@@ -12,3 +12,5 @@
 - Learn business context before optimizing queries.
 
 **Learn the fundamentals before going deep.**
+
+---
