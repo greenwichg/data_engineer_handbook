@@ -20,6 +20,6 @@ The "Swiss Army Knife" of table formats. Originally built by Netflix, it’s eng
 Don’t just store data; manage it.
 The choice between Delta and Iceberg often comes down to your existing ecosystem and your need for vendor neutrality.
 
-![Data Platform Architecture](./image_references/image.png)
+![Data Platform Architecture](./image_references/data_storage_formats.png)
 
 ---
