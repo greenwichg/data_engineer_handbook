@@ -54,6 +54,6 @@ The result?
 Modern data teams don't work in silos.
 They work in sync.
 
-![Data Platform Architecture](../image_references/marcel_dybalski.png)
+![Data Platform Architecture](./image_references/marcel_dybalski.png)
 
 ---

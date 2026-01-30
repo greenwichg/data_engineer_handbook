@@ -36,4 +36,4 @@ Miss these foundations, and your platform quietly becomes a swamp.
 
 ---
 
-![Data Platform Architecture](../image_references/surbhi_walecha.png)
+![Data Platform Architecture](./image_references/surbhi_walecha.png)
