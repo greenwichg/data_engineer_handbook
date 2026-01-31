@@ -2,7 +2,7 @@
 
 • Strong **AWS** experience: **Redshift/Athena** (databases, tables, partitions, clustering, DML/DDL, UDFs), **S3** (bucket design, lifecycle, security).
 
-• **Apache Airflow**: DAG design, custom operators/hooks, scheduling, backfilling, managing XComs, SLAs, and retries.
+• **Apache Airflow**: DAG design, custom operators/hooks, sensors, scheduling, backfilling, managing XComs, SLAs, and retries.
 
 • **PySpark**: RDD/DataFrame APIs, performance tuning (partitioning, caching, skew mitigation), reading/writing **Parquet/Avro/JSON/CSV**.
 
