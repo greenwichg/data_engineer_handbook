@@ -1,5 +1,5 @@
-PySpark Problem Types - Complete Cheat Sheet
-TABLE OF CONTENTS
+## PySpark Problem Types - Complete Cheat Sheet
+### TABLE OF CONTENTS
 	1.	Ranking & Top-N Problems
 	2.	Running/Cumulative Calculations
 	3.	Time-Series & Gap Analysis
