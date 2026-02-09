@@ -112,12 +112,13 @@ window_spec = Window.orderBy(F.col("score").desc())
 df.withColumn("rank", F.dense_rank().over(window_spec)).filter(F.col("rank") <= 10)
 ```
 
-2. Running/Cumulative Calculations
-Trigger Words
-	∙	“running total”, “cumulative sum”, “rolling average”
-	∙	“moving average”, “YTD”, “MTD”, “progressive”, “trailing”
-Key Pattern
+### 2. Running/Cumulative Calculations
+#### Trigger Words
+	- “running total”, “cumulative sum”, “rolling average”
+	- “moving average”, “YTD”, “MTD”, “progressive”, “trailing”
 
+#### Key Pattern
+```python
 from pyspark.sql.window import Window
 from pyspark.sql.functions import sum, avg
 
@@ -127,10 +128,10 @@ window_spec = Window.partitionBy("group").orderBy("date").rowsBetween(
 )
 
 df_running = df.withColumn("running_total", F.sum("amount").over(window_spec))
+```
 
-
-Frame Specification Options
-
+### Frame Specification Options
+```python
 # Cumulative from start (running total)
 Window.rowsBetween(Window.unboundedPreceding, Window.currentRow)
 
@@ -142,10 +143,10 @@ Window.rowsBetween(-3, 3)
 
 # All rows in partition (no row specification)
 Window.partitionBy("category")  # No orderBy = all rows
+```
 
-
-Examples
-
+### Examples
+```python
 # Example 1: Running total by month
 window_spec = Window.partitionBy("product_id").orderBy("date").rowsBetween(
     Window.unboundedPreceding, Window.currentRow
@@ -217,11 +218,9 @@ df_rolling = df.withColumn(
     "sales_last_7_days",
     F.sum("sales").over(window_spec)
 )
-
+```
 
 Quick Reference
-
-
 
 |Need                   |Function      |Window Specification                                 |
 |-----------------------|--------------|-----------------------------------------------------|
