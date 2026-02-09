@@ -10,8 +10,8 @@
 	8.Complex Filtering & Conditions
 	9.Performance Optimization Patterns
 	10.Deduplication Strategies
-	11.	Pivoting & Reshaping
-	12.	Advanced Patterns (UDFs, Broadcast, Caching)
+	11.Pivoting & Reshaping
+	12.Advanced Patterns (UDFs, Broadcast, Caching)
 
 1. Ranking & Top-N Problems
 Trigger Words
