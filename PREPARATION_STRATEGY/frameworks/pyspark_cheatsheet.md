@@ -1254,8 +1254,8 @@ exact_count = df.select(F.countDistinct("user_id")).collect()
 approx_count = df.select(F.approx_count_distinct("user_id", rsd=0.05)).collect()
 ```
 
-Performance Checklist
-✅ DO:
+### Performance Checklist
+#### ✅ DO:
 	1.	Cache only filtered/processed data
 	2.	Broadcast small tables in joins
 	3.	Filter before joins and aggregations
@@ -1264,7 +1264,7 @@ Performance Checklist
 	6.	Partition data appropriately (100-1000 partitions)
 	7.	Use approx functions for aggregations
 	8.	Persist intermediate results used multiple times
-❌ DON’T:
+#### ❌ DON’T:
 	1.	Cache entire large datasets unnecessarily
 	2.	Use collect() on large DataFrames
 	3.	Create too many or too few partitions
@@ -1274,12 +1274,13 @@ Performance Checklist
 	7.	Ignore data skew
 	8.	Chain many operations without caching intermediate results
 
-10. Deduplication Strategies
-Trigger Words
-	∙	“remove duplicates”, “unique”, “distinct”, “deduplicate”
-	∙	“keep first/last”, “primary key”, “eliminate duplicates”
-Deduplication Patterns
+### 10. Deduplication Strategies
+#### Trigger Words
+	- “remove duplicates”, “unique”, “distinct”, “deduplicate”
+	- “keep first/last”, “primary key”, “eliminate duplicates”
 
+#### Deduplication Patterns
+```python
 # Pattern 1: Simple distinct
 df.distinct()
 
@@ -1291,10 +1292,10 @@ window_spec = Window.partitionBy("email").orderBy(F.col("created_date").desc())
 df.withColumn("rn", F.row_number().over(window_spec)) \
   .filter(F.col("rn") == 1) \
   .drop("rn")
+```
 
-
-Examples
-
+#### Examples
+```python
 # Example 1: Remove complete duplicates
 df_unique = df.distinct()
 
@@ -1371,14 +1372,15 @@ df_similarity = df.alias("a").join(
     F.col("b.name").alias("name_2"),
     F.levenshtein(F.col("a.name"), F.col("b.name")).alias("edit_distance")
 )
+```
 
+### 11. Pivoting & Reshaping
+#### Trigger Words
+	- “pivot”, “unpivot”, “wide to long”, “long to wide”
+	- “transpose”, “crosstab”, “reshape”
 
-11. Pivoting & Reshaping
-Trigger Words
-	∙	“pivot”, “unpivot”, “wide to long”, “long to wide”
-	∙	“transpose”, “crosstab”, “reshape”
-Pivot Patterns
-
+#### Pivot Patterns
+```python
 # Pattern 1: Pivot (long to wide)
 df.groupBy("row_id").pivot("category").agg(F.sum("value"))
 
@@ -1387,10 +1389,10 @@ df.selectExpr(
     "id",
     "stack(3, 'col1', col1, 'col2', col2, 'col3', col3) as (metric, value)"
 )
+```
 
-
-Examples
-
+#### Examples
+```python
 # Example 1: Pivot sales by month
 # Input: product, month, sales
 # Output: product, Jan, Feb, Mar, ...
@@ -1453,11 +1455,11 @@ df_pivoted = (df
                      F.col("amount")).otherwise(0)).alias("pending_sales")
     )
 )
+```
 
-
-12. Advanced Patterns (UDFs, Broadcast, Caching)
-UDF Patterns
-
+### 12. Advanced Patterns (UDFs, Broadcast, Caching)
+#### UDF Patterns
+```python
 # Pattern 1: Simple UDF
 from pyspark.sql.types import StringType
 
@@ -1479,10 +1481,10 @@ def categorize_pandas(amounts: pd.Series) -> pd.Series:
                   labels=['Low', 'Medium', 'High'])
 
 df.withColumn("category", categorize_pandas(F.col("amount")))
+```
 
-
-Examples
-
+#### Examples
+```python
 # Example 1: Python UDF for complex logic
 from pyspark.sql.types import FloatType
 
@@ -1567,9 +1569,9 @@ def count_nulls(value):
 count_nulls_udf = F.udf(count_nulls, StringType())
 df.withColumn("checked", count_nulls_udf(F.col("name"))).count()
 print(f"Null values found: {null_counter.value}")
+```
 
-
-Quick Reference Card
+### Quick Reference Card
 
 ╔══════════════════════════════════════════════════════════════╗
 ║           PYSPARK PROBLEM TYPES QUICK REFERENCE              ║
