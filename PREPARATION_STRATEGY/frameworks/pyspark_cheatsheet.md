@@ -1256,23 +1256,23 @@ approx_count = df.select(F.approx_count_distinct("user_id", rsd=0.05)).collect()
 
 ### Performance Checklist
 #### ✅ DO:
-	1.	Cache only filtered/processed data
-	2.	Broadcast small tables in joins
-	3.	Filter before joins and aggregations
-	4.	Select only needed columns
-	5.	Use built-in functions over UDFs
-	6.	Partition data appropriately (100-1000 partitions)
-	7.	Use approx functions for aggregations
-	8.	Persist intermediate results used multiple times
+	1.Cache only filtered/processed data
+	2.Broadcast small tables in joins
+	3.Filter before joins and aggregations
+	4.Select only needed columns
+	5.Use built-in functions over UDFs
+	6.Partition data appropriately (100-1000 partitions)
+	7.Use approx functions for aggregations
+	8.Persist intermediate results used multiple times
 #### ❌ DON’T:
-	1.	Cache entire large datasets unnecessarily
-	2.	Use collect() on large DataFrames
-	3.	Create too many or too few partitions
-	4.	Use Python UDFs when SQL functions work
-	5.	Join without considering table sizes
-	6.	Process data row-by-row (use batch operations)
-	7.	Ignore data skew
-	8.	Chain many operations without caching intermediate results
+	1.Cache entire large datasets unnecessarily
+	2.Use collect() on large DataFrames
+	3.Create too many or too few partitions
+	4.Use Python UDFs when SQL functions work
+	5.Join without considering table sizes
+	6.Process data row-by-row (use batch operations)
+	7.Ignore data skew
+	8.Chain many operations without caching intermediate results
 
 ### 10. Deduplication Strategies
 #### Trigger Words
@@ -1572,6 +1572,53 @@ print(f"Null values found: {null_counter.value}")
 ```
 
 ### Quick Reference Card
+
+## Quick Reference Card
+
+**PYSPARK PROBLEM TYPES QUICK REFERENCE**
+
+**TOP N PER GROUP**
+- `row_number().over(Window...)`
+
+**RUNNING TOTAL**
+- `sum().over(rowsBetween(...))`
+
+**PREVIOUS/NEXT VALUE**
+- `lag()` / `lead()`
+
+**COMPARE TO GROUP AVG**
+- `avg().over(partitionBy(...))`
+
+**FIND GAPS**
+- Generate series + left_anti join
+
+**DEDUPLICATION**
+- `dropDuplicates()` or `row_number()`
+
+**PIVOT**
+- `groupBy().pivot().agg()`
+
+**UNPIVOT**
+- `selectExpr("stack(...)")`
+
+**BROADCAST JOIN**
+- `join(broadcast(small_df), ...)`
+
+**CONDITIONAL COLUMN**
+- `when().when().otherwise()`
+
+---
+
+**PERFORMANCE TIPS:**
+
+- Filter before joins/aggregations
+- Broadcast small tables (< 10MB)
+- Cache filtered data, not raw
+- Use built-in functions over UDFs
+- Repartition for parallelism (100-1000 partitions)
+- Select only needed columns
+- Use approx functions for large datasets
+
 
 ╔══════════════════════════════════════════════════════════════╗
 ║           PYSPARK PROBLEM TYPES QUICK REFERENCE              ║
