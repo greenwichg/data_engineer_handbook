@@ -20,6 +20,7 @@
 
 **Key Pattern**
 
+```python
 from pyspark.sql import Window
 from pyspark.sql.functions import row_number, rank, dense_rank
 
@@ -28,7 +29,7 @@ window_spec = Window.partitionBy("group_col").orderBy(F.col("value_col").desc())
 
 df_ranked = df.withColumn("rank", row_number().over(window_spec))
 df_top_n = df_ranked.filter(F.col("rank") <= N)
-
+```
 
 Function Choice Matrix
 
