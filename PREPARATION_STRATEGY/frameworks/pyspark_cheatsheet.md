@@ -1571,8 +1571,6 @@ df.withColumn("checked", count_nulls_udf(F.col("name"))).count()
 print(f"Null values found: {null_counter.value}")
 ```
 
-### Quick Reference Card
-
 ## Quick Reference Card
 
 **PYSPARK PROBLEM TYPES QUICK REFERENCE**
@@ -1619,37 +1617,7 @@ print(f"Null values found: {null_counter.value}")
 - Select only needed columns
 - Use approx functions for large datasets
 
-
-╔══════════════════════════════════════════════════════════════╗
-║           PYSPARK PROBLEM TYPES QUICK REFERENCE              ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║ TOP N PER GROUP         → row_number().over(Window...)       ║
-║ RUNNING TOTAL           → sum().over(rowsBetween(...))       ║
-║ PREVIOUS/NEXT VALUE     → lag() / lead()                     ║
-║ COMPARE TO GROUP AVG    → avg().over(partitionBy(...))       ║
-║ FIND GAPS               → Generate series + left_anti join   ║
-║ DEDUPLICATION           → dropDuplicates() or row_number()   ║
-║ PIVOT                   → groupBy().pivot().agg()            ║
-║ UNPIVOT                 → selectExpr("stack(...)")           ║
-║ BROADCAST JOIN          → join(broadcast(small_df), ...)     ║
-║ CONDITIONAL COLUMN      → when().when().otherwise()          ║
-║                                                              ║
-║ PERFORMANCE TIPS:                                            ║
-║ • Filter before joins/aggregations                           ║
-║ • Broadcast small tables (< 10MB)                            ║
-║ • Cache filtered data, not raw                               ║
-║ • Use built-in functions over UDFs                           ║
-║ • Repartition for parallelism (100-1000 partitions)          ║
-║ • Select only needed columns                                 ║
-║ • Use approx functions for large datasets                    ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-
-
-PySpark vs SQL Translation Guide
-
-
+### PySpark vs SQL Translation Guide
 
 |SQL                       |PySpark                                         |
 |--------------------------|------------------------------------------------|
@@ -1679,9 +1647,7 @@ PySpark vs SQL Translation Guide
 |`LEFT JOIN`               |`df1.join(df2, "key", "left")`                  |
 |`UNION ALL`               |`df1.union(df2)`                                |
 
-Common Pitfalls & Solutions
-
-
+### Common Pitfalls & Solutions
 
 |Pitfall                       |Solution                        |
 |------------------------------|--------------------------------|
@@ -1696,9 +1662,7 @@ Common Pitfalls & Solutions
 |Column name ambiguity in joins|Use df.alias(“a”)               |
 |Type mismatch in operations   |Explicit cast()                 |
 
-Interview Pattern Recognition
-
-
+### Interview Pattern Recognition
 
 |Interview Phrase     |PySpark Pattern                                          |
 |---------------------|---------------------------------------------------------|
@@ -1713,9 +1677,9 @@ Interview Pattern Recognition
 |“pivot table”        |`groupBy().pivot().agg()`                                |
 |“unique values”      |`distinct()` or `dropDuplicates()`                       |
 
-Happy Sparking! 🎯
-Would you like me to:
-	1.	Create end-to-end PySpark examples for complete workflows?
-	2.	Build a comparison guide (PySpark vs Pandas vs SQL)?
-	3.	Add Spark optimization deep-dive (partitioning strategies, shuffle optimization)?
-	4.	Create a troubleshooting guide for common Spark errors?​​​​​​​​​​​​​​​​
+### Happy Sparking! 🎯
+#### Would you like me to:
+	1.Create end-to-end PySpark examples for complete workflows?
+	2.Build a comparison guide (PySpark vs Pandas vs SQL)?
+	3.Add Spark optimization deep-dive (partitioning strategies, shuffle optimization)?
+	4.Create a troubleshooting guide for common Spark errors?​​​​​​​​​​​​​​​​
