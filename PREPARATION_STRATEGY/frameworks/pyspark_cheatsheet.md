@@ -33,8 +33,6 @@ df_top_n = df_ranked.filter(F.col("rank") <= N)
 
 ### Function Choice Matrix
 
-
-
 |Need                      |Use             |Result Example    |
 |--------------------------|----------------|------------------|
 |Unique ranks, skip on ties|`row_number()`  |1,2,3,4,5         |
@@ -95,8 +93,8 @@ df_with_ranks = (df
 )
 ```
 
-Common Pitfalls
-
+### Common Pitfalls
+```python
 # ❌ WRONG: Using limit() on grouped data
 df.orderBy(F.col("salary").desc()).limit(3)  
 # Only gives top 3 overall, not per group!
@@ -112,7 +110,7 @@ df.orderBy(F.col("score").desc()).limit(10)
 # ✅ CORRECT: Use dense_rank or rank
 window_spec = Window.orderBy(F.col("score").desc())
 df.withColumn("rank", F.dense_rank().over(window_spec)).filter(F.col("rank") <= 10)
-
+```
 
 2. Running/Cumulative Calculations
 Trigger Words
