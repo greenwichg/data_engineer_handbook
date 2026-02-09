@@ -220,7 +220,7 @@ df_rolling = df.withColumn(
 )
 ```
 
-Quick Reference
+### Quick Reference
 
 |Need                   |Function      |Window Specification                                 |
 |-----------------------|--------------|-----------------------------------------------------|
@@ -231,8 +231,8 @@ Quick Reference
 |First in partition     |`first()`     |`rowsBetween(unboundedPreceding, unboundedFollowing)`|
 |Last in partition      |`last()`      |`rowsBetween(unboundedPreceding, unboundedFollowing)`|
 
-rowsBetween vs rangeBetween
-
+#### rowsBetween vs rangeBetween
+```python
 # rowsBetween: Physical row positions
 Window.orderBy("date").rowsBetween(-6, 0)  # Last 7 rows
 
@@ -244,14 +244,15 @@ Window.orderBy(F.col("date").cast("long")).rangeBetween(
 # When to use which:
 # - rowsBetween: When you want exactly N rows (e.g., "last 10 transactions")
 # - rangeBetween: When you want time-based windows (e.g., "last 7 days")
+```
 
+### 3. Time-Series & Gap Analysis
+#### Trigger Words
+	- “missing dates”, “gaps”, “fill missing”, “consecutive days”
+	- “streak”, “continuous”, “interpolate”, “date series”
 
-3. Time-Series & Gap Analysis
-Trigger Words
-	∙	“missing dates”, “gaps”, “fill missing”, “consecutive days”
-	∙	“streak”, “continuous”, “interpolate”, “date series”
-Key Pattern
-
+#### Key Pattern
+```python
 from pyspark.sql.functions import expr, explode, sequence, to_date
 
 # Template: Generate date series and find gaps
@@ -265,10 +266,10 @@ date_range = spark.sql("""
 
 # Find gaps
 gaps = date_range.join(df, "date", "left_anti")
+```
 
-
-Common Patterns
-
+### Common Patterns
+```python
 # Pattern 1: Generate complete date series
 from pyspark.sql.functions import explode, sequence, to_date, lit
 
@@ -312,10 +313,10 @@ islands_summary = (df_islands
         F.count("*").alias("streak_days")
     )
 )
+```
 
-
-Examples
-
+#### Examples
+```python
 # Example 1: Find missing transaction IDs
 from pyspark.sql.functions import expr, col
 
@@ -375,7 +376,7 @@ gaps = (df
     .filter(F.col("gap_seconds") > 3600)  # Gaps > 1 hour
     .select("device_id", "event_time", "next_event", "gap_seconds")
 )
-
+```
 
 4. Aggregation Patterns
 Trigger Words
