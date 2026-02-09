@@ -477,8 +477,8 @@ high_volume_products = (df
 )
 ```
 
-Advanced Aggregation Functions
-
+### Advanced Aggregation Functions
+```python
 # Statistical aggregations
 df.groupBy("category").agg(
     F.mean("price").alias("mean"),
@@ -493,14 +493,15 @@ df.groupBy("user_id").agg(
     F.approx_count_distinct("product_id", rsd=0.05).alias("approx_unique_products"),
     F.expr("percentile_approx(price, 0.5, 100)").alias("median_price")  # 100 = accuracy
 )
+```
 
+### 5. Join Strategies & Optimization
+#### Trigger Words
+	- “combine”, “merge”, “match”, “lookup”, “enrich”
+	- “left/right/inner/outer join”, “anti-join”, “semi-join”
 
-5. Join Strategies & Optimization
-Trigger Words
-	∙	“combine”, “merge”, “match”, “lookup”, “enrich”
-	∙	“left/right/inner/outer join”, “anti-join”, “semi-join”
-Join Types
-
+### Join Types
+```python
 # Inner Join (only matching records)
 df1.join(df2, "key", "inner")
 
@@ -521,10 +522,10 @@ df1.join(df2, "key", "left_anti")
 
 # Cross Join (Cartesian product)
 df1.crossJoin(df2)
+```
 
-
-Join Optimization Patterns
-
+### Join Optimization Patterns
+```python
 # Pattern 1: Broadcast Join (for small tables)
 from pyspark.sql.functions import broadcast
 
@@ -552,10 +553,10 @@ df.alias("a").join(
     (F.col("a.category") == F.col("b.category")),
     "inner"
 )
+```
 
-
-Examples
-
+#### Examples
+```python
 # Example 1: Enrich orders with customer data
 orders_enriched = (orders
     .join(customers, "customer_id", "left")
@@ -631,11 +632,9 @@ result = (orders
         orders["amount"]
     )
 )
+```
 
-
-Join Performance Checklist
-
-
+### Join Performance Checklist
 
 |Do                                       |Don’t                                            |
 |-----------------------------------------|-------------------------------------------------|
