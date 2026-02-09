@@ -93,7 +93,7 @@ df_with_ranks = (df
     .withColumn("rank", F.rank().over(window_spec))
     .withColumn("dense_rank", F.dense_rank().over(window_spec))
 )
-```python
+```
 
 Common Pitfalls
 
