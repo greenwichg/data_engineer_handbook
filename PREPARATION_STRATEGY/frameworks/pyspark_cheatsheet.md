@@ -15,8 +15,8 @@
 
 ### 1. Ranking & Top-N Problems
 #### Trigger Words
-	∙“top N”, “highest”, “lowest”, “rank”, “best performers”
-	∙“nth highest”, “per group”, “for each partition”
+	- “top N”, “highest”, “lowest”, “rank”, “best performers”
+	- “nth highest”, “per group”, “for each partition”
 
 **Key Pattern**
 
