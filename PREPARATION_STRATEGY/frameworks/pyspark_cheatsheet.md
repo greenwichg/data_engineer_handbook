@@ -43,8 +43,8 @@ df_top_n = df_ranked.filter(F.col("rank") <= N)
 |Percentile ranking        |`percent_rank()`|0.0 to 1.0        |
 |Divide into N buckets     |`ntile(N)`      |Quartiles, deciles|
 
-Examples
-
+### Examples
+```python
 from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
@@ -93,7 +93,7 @@ df_with_ranks = (df
     .withColumn("rank", F.rank().over(window_spec))
     .withColumn("dense_rank", F.dense_rank().over(window_spec))
 )
-
+```python
 
 Common Pitfalls
 
