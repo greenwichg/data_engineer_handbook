@@ -1,17 +1,17 @@
 ## PySpark Problem Types - Complete Cheat Sheet
 ### TABLE OF CONTENTS
-	1.Ranking & Top-N Problems
-	2.Running/Cumulative Calculations
-	3.Time-Series & Gap Analysis
-	4.Aggregation Patterns
-	5.Join Strategies & Optimization
-	6.Data Quality & Validation
-	7.Column Transformations
-	8.Complex Filtering & Conditions
-	9.Performance Optimization Patterns
-	10.Deduplication Strategies
-	11.Pivoting & Reshaping
-	12.Advanced Patterns (UDFs, Broadcast, Caching)
+	01. Ranking & Top-N Problems
+	02. Running/Cumulative Calculations
+	03. Time-Series & Gap Analysis
+	04. Aggregation Patterns
+	05. Join Strategies & Optimization
+	06. Data Quality & Validation
+	07. Column Transformations
+	08. Complex Filtering & Conditions
+	09. Performance Optimization Patterns
+	10. Deduplication Strategies
+	11. Pivoting & Reshaping
+	12. Advanced Patterns (UDFs, Broadcast, Caching)
 
 ### 1. Ranking & Top-N Problems
 #### Trigger Words
