@@ -28,6 +28,18 @@ Excellent! Let me give you a **comprehensive deep dive into Delta Lake patterns*
 21. Column Mapping
 22. Idempotent Writes (txnAppId / txnVersion)
 23. Copy-on-Write vs Merge-on-Read
+24. Medallion Architecture (Bronze / Silver / Gold)
+25. Unity Catalog & Governance
+26. Delta Live Tables (DLT)
+27. Delta Sharing
+28. Photon Engine
+29. Cost Optimization Strategies
+30. Monitoring & Observability
+31. GDPR & Compliance Patterns
+32. Disaster Recovery & High Availability
+33. SCD Type 3 & Type 4 Patterns
+34. Data Mesh with Delta Lake
+35. Delta Lake with ML / Feature Stores
 
 ---
 
@@ -3166,6 +3178,1506 @@ INTERVIEW ANSWER:
 
 ---
 
+## **PART 24: Medallion Architecture (Bronze / Silver / Gold)**
+
+### **The Three-Layer Lakehouse Pattern**
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                     MEDALLION ARCHITECTURE                           │
+│                                                                      │
+│  RAW SOURCES         BRONZE            SILVER            GOLD        │
+│  ┌─────────┐     ┌───────────┐     ┌───────────┐     ┌───────────┐  │
+│  │ Kafka   │────►│ Raw       │────►│ Cleaned   │────►│ Business  │  │
+│  │ S3 files│     │ Ingestion │     │ Conformed │     │ Aggregates│  │
+│  │ APIs    │     │ Append-   │     │ Deduplied │     │ Curated   │  │
+│  │ DBs     │     │ only      │     │ Validated │     │ KPI-ready │  │
+│  └─────────┘     └───────────┘     └───────────┘     └───────────┘  │
+│                                                                      │
+│  Principle:  Raw ingest  →  Clean & conform  →  Business logic       │
+│  Schema:     Source schema   Canonical schema   Star schema / agg    │
+│  Quality:    No validation   Data quality rules  Business rules      │
+│  Consumers:  Data engineers  Data engineers      Analysts / BI / ML  │
+│  Retention:  Long (audit)    Medium              Short (re-derivable)│
+│  Writes:     Append-only     MERGE (dedupe)      Overwrite / MERGE   │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+### **Implementing Medallion with Delta Lake**
+
+```python
+# ═══════════════════════════════════════════════════
+# BRONZE LAYER — Raw ingestion, append-only
+# ═══════════════════════════════════════════════════
+
+# Bronze: Ingest raw Kafka events (preserve everything)
+raw_events = spark.readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "broker:9092") \
+    .option("subscribe", "user_events") \
+    .load()
+
+bronze_df = raw_events.select(
+    col("key").cast("string").alias("event_key"),
+    col("value").cast("string").alias("raw_payload"),
+    col("topic"),
+    col("partition"),
+    col("offset"),
+    col("timestamp").alias("kafka_timestamp"),
+    current_timestamp().alias("ingested_at")
+)
+
+bronze_df.writeStream \
+    .format("delta") \
+    .outputMode("append") \
+    .option("checkpointLocation", "/checkpoints/bronze/user_events") \
+    .trigger(processingTime="30 seconds") \
+    .start("/delta/bronze/user_events")
+
+# Bronze table properties
+spark.sql("""
+    ALTER TABLE bronze.user_events SET TBLPROPERTIES (
+        'delta.enableChangeDataFeed' = 'true',
+        'delta.logRetentionDuration' = 'interval 90 days',
+        'delta.deletedFileRetentionDuration' = 'interval 90 days'
+    )
+""")
+
+# ═══════════════════════════════════════════════════
+# SILVER LAYER — Cleaned, conformed, deduplicated
+# ═══════════════════════════════════════════════════
+
+from pyspark.sql.functions import from_json, col, sha2, concat
+
+# Silver: Parse, validate, deduplicate
+event_schema = StructType([
+    StructField("event_id", StringType()),
+    StructField("user_id", StringType()),
+    StructField("event_type", StringType()),
+    StructField("properties", MapType(StringType(), StringType())),
+    StructField("event_timestamp", TimestampType())
+])
+
+def bronze_to_silver(batch_df, batch_id):
+    # Step 1: Parse JSON
+    parsed = batch_df.select(
+        from_json(col("raw_payload"), event_schema).alias("data"),
+        col("kafka_timestamp"),
+        col("ingested_at")
+    ).select("data.*", "kafka_timestamp", "ingested_at")
+
+    # Step 2: Data quality filters
+    clean = parsed.filter(
+        col("event_id").isNotNull() &
+        col("user_id").isNotNull() &
+        col("event_type").isin("click", "view", "purchase", "signup")
+    )
+
+    # Step 3: Add derived columns
+    enriched = clean.withColumn(
+        "event_date", col("event_timestamp").cast("date")
+    ).withColumn(
+        "row_hash", sha2(concat(col("event_id"), col("event_timestamp")), 256)
+    )
+
+    # Step 4: MERGE to deduplicate
+    silver_table = DeltaTable.forPath(spark, "/delta/silver/user_events")
+    silver_table.alias("t").merge(
+        enriched.alias("s"),
+        "t.event_id = s.event_id"
+    ).whenNotMatchedInsertAll().execute()
+    # Only inserts truly new events — deduplication built in
+
+spark.readStream.format("delta") \
+    .option("readChangeFeed", "true") \
+    .option("startingVersion", "latest") \
+    .load("/delta/bronze/user_events") \
+    .writeStream \
+    .foreachBatch(bronze_to_silver) \
+    .option("checkpointLocation", "/checkpoints/silver/user_events") \
+    .trigger(processingTime="1 minute") \
+    .start()
+
+# Silver table with quality constraints
+spark.sql("""
+    CREATE TABLE IF NOT EXISTS silver.user_events (
+        event_id        STRING NOT NULL,
+        user_id         STRING NOT NULL,
+        event_type      STRING,
+        properties      MAP<STRING, STRING>,
+        event_timestamp TIMESTAMP,
+        event_date      DATE GENERATED ALWAYS AS (CAST(event_timestamp AS DATE)),
+        kafka_timestamp TIMESTAMP,
+        ingested_at     TIMESTAMP,
+        row_hash        STRING
+    ) USING DELTA
+    CLUSTER BY (user_id, event_date)
+    TBLPROPERTIES (
+        'delta.enableChangeDataFeed' = 'true',
+        'delta.enableDeletionVectors' = 'true',
+        'delta.columnMapping.mode' = 'name'
+    )
+""")
+spark.sql("""
+    ALTER TABLE silver.user_events
+    ADD CONSTRAINT valid_event_type
+    CHECK (event_type IN ('click', 'view', 'purchase', 'signup'))
+""")
+
+# ═══════════════════════════════════════════════════
+# GOLD LAYER — Business aggregates, KPI-ready
+# ═══════════════════════════════════════════════════
+
+# Gold: Daily user activity summary
+spark.sql("""
+    CREATE OR REPLACE TABLE gold.daily_user_activity AS
+    SELECT
+        event_date,
+        user_id,
+        COUNT(*) AS total_events,
+        COUNT(DISTINCT event_type) AS unique_event_types,
+        SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) AS purchases,
+        SUM(CASE WHEN event_type = 'click' THEN 1 ELSE 0 END) AS clicks,
+        MIN(event_timestamp) AS first_event,
+        MAX(event_timestamp) AS last_event
+    FROM silver.user_events
+    GROUP BY event_date, user_id
+""")
+
+# Gold: Incremental refresh with MERGE
+def refresh_gold_daily(target_date):
+    daily_agg = spark.sql(f"""
+        SELECT
+            event_date, user_id,
+            COUNT(*) AS total_events,
+            SUM(CASE WHEN event_type = 'purchase' THEN 1 ELSE 0 END) AS purchases
+        FROM silver.user_events
+        WHERE event_date = '{target_date}'
+        GROUP BY event_date, user_id
+    """)
+
+    gold_table = DeltaTable.forName(spark, "gold.daily_user_activity")
+    gold_table.alias("t").merge(
+        daily_agg.alias("s"),
+        "t.event_date = s.event_date AND t.user_id = s.user_id"
+    ).whenMatchedUpdateAll() \
+     .whenNotMatchedInsertAll() \
+     .execute()
+```
+
+### **Medallion Best Practices**
+
+```
+┌─────────────┬───────────────────────────┬────────────────────────────┐
+│ Layer       │ Do                        │ Don't                      │
+├─────────────┼───────────────────────────┼────────────────────────────┤
+│ Bronze      │ Append-only               │ Transform or filter        │
+│             │ Preserve raw payload      │ Drop fields                │
+│             │ Add ingestion metadata    │ Apply business logic       │
+│             │ Long retention (audit)    │ Short retention            │
+├─────────────┼───────────────────────────┼────────────────────────────┤
+│ Silver      │ Deduplicate               │ Aggregate                  │
+│             │ Validate & clean          │ Apply business definitions │
+│             │ Conform to canonical model│ Join unrelated domains     │
+│             │ CHECK constraints         │ Over-normalize             │
+├─────────────┼───────────────────────────┼────────────────────────────┤
+│ Gold        │ Aggregate for use case    │ Store raw data             │
+│             │ Star schema / wide tables │ Complex joins at query time│
+│             │ Optimize for query pattern│ Store intermediate results │
+│             │ Short retention (re-derive)│ Duplicate silver logic    │
+└─────────────┴───────────────────────────┴────────────────────────────┘
+```
+
+---
+
+## **PART 25: Unity Catalog & Governance**
+
+### **Three-Level Namespace**
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                    UNITY CATALOG HIERARCHY                        │
+│                                                                  │
+│  Metastore (top-level, one per Databricks account region)        │
+│  └── Catalog (logical grouping, e.g., "production", "staging")   │
+│      └── Schema (database, e.g., "analytics", "raw")             │
+│          └── Table / View / Function / Model                     │
+│                                                                  │
+│  Full reference: catalog.schema.table                            │
+│  Example:        production.analytics.daily_revenue              │
+│                                                                  │
+│  BEFORE Unity Catalog:   hive_metastore.default.my_table         │
+│  WITH Unity Catalog:     prod.analytics.daily_revenue            │
+│                                                                  │
+│  KEY BENEFITS:                                                   │
+│  ✅ Centralized access control (GRANT/REVOKE)                    │
+│  ✅ Data lineage (automatic, column-level)                       │
+│  ✅ Data discovery (search, tags, comments)                      │
+│  ✅ Audit logging (who accessed what, when)                      │
+│  ✅ Cross-workspace governance (share across workspaces)         │
+│  ✅ Works with Delta, Iceberg, Parquet, CSV, JSON                │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### **Unity Catalog Access Control**
+
+```python
+# ✅ PATTERN 1: Create catalog and schema
+spark.sql("CREATE CATALOG IF NOT EXISTS production")
+spark.sql("CREATE SCHEMA IF NOT EXISTS production.analytics")
+
+# ✅ PATTERN 2: Grant permissions
+spark.sql("GRANT USAGE ON CATALOG production TO `data_engineers`")
+spark.sql("GRANT USAGE ON SCHEMA production.analytics TO `data_engineers`")
+spark.sql("GRANT SELECT ON TABLE production.analytics.revenue TO `analysts`")
+spark.sql("GRANT MODIFY ON TABLE production.analytics.revenue TO `data_engineers`")
+spark.sql("GRANT CREATE TABLE ON SCHEMA production.analytics TO `data_engineers`")
+
+# ✅ PATTERN 3: Fine-grained permissions
+spark.sql("GRANT SELECT ON TABLE production.analytics.customers TO `marketing`")
+# marketing can READ but not WRITE
+
+# ✅ PATTERN 4: Row-level security with row filters
+spark.sql("""
+    ALTER TABLE production.analytics.orders
+    SET ROW FILTER region_filter ON (region)
+""")
+# region_filter is a SQL UDF that returns TRUE for allowed rows
+
+# ✅ PATTERN 5: Column-level security with column masks
+spark.sql("""
+    ALTER TABLE production.analytics.customers
+    ALTER COLUMN email SET MASK mask_email
+""")
+# mask_email returns masked value for unauthorized users:
+# "user@example.com" → "u***@example.com"
+
+# ✅ PATTERN 6: Create row filter function
+spark.sql("""
+    CREATE FUNCTION production.analytics.region_filter(region STRING)
+    RETURNS BOOLEAN
+    RETURN IF(IS_MEMBER('global_admins'), true, region = current_user_region())
+""")
+
+# ✅ PATTERN 7: Create column mask function
+spark.sql("""
+    CREATE FUNCTION production.analytics.mask_email(email STRING)
+    RETURNS STRING
+    RETURN IF(IS_MEMBER('pii_authorized'), email,
+              CONCAT(LEFT(email, 1), '***@', SPLIT(email, '@')[1]))
+""")
+
+# ✅ PATTERN 8: Data lineage (automatic in Unity Catalog)
+# Lineage is tracked automatically when you:
+#   - CREATE TABLE AS SELECT (tracks source → target)
+#   - INSERT INTO ... SELECT (tracks flow)
+#   - MERGE INTO (tracks source → target)
+# View in Databricks UI: Catalog Explorer → Table → Lineage tab
+
+# ✅ PATTERN 9: Tags for data classification
+spark.sql("""
+    ALTER TABLE production.analytics.customers
+    SET TAGS ('pii' = 'true', 'sensitivity' = 'high', 'owner' = 'privacy_team')
+""")
+spark.sql("""
+    ALTER TABLE production.analytics.customers
+    ALTER COLUMN ssn SET TAGS ('pii_type' = 'ssn', 'mask_required' = 'true')
+""")
+
+# ✅ PATTERN 10: View permissions
+spark.sql("SHOW GRANTS ON TABLE production.analytics.revenue")
+spark.sql("SHOW GRANTS TO `data_engineers`")
+```
+
+### **Unity Catalog vs Legacy Hive Metastore**
+
+```
+┌────────────────────────┬───────────────────────┬────────────────────────┐
+│ Feature                │ Hive Metastore        │ Unity Catalog          │
+├────────────────────────┼───────────────────────┼────────────────────────┤
+│ Namespace              │ database.table        │ catalog.schema.table   │
+│ Access control         │ Table ACLs (limited)  │ GRANT/REVOKE (full)    │
+│ Row/column security    │ ❌ None               │ ✅ Filters & Masks     │
+│ Data lineage           │ ❌ None               │ ✅ Automatic           │
+│ Cross-workspace        │ ❌ No                 │ ✅ Yes                 │
+│ External tables        │ ✅ Yes                │ ✅ Yes (managed locs)  │
+│ Formats supported      │ Delta, Parquet, etc.  │ Delta, Iceberg, +more  │
+│ Audit logging          │ ❌ Limited            │ ✅ Full audit trail     │
+│ Data discovery         │ ❌ None               │ ✅ Search, tags, docs   │
+└────────────────────────┴───────────────────────┴────────────────────────┘
+```
+
+---
+
+## **PART 26: Delta Live Tables (DLT)**
+
+### **Declarative ETL Pipelines**
+
+```
+WHAT IS DLT?
+  Delta Live Tables is a DECLARATIVE framework for building ETL pipelines.
+
+  Traditional ETL:              DLT:
+  ─────────────────             ────────────────
+  You manage:                   You declare:
+  - Read source                 - "This table should contain..."
+  - Transform                   - "Quality expectations..."
+  - Write target                - DLT handles orchestration,
+  - Handle failures               retries, dependencies, and
+  - Manage dependencies            data quality automatically
+  - Schedule jobs
+
+  DLT automatically:
+  ✅ Resolves dependencies between tables
+  ✅ Manages incremental processing
+  ✅ Enforces data quality expectations
+  ✅ Handles retries and recovery
+  ✅ Optimizes execution
+```
+
+### **DLT Syntax and Patterns**
+
+```python
+import dlt
+from pyspark.sql.functions import *
+
+# ═══════════════════════════════════════════════════
+# BRONZE — Raw ingestion with Auto Loader
+# ═══════════════════════════════════════════════════
+
+@dlt.table(
+    name="bronze_events",
+    comment="Raw events ingested from cloud storage",
+    table_properties={"quality": "bronze"}
+)
+def bronze_events():
+    return (
+        spark.readStream
+            .format("cloudFiles")
+            .option("cloudFiles.format", "json")
+            .option("cloudFiles.inferColumnTypes", "true")
+            .load("/data/raw/events/")
+    )
+
+# ═══════════════════════════════════════════════════
+# SILVER — Cleaned with quality expectations
+# ═══════════════════════════════════════════════════
+
+@dlt.table(
+    name="silver_events",
+    comment="Cleaned and validated events"
+)
+@dlt.expect("valid_event_id", "event_id IS NOT NULL")
+@dlt.expect("valid_timestamp", "event_timestamp IS NOT NULL")
+@dlt.expect_or_drop("valid_event_type",
+                     "event_type IN ('click', 'view', 'purchase')")
+@dlt.expect_or_fail("valid_user_id", "user_id IS NOT NULL")
+def silver_events():
+    return (
+        dlt.read_stream("bronze_events")
+            .select(
+                col("event_id"),
+                col("user_id"),
+                col("event_type"),
+                col("event_timestamp").cast("timestamp"),
+                col("event_timestamp").cast("date").alias("event_date")
+            )
+    )
+
+# ═══════════════════════════════════════════════════
+# GOLD — Business aggregation
+# ═══════════════════════════════════════════════════
+
+@dlt.table(
+    name="gold_daily_summary",
+    comment="Daily event summary per user"
+)
+def gold_daily_summary():
+    return (
+        dlt.read("silver_events")
+            .groupBy("event_date", "user_id")
+            .agg(
+                count("*").alias("total_events"),
+                countDistinct("event_type").alias("unique_types"),
+                sum(when(col("event_type") == "purchase", 1).otherwise(0))
+                    .alias("purchases")
+            )
+    )
+
+"""
+DLT EXPECTATION ACTIONS:
+  @dlt.expect("name", "condition")
+    → Logs violations, keeps bad rows (warn)
+  @dlt.expect_or_drop("name", "condition")
+    → Drops bad rows silently
+  @dlt.expect_or_fail("name", "condition")
+    → Fails entire pipeline on violation
+
+MATERIALIZATION TYPES:
+  @dlt.table      → Materialized table (stored as Delta)
+  @dlt.view       → Computed view (not stored, for intermediate steps)
+
+STREAMING vs BATCH:
+  dlt.read_stream("table")  → Incremental (streaming)
+  dlt.read("table")         → Full recompute (batch)
+"""
+```
+
+### **DLT vs Manual ETL**
+
+```
+┌───────────────────────┬──────────────────────────┬──────────────────────┐
+│ Aspect                │ Manual ETL (Notebooks)   │ Delta Live Tables    │
+├───────────────────────┼──────────────────────────┼──────────────────────┤
+│ Dependency management │ Manual (job orchestrator) │ Automatic (DAG)     │
+│ Incremental processing│ You implement            │ Built-in             │
+│ Data quality          │ Custom validation code   │ Declarative expects  │
+│ Error handling        │ Try/catch, manual retry  │ Automatic retry      │
+│ Schema evolution      │ Manual                   │ Automatic            │
+│ Monitoring            │ Custom dashboards        │ Built-in event log   │
+│ Code complexity       │ Higher                   │ Lower (declarative)  │
+│ Flexibility           │ Maximum                  │ Framework-constrained│
+│ Testing               │ Unit tests needed        │ Expectations = tests │
+└───────────────────────┴──────────────────────────┴──────────────────────┘
+```
+
+---
+
+## **PART 27: Delta Sharing**
+
+### **Cross-Organization Data Sharing**
+
+```
+PROBLEM:
+  Company A wants to share a Delta table with Company B
+  Traditional: Export CSV/Parquet → upload to B's storage → B imports
+  → Stale data, duplication, no access control, no audit trail
+
+DELTA SHARING:
+  Company A shares a LIVE Delta table with Company B
+  Company B reads directly — no data copying!
+
+  ┌───────────────┐                    ┌───────────────┐
+  │ PROVIDER      │                    │ RECIPIENT     │
+  │ (Company A)   │                    │ (Company B)   │
+  │               │   Delta Sharing    │               │
+  │ Delta Table ──┼───── Protocol ─────┼──► Read-only  │
+  │               │   (open protocol)  │    access     │
+  │ Access control│                    │               │
+  │ Audit logging │                    │ Any client:   │
+  └───────────────┘                    │ Spark, Pandas,│
+                                       │ Trino, Power BI│
+                                       └───────────────┘
+
+  KEY FEATURES:
+  ✅ Open protocol (not Databricks-only)
+  ✅ No data copying — recipients read from provider's storage
+  ✅ Fine-grained access control (table, partition, column level)
+  ✅ Audit trail (who accessed what, when)
+  ✅ Recipients don't need Databricks — any client works
+  ✅ Supports sharing tables, views, notebooks, AI models
+```
+
+### **Delta Sharing Patterns**
+
+```python
+# ═══════════════════════════════════════════════════
+# PROVIDER SIDE — Share data
+# ═══════════════════════════════════════════════════
+
+# ✅ PATTERN 1: Create a share
+spark.sql("CREATE SHARE IF NOT EXISTS customer_analytics")
+
+# ✅ PATTERN 2: Add tables to share
+spark.sql("""
+    ALTER SHARE customer_analytics
+    ADD TABLE production.analytics.daily_revenue
+""")
+
+# ✅ PATTERN 3: Share with partition filter (limit what's visible)
+spark.sql("""
+    ALTER SHARE customer_analytics
+    ADD TABLE production.analytics.orders
+    PARTITION (region = 'US')
+""")
+# Recipient only sees US orders
+
+# ✅ PATTERN 4: Grant recipient access
+spark.sql("""
+    GRANT SELECT ON SHARE customer_analytics
+    TO RECIPIENT partner_company
+""")
+
+# ✅ PATTERN 5: Create recipient
+spark.sql("""
+    CREATE RECIPIENT partner_company
+    COMMENT 'Partner Company B for analytics sharing'
+""")
+# Returns an activation link for the recipient
+
+# ═══════════════════════════════════════════════════
+# RECIPIENT SIDE — Consume shared data
+# ═══════════════════════════════════════════════════
+
+# ✅ PATTERN 6: Create catalog from share (Databricks)
+spark.sql("""
+    CREATE CATALOG IF NOT EXISTS shared_data
+    USING SHARE provider_org.customer_analytics
+""")
+# Now query: SELECT * FROM shared_data.analytics.daily_revenue
+
+# ✅ PATTERN 7: Read with open-source connector (non-Databricks)
+import delta_sharing
+
+# Using the profile file from activation link
+profile = "/path/to/share_profile.json"
+shares = delta_sharing.SharingClient(profile).list_shares()
+
+# Read as Pandas
+df = delta_sharing.load_as_pandas(f"{profile}#share_name.schema.table")
+
+# Read as Spark
+df = delta_sharing.load_as_spark(f"{profile}#share_name.schema.table")
+
+# ✅ PATTERN 8: Manage shares
+spark.sql("SHOW SHARES")
+spark.sql("DESCRIBE SHARE customer_analytics")
+spark.sql("SHOW RECIPIENTS")
+spark.sql("SHOW GRANTS ON SHARE customer_analytics")
+```
+
+---
+
+## **PART 28: Photon Engine**
+
+### **Vectorized Query Execution**
+
+```
+WHAT IS PHOTON?
+  Photon is Databricks' C++-based vectorized query engine that
+  replaces parts of the Spark JVM execution engine.
+
+  Traditional Spark:                Photon:
+  ┌──────────────────┐              ┌──────────────────┐
+  │ Spark SQL         │              │ Spark SQL         │
+  │ Catalyst Optimizer│              │ Catalyst Optimizer│
+  │ ↓                 │              │ ↓                 │
+  │ JVM Execution     │              │ Photon (C++ native)│
+  │ Row-at-a-time     │              │ Vectorized (batch) │
+  │ Garbage collection│              │ No GC overhead     │
+  │ Interpreted       │              │ SIMD-optimized     │
+  └──────────────────┘              └──────────────────┘
+
+  PERFORMANCE GAINS (typical):
+  ┌────────────────────────┬──────────┬─────────┬───────────┐
+  │ Operation              │ JVM Spark│ Photon  │ Speedup   │
+  ├────────────────────────┼──────────┼─────────┼───────────┤
+  │ Full table scan        │ 100s     │ 30s     │ ~3x       │
+  │ Aggregation            │ 60s      │ 15s     │ ~4x       │
+  │ JOIN (large tables)    │ 120s     │ 40s     │ ~3x       │
+  │ String operations      │ 80s      │ 10s     │ ~8x       │
+  │ Parquet I/O            │ 50s      │ 15s     │ ~3x       │
+  │ MERGE / DML            │ 90s      │ 25s     │ ~3.5x     │
+  └────────────────────────┴──────────┴─────────┴───────────┘
+
+WHEN PHOTON HELPS MOST:
+  ✅ Scan-heavy workloads (large table scans, aggregations)
+  ✅ String-heavy processing (parsing, regex, string functions)
+  ✅ JOIN-heavy queries (hash joins, broadcast joins)
+  ✅ DML operations (MERGE, UPDATE, DELETE on Delta)
+  ✅ ETL / ELT pipelines
+
+WHEN PHOTON DOESN'T HELP:
+  ❌ UDF-heavy workloads (Python UDFs still run in JVM/Python)
+  ❌ ML training (Photon is for SQL/DataFrame, not MLlib)
+  ❌ Very small datasets (overhead not worth it)
+  ❌ Workloads already bottlenecked on I/O, not compute
+
+HOW TO ENABLE:
+  - Select "Photon" runtime when creating a cluster
+  - Or set: spark.databricks.photon.enabled = true
+  - No code changes needed — Photon is transparent
+```
+
+---
+
+## **PART 29: Cost Optimization Strategies**
+
+### **Storage Cost Optimization**
+
+```python
+"""
+DELTA LAKE STORAGE COST BREAKDOWN:
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ Cost Component         │ Typical %  │ Optimization       │
+  ├────────────────────────┼────────────┼────────────────────┤
+  │ Active data files      │ 40-60%     │ Compaction, codec   │
+  │ Old file versions      │ 20-40%     │ VACUUM              │
+  │ Transaction log        │ 1-5%       │ Log retention       │
+  │ Bloom filter indexes   │ 1-3%       │ Only on needed cols │
+  │ Deletion vectors       │ <1%        │ OPTIMIZE compacts   │
+  └────────────────────────┴────────────┴────────────────────┘
+"""
+
+# ✅ PATTERN 1: Right-size VACUUM retention
+# Aggressive retention = less storage cost
+spark.sql("""
+    ALTER TABLE events SET TBLPROPERTIES (
+        'delta.deletedFileRetentionDuration' = 'interval 7 days',
+        'delta.logRetentionDuration' = 'interval 30 days'
+    )
+""")
+# 7-day file retention is minimum safe value
+# Reduces storage of old versions by up to 80%
+
+# ✅ PATTERN 2: Regular OPTIMIZE + VACUUM workflow
+spark.sql("OPTIMIZE events")           # Compact small files → fewer large files
+spark.sql("VACUUM events RETAIN 168 HOURS")  # Remove old files
+
+# ✅ PATTERN 3: Avoid over-partitioning (biggest cost mistake)
+# ❌ BAD: Millions of partitions → millions of tiny files
+# df.write.partitionBy("user_id").save(...)  # 10M users = 10M directories!
+
+# ✅ GOOD: Use Liquid Clustering instead
+spark.sql("ALTER TABLE events CLUSTER BY (user_id, event_date)")
+
+# ✅ PATTERN 4: Compression codec optimization
+spark.conf.set("spark.sql.parquet.compression.codec", "zstd")
+# zstd: Best compression ratio with good speed
+# snappy: Fastest but less compression (default)
+# lz4: Fast decompression, moderate compression
+
+# ✅ PATTERN 5: Drop unused Bloom filter indexes
+spark.sql("DROP BLOOMFILTER INDEX ON TABLE events FOR COLUMNS (rarely_queried_col)")
+
+# ✅ PATTERN 6: Monitor table size
+spark.sql("DESCRIBE DETAIL events").select(
+    "name", "numFiles", "sizeInBytes"
+).show()
+# Check: sizeInBytes / numFiles ≈ 128MB–1GB is optimal
+# If much smaller → need OPTIMIZE
+# If much larger → may need repartitioning
+```
+
+### **Compute Cost Optimization**
+
+```python
+"""
+COMPUTE COST STRATEGIES:
+
+1. DATA SKIPPING — Read less data
+   - Partition pruning: only scan relevant directories
+   - Z-ORDER / Liquid Clustering: skip irrelevant files
+   - Bloom filter: skip files for point lookups
+   - Column pruning: SELECT only needed columns
+
+2. WRITE EFFICIENCY — Write less data
+   - Deletion Vectors: avoid full file rewrites
+   - Idempotent writes: avoid duplicate processing
+   - optimizeWrite: avoid small file writes
+
+3. PROCESSING EFFICIENCY — Use compute wisely
+   - Photon: 2-8x faster on supported operations
+   - Auto-scaling clusters: scale down during idle
+   - Trigger(availableNow=True): batch-style streaming (no idle clusters)
+
+4. CACHING — Avoid redundant reads
+   - Delta cache: automatically caches hot data on SSD
+   - Result cache: caches query results
+"""
+
+# ✅ PATTERN 7: Use availableNow trigger (no idle streaming cluster)
+stream.writeStream \
+    .trigger(availableNow=True) \
+    .format("delta") \
+    .option("checkpointLocation", checkpoint) \
+    .start(target)
+# Processes all available data then STOPS — no idle compute cost
+# Schedule this as a job every N minutes instead of continuous streaming
+
+# ✅ PATTERN 8: Column pruning (read only what you need)
+# ❌ EXPENSIVE: SELECT * FROM huge_table WHERE ...
+# ✅ CHEAP:    SELECT col1, col2 FROM huge_table WHERE ...
+
+# ✅ PATTERN 9: Predicate pushdown (filter early)
+# ❌ EXPENSIVE: Read all, then filter in application
+# ✅ CHEAP:    Push filter to Delta scan
+spark.sql("""
+    SELECT user_id, event_type
+    FROM events
+    WHERE event_date = '2024-02-08'  -- partition pruning
+      AND user_id = 'user_123'       -- data skipping (Liquid Cluster)
+""")
+```
+
+### **Cost Optimization Checklist**
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│              DELTA LAKE COST OPTIMIZATION CHECKLIST           │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│ STORAGE:                                                     │
+│ □ VACUUM running regularly (7-30 day retention)              │
+│ □ OPTIMIZE running regularly (compact small files)           │
+│ □ No over-partitioning (use Liquid Clustering)               │
+│ □ zstd compression codec enabled                             │
+│ □ Bloom filters only on frequently queried high-card cols    │
+│ □ Log retention set appropriately (30 days default)          │
+│                                                              │
+│ COMPUTE:                                                     │
+│ □ Partition pruning in WHERE clauses                         │
+│ □ Column pruning (no SELECT *)                               │
+│ □ Liquid Clustering / Z-ORDER on filter columns              │
+│ □ Deletion Vectors enabled (avoid write amplification)       │
+│ □ Photon runtime enabled                                     │
+│ □ availableNow trigger for batch-style streaming             │
+│ □ Auto-scaling clusters configured                           │
+│ □ Idempotent writes to prevent reprocessing                  │
+│                                                              │
+│ MONITORING:                                                  │
+│ □ Track numFiles and sizeInBytes trends                      │
+│ □ Alert on small file accumulation                           │
+│ □ Review OPTIMIZE/VACUUM job history                         │
+│ □ Monitor query scan metrics (files scanned vs skipped)      │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## **PART 30: Monitoring & Observability**
+
+### **Table Health Monitoring**
+
+```python
+# ✅ PATTERN 1: Table detail metrics
+detail = spark.sql("DESCRIBE DETAIL events")
+detail.select(
+    "name", "format", "numFiles", "sizeInBytes",
+    "minReaderVersion", "minWriterVersion",
+    "properties"
+).show(truncate=False)
+
+# Key metrics to watch:
+# - numFiles: should not grow unboundedly (need OPTIMIZE)
+# - sizeInBytes / numFiles: should be 128MB-1GB per file
+# - properties: verify expected table properties are set
+
+# ✅ PATTERN 2: Table history analysis
+from delta.tables import DeltaTable
+
+delta_table = DeltaTable.forPath(spark, "/delta/events")
+history = delta_table.history(100)  # last 100 operations
+
+# Analyze operation frequency
+history.groupBy("operation").count().orderBy(col("count").desc()).show()
+
+# Analyze operation metrics
+history.select(
+    "version", "timestamp", "operation",
+    "operationMetrics.numOutputRows",
+    "operationMetrics.numAddedFiles",
+    "operationMetrics.numRemovedFiles"
+).show(truncate=False)
+
+# ✅ PATTERN 3: Small file detection
+file_stats = spark.sql("""
+    DESCRIBE DETAIL events
+""").select("numFiles", "sizeInBytes").collect()[0]
+
+avg_file_size_mb = (file_stats["sizeInBytes"] / file_stats["numFiles"]) / (1024 * 1024)
+print(f"Average file size: {avg_file_size_mb:.1f} MB")
+print(f"Total files: {file_stats['numFiles']}")
+
+if avg_file_size_mb < 32:
+    print("WARNING: Small files detected! Run OPTIMIZE.")
+elif avg_file_size_mb > 2048:
+    print("WARNING: Files too large! Consider repartitioning.")
+else:
+    print("OK: File sizes within healthy range.")
+
+# ✅ PATTERN 4: Operation metrics dashboard
+def table_health_report(table_name):
+    """Generate comprehensive health report for a Delta table."""
+    detail = spark.sql(f"DESCRIBE DETAIL {table_name}").collect()[0]
+    history = DeltaTable.forName(spark, table_name).history(50)
+
+    report = {
+        "table": table_name,
+        "num_files": detail["numFiles"],
+        "size_gb": round(detail["sizeInBytes"] / (1024**3), 2),
+        "avg_file_mb": round(
+            detail["sizeInBytes"] / detail["numFiles"] / (1024**2), 1
+        ) if detail["numFiles"] > 0 else 0,
+        "total_versions": history.count(),
+        "last_optimize": history.filter("operation = 'OPTIMIZE'")
+            .select("timestamp").first(),
+        "last_vacuum": history.filter("operation = 'VACUUM END'")
+            .select("timestamp").first(),
+        "operations_24h": history.filter(
+            "timestamp > current_timestamp() - INTERVAL 24 HOURS"
+        ).groupBy("operation").count().collect()
+    }
+    return report
+
+report = table_health_report("production.analytics.events")
+print(f"Table: {report['table']}")
+print(f"Size: {report['size_gb']} GB across {report['num_files']} files")
+print(f"Avg file size: {report['avg_file_mb']} MB")
+print(f"Last OPTIMIZE: {report['last_optimize']}")
+print(f"Last VACUUM: {report['last_vacuum']}")
+
+# ✅ PATTERN 5: Query performance metrics
+# After running a query, check Spark UI metrics:
+# - "files pruned" vs "files scanned" (data skipping effectiveness)
+# - "bytes read" (should be much less than total table size)
+# - "time in scan" vs "time in processing"
+
+# Programmatic check:
+spark.sql("""
+    SELECT * FROM events
+    WHERE event_date = '2024-02-08' AND user_id = 'user_123'
+""")
+# Check: spark.sql("EXPLAIN EXTENDED SELECT ...") for partition pruning
+```
+
+### **Alerting Patterns**
+
+```python
+# ✅ PATTERN 6: Automated health checks (run as scheduled job)
+def check_table_health(table_name, max_files=10000, min_avg_mb=32):
+    """Alert if table health degrades."""
+    detail = spark.sql(f"DESCRIBE DETAIL {table_name}").collect()[0]
+    num_files = detail["numFiles"]
+    size_bytes = detail["sizeInBytes"]
+    avg_mb = (size_bytes / num_files / (1024**2)) if num_files > 0 else 0
+
+    alerts = []
+    if num_files > max_files:
+        alerts.append(f"ALERT: {table_name} has {num_files} files (max: {max_files})")
+    if avg_mb < min_avg_mb and num_files > 0:
+        alerts.append(f"ALERT: {table_name} avg file {avg_mb:.0f}MB (min: {min_avg_mb}MB)")
+
+    return alerts
+
+# Check all critical tables
+for table in ["events", "customers", "orders"]:
+    alerts = check_table_health(f"production.analytics.{table}")
+    for alert in alerts:
+        print(alert)
+        # Send to Slack/PagerDuty/email
+```
+
+---
+
+## **PART 31: GDPR & Compliance Patterns**
+
+### **Right to Be Forgotten (GDPR Article 17)**
+
+```python
+"""
+GDPR REQUIREMENT: Delete all data for a specific user upon request.
+
+CHALLENGE with data lakes:
+  - Data is spread across many tables and partitions
+  - Parquet files are immutable (can't delete individual rows easily)
+  - Need to prove deletion happened (audit trail)
+
+DELTA LAKE SOLUTION:
+  - DELETE command removes user data from all tables
+  - Deletion Vectors make this fast (no full file rewrite)
+  - Time Travel + VACUUM ensures data is physically removed
+  - Transaction log provides audit trail
+"""
+
+# ✅ PATTERN 1: GDPR deletion workflow
+def gdpr_delete_user(user_id, tables, vacuum_after=False):
+    """
+    Delete all data for a user across all tables.
+    Returns audit record.
+    """
+    audit = []
+
+    for table in tables:
+        # Count rows before
+        before = spark.sql(f"""
+            SELECT COUNT(*) as cnt FROM {table} WHERE user_id = '{user_id}'
+        """).collect()[0]["cnt"]
+
+        # Delete
+        spark.sql(f"DELETE FROM {table} WHERE user_id = '{user_id}'")
+
+        # Count rows after (should be 0)
+        after = spark.sql(f"""
+            SELECT COUNT(*) as cnt FROM {table} WHERE user_id = '{user_id}'
+        """).collect()[0]["cnt"]
+
+        audit.append({
+            "table": table,
+            "user_id": user_id,
+            "rows_deleted": before - after,
+            "rows_remaining": after,
+            "timestamp": datetime.now().isoformat()
+        })
+
+    if vacuum_after:
+        for table in tables:
+            spark.sql(f"VACUUM {table} RETAIN 0 HOURS")
+            # WARNING: Only use 0 hours in GDPR context with no active readers
+
+    return audit
+
+# Execute GDPR deletion
+tables = [
+    "production.analytics.events",
+    "production.analytics.orders",
+    "production.analytics.profiles"
+]
+audit = gdpr_delete_user("user_to_forget", tables)
+
+# Store audit record
+audit_df = spark.createDataFrame(audit)
+audit_df.write.format("delta").mode("append").save("/delta/gdpr_audit_log")
+
+# ✅ PATTERN 2: Pseudonymization (alternative to deletion)
+from pyspark.sql.functions import sha2, concat, lit
+
+def pseudonymize_user(user_id, tables, salt="gdpr_salt_2024"):
+    """Replace PII with hashed values instead of deleting."""
+    pseudo_id = sha2(concat(lit(user_id), lit(salt)), 256)
+
+    for table in tables:
+        spark.sql(f"""
+            UPDATE {table}
+            SET
+                user_id = '{pseudo_id}',
+                email = NULL,
+                name = NULL,
+                phone = NULL
+            WHERE user_id = '{user_id}'
+        """)
+
+# ✅ PATTERN 3: Ensure physical deletion (VACUUM after DELETE)
+# After logical DELETE, data still exists in old Parquet files
+# VACUUM physically removes old files
+
+spark.sql("DELETE FROM events WHERE user_id = 'user_to_forget'")
+
+# Wait for all concurrent readers to finish, then:
+spark.conf.set(
+    "spark.databricks.delta.retentionDurationCheck.enabled", "false"
+)
+spark.sql("VACUUM events RETAIN 0 HOURS")  # Physically remove files
+spark.conf.set(
+    "spark.databricks.delta.retentionDurationCheck.enabled", "true"
+)
+# Now old files are gone — data is unrecoverable
+
+# ✅ PATTERN 4: Verify deletion (compliance proof)
+# Check that no data remains via time travel
+try:
+    spark.read.format("delta") \
+        .option("versionAsOf", 0) \
+        .load("/delta/events") \
+        .filter(f"user_id = 'user_to_forget'") \
+        .count()
+    print("WARNING: Old versions still contain user data!")
+    print("Run VACUUM to physically remove.")
+except Exception:
+    print("VERIFIED: Old versions vacuumed. Data is physically removed.")
+```
+
+### **Data Retention Policies**
+
+```python
+# ✅ PATTERN 5: Automated retention enforcement
+def enforce_retention(table, retention_days, date_column="event_date"):
+    """Delete data older than retention period."""
+    cutoff = (datetime.now() - timedelta(days=retention_days)).strftime("%Y-%m-%d")
+
+    deleted = spark.sql(f"""
+        DELETE FROM {table}
+        WHERE {date_column} < '{cutoff}'
+    """)
+
+    spark.sql(f"OPTIMIZE {table}")
+    spark.sql(f"VACUUM {table} RETAIN 168 HOURS")
+
+    return f"Deleted data before {cutoff} from {table}"
+
+# Monthly retention job
+enforce_retention("bronze.raw_events", retention_days=90)
+enforce_retention("silver.processed_events", retention_days=365)
+# Gold tables: keep indefinitely (re-derivable from silver)
+```
+
+---
+
+## **PART 32: Disaster Recovery & High Availability**
+
+### **Backup Strategies**
+
+```
+DISASTER RECOVERY TIERS:
+
+  Tier 1: Transaction Log Protection (basic)
+  ────────────────────────────────────────────
+  - Delta log is the source of truth
+  - S3/ADLS versioning protects against accidental deletion
+  - RESTORE command undoes bad operations
+  - Cost: Zero (built-in)
+
+  Tier 2: DEEP CLONE to Same Region (standard)
+  ────────────────────────────────────────────
+  - Scheduled DEEP CLONE to backup location
+  - Same-region — protects against table corruption
+  - Cost: 1x storage
+  - RPO: depends on clone frequency
+
+  Tier 3: Cross-Region Replication (enterprise)
+  ────────────────────────────────────────────
+  - DEEP CLONE to different AWS region / Azure region
+  - Protects against regional outages
+  - Cost: 1x storage + cross-region transfer
+  - RPO: depends on replication frequency
+
+  ┌─────────────────┬─────────────┬──────────┬─────────┬──────────┐
+  │ Strategy        │ RTO         │ RPO      │ Cost    │ Protects │
+  ├─────────────────┼─────────────┼──────────┼─────────┼──────────┤
+  │ RESTORE command │ Minutes     │ 0 (ACID) │ Free    │ Bad write│
+  │ DEEP CLONE same │ Minutes     │ Hours    │ 1x      │ Corrupt  │
+  │ Cross-region    │ Hours       │ Hours    │ 2x+     │ Region   │
+  │ S3 versioning   │ Hours       │ 0        │ ~0.3x   │ Delete   │
+  └─────────────────┴─────────────┴──────────┴─────────┴──────────┘
+```
+
+### **DR Implementation Patterns**
+
+```python
+# ✅ PATTERN 1: Scheduled backup with DEEP CLONE
+def backup_table(source, backup_path, version=None):
+    """Create or update backup via DEEP CLONE."""
+    if version:
+        spark.sql(f"""
+            CREATE OR REPLACE TABLE delta.`{backup_path}`
+            DEEP CLONE {source} VERSION AS OF {version}
+        """)
+    else:
+        spark.sql(f"""
+            CREATE OR REPLACE TABLE delta.`{backup_path}`
+            DEEP CLONE {source}
+        """)
+    # CREATE OR REPLACE with DEEP CLONE only copies changed files
+
+# Daily backup job
+critical_tables = {
+    "production.analytics.customers": "/backup/customers",
+    "production.analytics.orders": "/backup/orders",
+    "production.analytics.revenue": "/backup/revenue"
+}
+for source, backup in critical_tables.items():
+    backup_table(source, backup)
+
+# ✅ PATTERN 2: Cross-region backup
+# Same as above, but backup_path is in a different region:
+# /backup-us-west-2/customers (if primary is us-east-1)
+
+# ✅ PATTERN 3: Point-in-time recovery
+def recover_table(source, target, point_in_time):
+    """Recover table to specific point in time."""
+    spark.sql(f"""
+        CREATE OR REPLACE TABLE {target}
+        DEEP CLONE {source} TIMESTAMP AS OF '{point_in_time}'
+    """)
+
+# Recover to yesterday's state
+recover_table(
+    "production.analytics.orders",
+    "production.analytics.orders_recovered",
+    "2024-02-07T23:59:59"
+)
+
+# ✅ PATTERN 4: Validate backup integrity
+def validate_backup(source, backup):
+    """Verify backup matches source."""
+    source_count = spark.table(source).count()
+    backup_count = spark.read.format("delta").load(backup).count()
+
+    source_schema = spark.table(source).schema
+    backup_schema = spark.read.format("delta").load(backup).schema
+
+    assert source_count == backup_count, \
+        f"Count mismatch: {source_count} vs {backup_count}"
+    assert source_schema == backup_schema, \
+        "Schema mismatch!"
+
+    return f"Backup validated: {source_count} rows, schema matches"
+```
+
+---
+
+## **PART 33: SCD Type 3 & Type 4 Patterns**
+
+### **SCD Type 3 — Previous Value Column**
+
+```python
+"""
+SCD TYPE 3: Keep current + one previous value in the same row.
+
+  Before update:
+  | customer_id | city      | prev_city | city_changed_at |
+  | C001        | New York  | NULL      | 2023-01-15      |
+
+  After update (customer moves to Boston):
+  | customer_id | city      | prev_city | city_changed_at |
+  | C001        | Boston    | New York  | 2024-02-08      |
+
+  Only tracks ONE historical value — lightweight but limited.
+"""
+
+# ✅ PATTERN: SCD Type 3 MERGE
+delta_table = DeltaTable.forName(spark, "dim_customer")
+
+delta_table.alias("t").merge(
+    updates_df.alias("s"),
+    "t.customer_id = s.customer_id"
+).whenMatchedUpdate(
+    condition="t.city != s.city",  # Only when value actually changed
+    set={
+        "prev_city": "t.city",             # Save current as previous
+        "city": "s.city",                   # Update to new value
+        "city_changed_at": "current_date()" # Track when it changed
+    }
+).whenMatchedUpdate(
+    condition="t.city = s.city",  # No change — update other fields only
+    set={
+        "name": "s.name",
+        "email": "s.email"
+    }
+).whenNotMatchedInsert(values={
+    "customer_id": "s.customer_id",
+    "name": "s.name",
+    "email": "s.email",
+    "city": "s.city",
+    "prev_city": "NULL",
+    "city_changed_at": "current_date()"
+}).execute()
+```
+
+### **SCD Type 4 — History Table**
+
+```python
+"""
+SCD TYPE 4: Current values in main table + full history in separate table.
+
+  Main table (dim_customer):
+  | customer_id | name  | city    | tier     | updated_at |
+  | C001        | Alice | Boston  | Gold     | 2024-02-08 |
+
+  History table (dim_customer_history):
+  | customer_id | name  | city      | tier   | valid_from | valid_to   |
+  | C001        | Alice | New York  | Silver | 2023-01-15 | 2023-08-01 |
+  | C001        | Alice | New York  | Gold   | 2023-08-01 | 2024-02-08 |
+  | C001        | Alice | Boston    | Gold   | 2024-02-08 | 9999-12-31 |
+
+  Best of both worlds:
+  ✅ Fast lookups on current table (no is_current filter needed)
+  ✅ Full history available in separate table
+  ✅ History table can have different retention/optimization
+"""
+
+# ✅ PATTERN: SCD Type 4 — Dual table update
+def scd_type4_merge(updates_df, current_table, history_table, key_col):
+    """
+    Update current table + append to history table.
+    """
+    current_dt = DeltaTable.forName(spark, current_table)
+    current_df = current_dt.toDF()
+
+    # Find changed rows
+    changed = updates_df.alias("s").join(
+        current_df.alias("t"), key_col
+    ).where("""
+        s.name != t.name OR s.city != t.city OR s.tier != t.tier
+    """).select("t.*")
+
+    # Close old records in history
+    if changed.count() > 0:
+        history_dt = DeltaTable.forName(spark, history_table)
+        history_dt.alias("h").merge(
+            changed.alias("c"),
+            f"h.{key_col} = c.{key_col} AND h.valid_to = '9999-12-31'"
+        ).whenMatchedUpdate(set={
+            "valid_to": "current_timestamp()"
+        }).execute()
+
+    # Insert new records to history
+    new_history = updates_df.withColumn(
+        "valid_from", current_timestamp()
+    ).withColumn(
+        "valid_to", lit("9999-12-31").cast("timestamp")
+    )
+    new_history.write.format("delta").mode("append").saveAsTable(history_table)
+
+    # Upsert current table
+    current_dt.alias("t").merge(
+        updates_df.alias("s"), f"t.{key_col} = s.{key_col}"
+    ).whenMatchedUpdateAll() \
+     .whenNotMatchedInsertAll() \
+     .execute()
+
+scd_type4_merge(updates_df, "dim_customer", "dim_customer_history", "customer_id")
+```
+
+### **SCD Type Comparison**
+
+```
+┌──────────┬──────────────────┬──────────────┬──────────────┬───────────┐
+│ SCD Type │ Strategy         │ History Kept │ Complexity   │ Use When  │
+├──────────┼──────────────────┼──────────────┼──────────────┼───────────┤
+│ Type 0   │ Never update     │ None         │ Trivial      │ Static    │
+│          │                  │              │              │ dimensions│
+│ Type 1   │ Overwrite        │ None         │ Simple       │ No history│
+│          │ (MERGE update)   │              │ (basic MERGE)│ needed    │
+│ Type 2   │ New row + close  │ Full history │ Complex      │ Full audit│
+│          │ old (is_current) │ (all changes)│ (versioned)  │ trail     │
+│ Type 3   │ Previous value   │ Last change  │ Medium       │ Track one │
+│          │ column           │ only         │              │ prior val │
+│ Type 4   │ Separate history │ Full history │ Medium-High  │ Fast      │
+│          │ table            │ (own table)  │ (two tables) │ current + │
+│          │                  │              │              │ full hist │
+│ Type 6   │ Type 1+2+3 combo │ Full + prev  │ Highest      │ Maximum  │
+│          │ (hybrid)         │              │              │ flexibility│
+└──────────┴──────────────────┴──────────────┴──────────────┴───────────┘
+```
+
+---
+
+## **PART 34: Data Mesh with Delta Lake**
+
+### **Data Mesh Principles Applied to Lakehouse**
+
+```
+DATA MESH CORE PRINCIPLES:
+
+  1. DOMAIN OWNERSHIP
+     Each business domain owns its data (not central data team)
+
+  2. DATA AS A PRODUCT
+     Each domain publishes data products with SLAs
+
+  3. SELF-SERVE DATA PLATFORM
+     Platform team provides tooling, domains operate independently
+
+  4. FEDERATED COMPUTATIONAL GOVERNANCE
+     Global standards, local implementation
+
+HOW DELTA LAKE + UNITY CATALOG ENABLES DATA MESH:
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                     UNITY CATALOG (Governance)              │
+  │  ┌────────────────┐ ┌────────────────┐ ┌────────────────┐  │
+  │  │  SALES DOMAIN  │ │ MARKETING      │ │ FINANCE        │  │
+  │  │  Catalog: sales│ │ Catalog: mktg  │ │ Catalog: fin   │  │
+  │  │                │ │                │ │                │  │
+  │  │  Bronze tables │ │  Bronze tables │ │  Bronze tables │  │
+  │  │  Silver tables │ │  Silver tables │ │  Silver tables │  │
+  │  │  Gold (product)│ │  Gold (product)│ │  Gold (product)│  │
+  │  │                │ │                │ │                │  │
+  │  │  Delta Sharing │ │  Delta Sharing │ │  Delta Sharing │  │
+  │  │  (published)   │ │  (published)   │ │  (published)   │  │
+  │  └────────────────┘ └────────────────┘ └────────────────┘  │
+  │                                                             │
+  │  Cross-domain access via:                                   │
+  │  - Delta Sharing (external consumers)                       │
+  │  - Unity Catalog GRANT (internal consumers)                 │
+  │  - Federated governance (tags, lineage, audit)              │
+  └─────────────────────────────────────────────────────────────┘
+```
+
+### **Implementing Data Mesh with Delta**
+
+```python
+# ✅ PATTERN 1: Domain catalog per team
+spark.sql("CREATE CATALOG IF NOT EXISTS sales")
+spark.sql("CREATE CATALOG IF NOT EXISTS marketing")
+spark.sql("CREATE CATALOG IF NOT EXISTS finance")
+
+# Each domain manages their own schemas
+spark.sql("CREATE SCHEMA IF NOT EXISTS sales.raw")
+spark.sql("CREATE SCHEMA IF NOT EXISTS sales.curated")
+spark.sql("CREATE SCHEMA IF NOT EXISTS sales.products")  # published data products
+
+# ✅ PATTERN 2: Data product with SLA metadata
+spark.sql("""
+    CREATE TABLE sales.products.daily_revenue (
+        sale_date DATE,
+        region STRING,
+        product_category STRING,
+        revenue DECIMAL(15,2),
+        order_count BIGINT
+    ) USING DELTA
+    CLUSTER BY (region, sale_date)
+    TBLPROPERTIES (
+        'data_product.owner' = 'sales_team',
+        'data_product.sla' = 'daily_by_6am_utc',
+        'data_product.freshness' = '24h',
+        'data_product.quality_score' = '99.5',
+        'data_product.documentation' = 'https://wiki/sales/daily_revenue',
+        'delta.enableChangeDataFeed' = 'true',
+        'delta.columnMapping.mode' = 'name'
+    )
+""")
+
+# ✅ PATTERN 3: Cross-domain access via grants
+# Marketing team can READ sales data product
+spark.sql("""
+    GRANT SELECT ON TABLE sales.products.daily_revenue
+    TO `marketing_analysts`
+""")
+
+# ✅ PATTERN 4: Data product quality gate
+spark.sql("""
+    ALTER TABLE sales.products.daily_revenue
+    ADD CONSTRAINT positive_revenue CHECK (revenue >= 0)
+""")
+spark.sql("""
+    ALTER TABLE sales.products.daily_revenue
+    ADD CONSTRAINT valid_date CHECK (sale_date <= current_date())
+""")
+
+# ✅ PATTERN 5: External sharing via Delta Sharing
+spark.sql("""
+    CREATE SHARE IF NOT EXISTS sales_analytics_share
+""")
+spark.sql("""
+    ALTER SHARE sales_analytics_share
+    ADD TABLE sales.products.daily_revenue
+""")
+```
+
+---
+
+## **PART 35: Delta Lake with ML / Feature Stores**
+
+### **Feature Store Pattern with Delta Lake**
+
+```python
+"""
+WHY DELTA LAKE FOR FEATURE STORES?
+
+  ML features need:
+  ✅ Point-in-time correctness (no data leakage)
+  ✅ Versioning (reproduce training data)
+  ✅ Low-latency lookups (serving)
+  ✅ Batch + streaming updates
+  ✅ Schema evolution (new features)
+
+  Delta Lake provides ALL of these natively.
+"""
+
+# ✅ PATTERN 1: Feature table with time travel
+spark.sql("""
+    CREATE TABLE ml.features.user_features (
+        user_id         STRING NOT NULL,
+        feature_date    DATE NOT NULL,
+        purchase_count_7d    INT,
+        purchase_count_30d   INT,
+        avg_order_value_30d  DECIMAL(10,2),
+        days_since_last_purchase INT,
+        total_lifetime_value DECIMAL(15,2),
+        user_segment         STRING,
+        updated_at           TIMESTAMP
+    ) USING DELTA
+    CLUSTER BY (user_id, feature_date)
+    TBLPROPERTIES (
+        'delta.enableChangeDataFeed' = 'true',
+        'delta.columnMapping.mode' = 'name'
+    )
+""")
+
+# ✅ PATTERN 2: Point-in-time feature retrieval (no data leakage)
+def get_features_as_of(entity_df, feature_table, join_keys, as_of_column):
+    """
+    Join features with point-in-time correctness.
+    Prevents future data from leaking into training set.
+    """
+    features = spark.table(feature_table)
+
+    # For each entity row, get the latest feature BEFORE the event timestamp
+    from pyspark.sql.window import Window
+    from pyspark.sql.functions import row_number
+
+    joined = entity_df.alias("e").join(
+        features.alias("f"),
+        [entity_df[k] == features[k] for k in join_keys] +
+        [features["feature_date"] <= entity_df[as_of_column]],
+        "left"
+    )
+
+    window = Window.partitionBy(
+        *[f"e.{k}" for k in join_keys], f"e.{as_of_column}"
+    ).orderBy(col("f.feature_date").desc())
+
+    result = joined.withColumn("_rn", row_number().over(window)) \
+        .filter("_rn = 1").drop("_rn")
+
+    return result
+
+# Training set with point-in-time features
+training_events = spark.sql("""
+    SELECT user_id, event_date, label
+    FROM ml.training.purchase_labels
+""")
+
+training_data = get_features_as_of(
+    training_events,
+    "ml.features.user_features",
+    join_keys=["user_id"],
+    as_of_column="event_date"
+)
+
+# ✅ PATTERN 3: Feature versioning with time travel
+# Reproduce exact training data from 2 weeks ago
+features_2_weeks_ago = spark.read.format("delta") \
+    .option("timestampAsOf", "2024-01-25") \
+    .table("ml.features.user_features")
+
+# ✅ PATTERN 4: Incremental feature updates
+def update_user_features(as_of_date):
+    """Compute and upsert features for a specific date."""
+    new_features = spark.sql(f"""
+        SELECT
+            user_id,
+            DATE('{as_of_date}') as feature_date,
+            COUNT(*) FILTER (WHERE order_date >= DATE_SUB('{as_of_date}', 7))
+                as purchase_count_7d,
+            COUNT(*) FILTER (WHERE order_date >= DATE_SUB('{as_of_date}', 30))
+                as purchase_count_30d,
+            AVG(amount) FILTER (WHERE order_date >= DATE_SUB('{as_of_date}', 30))
+                as avg_order_value_30d,
+            DATEDIFF('{as_of_date}', MAX(order_date))
+                as days_since_last_purchase,
+            SUM(amount) as total_lifetime_value,
+            current_timestamp() as updated_at
+        FROM production.analytics.orders
+        WHERE order_date <= '{as_of_date}'
+        GROUP BY user_id
+    """)
+
+    feature_table = DeltaTable.forName(spark, "ml.features.user_features")
+    feature_table.alias("t").merge(
+        new_features.alias("s"),
+        "t.user_id = s.user_id AND t.feature_date = s.feature_date"
+    ).whenMatchedUpdateAll() \
+     .whenNotMatchedInsertAll() \
+     .execute()
+```
+
+---
+
 ## **QUICK REFERENCE CARD**
 
 ```
@@ -3244,6 +4756,25 @@ INTERVIEW ANSWER:
 │                                                                      │
 │ IDEMPOTENT WRITES:                                                   │
 │ .option("txnAppId", "job_name").option("txnVersion", "run_id")      │
+│                                                                      │
+│ UNITY CATALOG:                                                       │
+│ CREATE CATALOG name / CREATE SCHEMA catalog.schema                   │
+│ GRANT SELECT ON TABLE catalog.schema.table TO `group`                │
+│ ALTER TABLE t SET ROW FILTER func ON (col)                           │
+│ ALTER TABLE t ALTER COLUMN c SET MASK mask_func                      │
+│                                                                      │
+│ DELTA LIVE TABLES:                                                   │
+│ @dlt.table / @dlt.view                                               │
+│ @dlt.expect("name", "condition")                                     │
+│ @dlt.expect_or_drop("name", "condition")                             │
+│ @dlt.expect_or_fail("name", "condition")                             │
+│                                                                      │
+│ DELTA SHARING:                                                       │
+│ CREATE SHARE name / ALTER SHARE name ADD TABLE t                     │
+│ CREATE RECIPIENT name / GRANT SELECT ON SHARE TO RECIPIENT           │
+│                                                                      │
+│ GDPR:                                                                │
+│ DELETE FROM t WHERE user_id = 'x' (then VACUUM to physically remove) │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -3535,4 +5066,207 @@ Protocol: minReaderVersion=2, minWriterVersion=5
 Warning: Irreversible — cannot switch back to position mode
 
 Best practice: Enable on ALL new tables (no downside)
+```
+
+### **Q13: Explain the Medallion Architecture and how Delta Lake enables it.**
+
+**Answer:**
+```
+Medallion = Bronze → Silver → Gold layered data architecture.
+
+Bronze (Raw):
+  - Append-only ingestion from sources (Kafka, S3, APIs)
+  - Preserve raw payload + ingestion metadata
+  - No transformation, no filtering
+  - Long retention for audit/replay
+
+Silver (Cleaned):
+  - Parsed, validated, deduplicated
+  - Canonical schema (consistent types, naming)
+  - CHECK constraints for data quality
+  - MERGE for deduplication
+  - Medium retention
+
+Gold (Business):
+  - Aggregated, business-logic applied
+  - Star schema or wide tables
+  - Optimized for query patterns (BI, ML)
+  - Short retention (re-derivable from Silver)
+
+Delta Lake enables this with:
+  - ACID writes at each layer (no partial state)
+  - Change Data Feed to propagate changes layer-to-layer
+  - Schema evolution as sources change
+  - Time travel for debugging between layers
+  - Streaming between layers (readStream → writeStream)
+```
+
+### **Q14: What is Unity Catalog and how does it differ from Hive Metastore?**
+
+**Answer:**
+```
+Unity Catalog = Databricks' unified governance solution.
+
+Key differences from Hive Metastore:
+  Namespace:      database.table → catalog.schema.table (3-level)
+  Access control: Limited table ACLs → full GRANT/REVOKE + row/column security
+  Lineage:        None → automatic column-level lineage
+  Audit:          Limited → full audit trail
+  Cross-workspace: No → Yes (share across Databricks workspaces)
+  Data discovery:  None → search, tags, comments
+
+Row-level security: ALTER TABLE t SET ROW FILTER func ON (col)
+Column masking:     ALTER TABLE t ALTER COLUMN c SET MASK mask_func
+
+Unity Catalog is the foundation for governance, compliance, and
+data mesh architectures on Databricks.
+```
+
+### **Q15: What is Delta Live Tables (DLT)?**
+
+**Answer:**
+```
+DLT = Declarative ETL framework built on Delta Lake.
+
+Instead of writing imperative ETL (read → transform → write),
+you DECLARE what the table should contain:
+
+  @dlt.table
+  @dlt.expect_or_drop("valid_id", "id IS NOT NULL")
+  def silver_events():
+      return dlt.read_stream("bronze_events").select(...)
+
+DLT automatically handles:
+  - Dependency resolution (DAG of tables)
+  - Incremental processing (only new data)
+  - Data quality (expectations = declarative checks)
+  - Error recovery and retries
+  - Schema management
+
+Three expectation levels:
+  @dlt.expect           → warn (log bad rows, keep them)
+  @dlt.expect_or_drop   → drop bad rows silently
+  @dlt.expect_or_fail   → fail pipeline on violation
+
+Best for: Production ETL pipelines where reliability matters
+          more than maximum flexibility.
+```
+
+### **Q16: How do you handle GDPR "Right to Be Forgotten" with Delta Lake?**
+
+**Answer:**
+```
+Challenge: Delete all data for a user across all tables,
+           AND prove the data is physically removed.
+
+Step 1 — Logical delete:
+  DELETE FROM events WHERE user_id = 'user_to_forget'
+  DELETE FROM orders WHERE user_id = 'user_to_forget'
+  (repeat for all tables containing user data)
+
+Step 2 — Physical removal:
+  VACUUM events RETAIN 0 HOURS
+  (removes old Parquet files containing the deleted user's data)
+  WARNING: This breaks time travel for all data, not just the user!
+
+Step 3 — Verification:
+  Attempt time travel to old versions → should fail (files vacuumed)
+  Query current version → user data should return 0 rows
+
+Step 4 — Audit trail:
+  Store deletion records in a GDPR audit log table
+  (table, user_id, rows_deleted, timestamp)
+
+Alternative: Pseudonymization (replace PII with hashed values)
+  — Preserves analytics value while removing identifiability
+
+Key: Deletion Vectors make Step 1 fast (no full file rewrite).
+     VACUUM in Step 2 handles physical removal.
+```
+
+### **Q17: What is Delta Sharing and when would you use it?**
+
+**Answer:**
+```
+Delta Sharing = Open protocol for sharing live Delta tables
+across organizations without copying data.
+
+How it works:
+  Provider creates a SHARE → adds tables to it
+  Recipient gets activation link → reads tables directly
+  Data stays in provider's storage — no copying!
+
+Key features:
+  - Open protocol (works with Spark, Pandas, Trino, Power BI)
+  - Recipient doesn't need Databricks
+  - Fine-grained access (table, partition, column level)
+  - Full audit trail
+
+Use cases:
+  - Share data with partners/vendors
+  - B2B data marketplace
+  - Cross-department data products (Data Mesh)
+  - Compliance reporting to regulators
+
+vs. traditional sharing (export CSV/Parquet):
+  ✅ Always fresh (live data, not stale exports)
+  ✅ No data duplication (saves storage cost)
+  ✅ Access control and audit (revoke anytime)
+  ✅ Schema evolution handled automatically
+```
+
+### **Q18: How would you optimize Delta Lake costs in production?**
+
+**Answer:**
+```
+Storage costs:
+  1. Regular VACUUM (remove old file versions)
+  2. OPTIMIZE (compact small files → fewer, larger files)
+  3. Use Liquid Clustering (avoid over-partitioning)
+  4. zstd compression (better ratio than snappy)
+  5. Drop unused Bloom filter indexes
+
+Compute costs:
+  1. Partition pruning (filter on partition columns)
+  2. Column pruning (SELECT only needed cols, never SELECT *)
+  3. Data skipping (Liquid Clustering / Z-ORDER on filter cols)
+  4. Bloom filters (for UUID/high-cardinality point lookups)
+  5. Deletion Vectors (avoid write amplification on UPDATE/DELETE)
+  6. Photon engine (2-8x faster, no code changes)
+  7. availableNow trigger (batch-style streaming, no idle cluster)
+  8. Idempotent writes (prevent duplicate processing)
+
+Monitoring:
+  - Track numFiles and avgFileSize trends
+  - Alert on small file accumulation
+  - Monitor files scanned vs skipped per query
+  - Review OPTIMIZE/VACUUM job history
+```
+
+### **Q19: Compare SCD Types 1, 2, 3, and 4 with Delta Lake.**
+
+**Answer:**
+```
+SCD Type 1 — Overwrite (no history):
+  MERGE ... WHEN MATCHED UPDATE SET *
+  Simple, fast, but history is lost.
+
+SCD Type 2 — Versioned rows (full history):
+  MERGE: close old row (is_current=false, end_date=now)
+       + insert new row (is_current=true, end_date=9999-12-31)
+  Full audit trail, but table grows unboundedly.
+  Query current: WHERE is_current = true
+
+SCD Type 3 — Previous value column (one change):
+  MERGE: SET prev_city = t.city, city = s.city
+  Only tracks ONE prior value. Lightweight but limited.
+
+SCD Type 4 — Separate history table:
+  Main table: always current (fast lookups)
+  History table: all changes (full audit)
+  Best of both: fast current reads + full history.
+  More complex: must maintain two tables in sync.
+
+Type 2 is most common in interviews.
+Type 4 is recommended for large-scale production systems.
 ```

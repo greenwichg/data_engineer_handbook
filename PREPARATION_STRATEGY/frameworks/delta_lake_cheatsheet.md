@@ -15,6 +15,12 @@
 10. CHECK Constraints & Data Quality
 11. Clone Operations (SHALLOW / DEEP)
 12. Performance Tuning & Data Skipping
+13. Medallion Architecture (Bronze / Silver / Gold)
+14. Unity Catalog & Governance
+15. Delta Live Tables (DLT)
+16. GDPR & Compliance
+17. Cost Optimization
+18. Disaster Recovery & Backup
 ```
 
 ---
@@ -1341,6 +1347,493 @@ df.write.format("delta").partitionBy("date").save(path)
 
 ---
 
+## **PROBLEM TYPE 13: Medallion Architecture (Bronze / Silver / Gold)**
+
+### **Trigger Words:**
+```
+"medallion", "bronze silver gold", "layered architecture", "multi-hop",
+"raw to curated", "data quality layers", "lakehouse architecture"
+```
+
+### **Key Pattern:**
+```python
+# Template: Bronze → Silver → Gold pipeline
+# Bronze: append raw
+raw_df.writeStream.format("delta").outputMode("append").start("/delta/bronze/t")
+# Silver: clean + deduplicate with MERGE via foreachBatch
+# Gold: aggregate for business use
+```
+
+### **Layer Responsibility Matrix:**
+
+| Layer | Write Mode | Quality | Schema | Consumers |
+|-------|-----------|---------|--------|-----------|
+| Bronze | Append-only | None (raw) | Source schema | Data engineers |
+| Silver | MERGE (dedupe) | CHECK constraints, NOT NULL | Canonical/conformed | Data engineers, analysts |
+| Gold | MERGE or overwrite | Business rules | Star schema / wide | Analysts, BI, ML |
+
+### **Examples:**
+```python
+# Example 1: Bronze — Raw ingestion (append-only, preserve everything)
+raw_kafka = spark.readStream.format("kafka") \
+    .option("kafka.bootstrap.servers", "broker:9092") \
+    .option("subscribe", "events").load()
+
+bronze = raw_kafka.select(
+    col("value").cast("string").alias("raw_payload"),
+    col("topic"), col("offset"),
+    col("timestamp").alias("kafka_ts"),
+    current_timestamp().alias("ingested_at")
+)
+bronze.writeStream.format("delta").outputMode("append") \
+    .option("checkpointLocation", "/checkpoints/bronze/events") \
+    .start("/delta/bronze/events")
+
+# Example 2: Silver — Parse, validate, deduplicate
+def bronze_to_silver(batch_df, batch_id):
+    parsed = batch_df.select(
+        from_json(col("raw_payload"), event_schema).alias("d"), "ingested_at"
+    ).select("d.*", "ingested_at") \
+     .filter("event_id IS NOT NULL AND user_id IS NOT NULL")
+
+    silver = DeltaTable.forPath(spark, "/delta/silver/events")
+    silver.alias("t").merge(parsed.alias("s"), "t.event_id = s.event_id") \
+        .whenNotMatchedInsertAll().execute()
+
+spark.readStream.format("delta").load("/delta/bronze/events") \
+    .writeStream.foreachBatch(bronze_to_silver) \
+    .option("checkpointLocation", "/checkpoints/silver/events").start()
+
+# Example 3: Gold — Business aggregation
+spark.sql("""
+    CREATE OR REPLACE TABLE gold.daily_kpi AS
+    SELECT event_date, COUNT(*) as events, COUNT(DISTINCT user_id) as users,
+           SUM(CASE WHEN event_type='purchase' THEN 1 ELSE 0 END) as purchases
+    FROM silver.events GROUP BY event_date
+""")
+
+# Example 4: CDF-based propagation (Silver reads Bronze changes)
+spark.readStream.format("delta") \
+    .option("readChangeFeed", "true") \
+    .option("startingVersion", "latest") \
+    .load("/delta/bronze/events") \
+    .writeStream.foreachBatch(bronze_to_silver) \
+    .option("checkpointLocation", "/checkpoints/silver_cdf").start()
+```
+
+### **Common Pitfalls:**
+```python
+# ❌ WRONG: Filtering or transforming in Bronze
+raw_df.filter("status = 'active'").write.format("delta").save("/delta/bronze/t")
+# Bronze should preserve EVERYTHING — filter in Silver
+
+# ✅ CORRECT: Append raw data as-is in Bronze
+raw_df.write.format("delta").mode("append").save("/delta/bronze/t")
+
+# ❌ WRONG: Putting business logic in Silver
+# Silver should only clean/conform, not compute business metrics
+
+# ✅ CORRECT: Business logic belongs in Gold
+```
+
+---
+
+## **PROBLEM TYPE 14: Unity Catalog & Governance**
+
+### **Trigger Words:**
+```
+"governance", "unity catalog", "access control", "grant", "revoke",
+"row-level security", "column masking", "lineage", "audit",
+"data discovery", "tags", "three-level namespace"
+```
+
+### **Key Pattern:**
+```python
+# Template: Three-level namespace
+# catalog.schema.table
+spark.sql("CREATE CATALOG production")
+spark.sql("CREATE SCHEMA production.analytics")
+spark.sql("GRANT SELECT ON TABLE production.analytics.t TO `group`")
+```
+
+### **Permission Matrix:**
+
+| Permission | Scope | Effect |
+|-----------|-------|--------|
+| `USAGE` | Catalog / Schema | Can browse, required to access children |
+| `SELECT` | Table / View | Can read data |
+| `MODIFY` | Table | Can INSERT, UPDATE, DELETE, MERGE |
+| `CREATE TABLE` | Schema | Can create tables in schema |
+| `CREATE SCHEMA` | Catalog | Can create schemas in catalog |
+| `ALL PRIVILEGES` | Any | Full access at that scope |
+
+### **Examples:**
+```python
+# Example 1: Set up catalog + schema + permissions
+spark.sql("CREATE CATALOG IF NOT EXISTS production")
+spark.sql("CREATE SCHEMA IF NOT EXISTS production.analytics")
+spark.sql("GRANT USAGE ON CATALOG production TO `data_engineers`")
+spark.sql("GRANT USAGE ON SCHEMA production.analytics TO `data_engineers`")
+spark.sql("GRANT SELECT ON TABLE production.analytics.revenue TO `analysts`")
+spark.sql("GRANT MODIFY ON TABLE production.analytics.revenue TO `data_engineers`")
+
+# Example 2: Row-level security
+spark.sql("""
+    CREATE FUNCTION production.analytics.region_filter(region STRING)
+    RETURNS BOOLEAN
+    RETURN IF(IS_MEMBER('global_admins'), true, region = current_user_region())
+""")
+spark.sql("""
+    ALTER TABLE production.analytics.orders
+    SET ROW FILTER production.analytics.region_filter ON (region)
+""")
+
+# Example 3: Column masking
+spark.sql("""
+    CREATE FUNCTION production.analytics.mask_email(email STRING)
+    RETURNS STRING
+    RETURN IF(IS_MEMBER('pii_authorized'), email,
+              CONCAT(LEFT(email, 1), '***@', SPLIT(email, '@')[1]))
+""")
+spark.sql("""
+    ALTER TABLE production.analytics.customers
+    ALTER COLUMN email SET MASK production.analytics.mask_email
+""")
+
+# Example 4: Tags for classification
+spark.sql("""
+    ALTER TABLE production.analytics.customers
+    SET TAGS ('pii' = 'true', 'sensitivity' = 'high')
+""")
+
+# Example 5: View permissions and audit
+spark.sql("SHOW GRANTS ON TABLE production.analytics.revenue")
+spark.sql("SHOW GRANTS TO `data_engineers`")
+```
+
+### **Common Pitfalls:**
+```python
+# ❌ WRONG: Granting SELECT without USAGE on parent
+spark.sql("GRANT SELECT ON TABLE production.analytics.t TO `user`")
+# User can't access — needs USAGE on catalog AND schema first!
+
+# ✅ CORRECT: Grant USAGE chain + SELECT
+spark.sql("GRANT USAGE ON CATALOG production TO `user`")
+spark.sql("GRANT USAGE ON SCHEMA production.analytics TO `user`")
+spark.sql("GRANT SELECT ON TABLE production.analytics.t TO `user`")
+```
+
+---
+
+## **PROBLEM TYPE 15: Delta Live Tables (DLT)**
+
+### **Trigger Words:**
+```
+"DLT", "delta live tables", "declarative ETL", "expectations",
+"pipeline", "data quality rules", "auto loader", "@dlt.table",
+"expect_or_drop", "expect_or_fail", "managed pipeline"
+```
+
+### **Key Pattern:**
+```python
+import dlt
+
+# Template: DLT table with quality expectations
+@dlt.table(name="silver_events", comment="Cleaned events")
+@dlt.expect_or_drop("valid_id", "event_id IS NOT NULL")
+def silver_events():
+    return dlt.read_stream("bronze_events").select(...)
+```
+
+### **DLT Expectation Matrix:**
+
+| Decorator | On Violation | Use When |
+|-----------|-------------|----------|
+| `@dlt.expect("name", "expr")` | Log warning, keep row | Monitoring quality |
+| `@dlt.expect_or_drop("name", "expr")` | Drop row silently | Filter bad data |
+| `@dlt.expect_or_fail("name", "expr")` | Fail entire pipeline | Hard invariants |
+
+### **Examples:**
+```python
+import dlt
+from pyspark.sql.functions import *
+
+# Example 1: Bronze with Auto Loader
+@dlt.table(name="bronze_events", table_properties={"quality": "bronze"})
+def bronze_events():
+    return spark.readStream.format("cloudFiles") \
+        .option("cloudFiles.format", "json") \
+        .option("cloudFiles.inferColumnTypes", "true") \
+        .load("/data/raw/events/")
+
+# Example 2: Silver with expectations
+@dlt.table(name="silver_events")
+@dlt.expect("valid_id", "event_id IS NOT NULL")
+@dlt.expect_or_drop("valid_type", "event_type IN ('click','view','purchase')")
+@dlt.expect_or_fail("valid_user", "user_id IS NOT NULL")
+def silver_events():
+    return dlt.read_stream("bronze_events").select(
+        col("event_id"), col("user_id"), col("event_type"),
+        col("event_timestamp").cast("timestamp")
+    )
+
+# Example 3: Gold aggregation
+@dlt.table(name="gold_daily_summary")
+def gold_daily_summary():
+    return dlt.read("silver_events").groupBy("event_date", "user_id") \
+        .agg(count("*").alias("total_events"),
+             sum(when(col("event_type")=="purchase", 1).otherwise(0)).alias("purchases"))
+
+# Example 4: View (intermediate, not materialized)
+@dlt.view(name="valid_events")
+def valid_events():
+    return dlt.read_stream("bronze_events").filter("event_id IS NOT NULL")
+```
+
+### **Common Pitfalls:**
+```python
+# ❌ WRONG: Using spark.read inside DLT function
+@dlt.table
+def my_table():
+    return spark.read.format("delta").load("/delta/source")  # Don't do this
+
+# ✅ CORRECT: Use dlt.read() or dlt.read_stream()
+@dlt.table
+def my_table():
+    return dlt.read("source_table")  # or dlt.read_stream("source_table")
+
+# ❌ WRONG: Mixing DLT with manual Delta writes
+# DLT manages table lifecycle — don't write to DLT tables externally
+```
+
+---
+
+## **PROBLEM TYPE 16: GDPR & Compliance**
+
+### **Trigger Words:**
+```
+"GDPR", "right to be forgotten", "delete user data", "compliance",
+"data retention", "PII", "pseudonymization", "audit trail",
+"data privacy", "forget me"
+```
+
+### **Key Pattern:**
+```python
+# Template: GDPR deletion
+spark.sql("DELETE FROM table WHERE user_id = 'user_to_forget'")
+# Then VACUUM to physically remove old files
+spark.sql("VACUUM table RETAIN 0 HOURS")  # careful — breaks time travel!
+```
+
+### **GDPR Strategy Matrix:**
+
+| Strategy | PII Removed? | Analytics Preserved? | Complexity |
+|----------|:----------:|:------------------:|:----------:|
+| Hard delete + VACUUM | Yes | No (rows gone) | Low |
+| Pseudonymization | Yes (hashed) | Yes (aggregatable) | Medium |
+| Crypto-shredding | Yes (key destroyed) | Partial | High |
+
+### **Examples:**
+```python
+# Example 1: Hard delete across all tables
+tables = ["events", "orders", "profiles"]
+for table in tables:
+    spark.sql(f"DELETE FROM {table} WHERE user_id = 'user_to_forget'")
+    # Deletion Vectors make this fast — no full file rewrite
+
+# Then physically remove old files:
+for table in tables:
+    spark.sql(f"VACUUM {table} RETAIN 0 HOURS")
+
+# Example 2: Pseudonymization (replace PII, keep analytics)
+spark.sql("""
+    UPDATE customers
+    SET name = 'REDACTED', email = NULL, phone = NULL,
+        user_id = SHA2(CONCAT(user_id, 'salt'), 256)
+    WHERE user_id = 'user_to_forget'
+""")
+
+# Example 3: Automated retention policy
+def enforce_retention(table, retention_days, date_col="event_date"):
+    cutoff = (datetime.now() - timedelta(days=retention_days)).strftime("%Y-%m-%d")
+    spark.sql(f"DELETE FROM {table} WHERE {date_col} < '{cutoff}'")
+    spark.sql(f"OPTIMIZE {table}")
+    spark.sql(f"VACUUM {table} RETAIN 168 HOURS")
+
+enforce_retention("bronze.raw_events", 90)
+enforce_retention("silver.processed_events", 365)
+
+# Example 4: Audit log for compliance proof
+audit = spark.createDataFrame([
+    ("user_to_forget", "events", 150, datetime.now()),
+    ("user_to_forget", "orders", 23, datetime.now()),
+], ["user_id", "table_name", "rows_deleted", "deleted_at"])
+audit.write.format("delta").mode("append").save("/delta/gdpr_audit_log")
+```
+
+### **Common Pitfalls:**
+```python
+# ❌ WRONG: Deleting logically but forgetting VACUUM
+spark.sql("DELETE FROM events WHERE user_id = 'user_to_forget'")
+# Old Parquet files STILL contain the user's data!
+# GDPR requires PHYSICAL removal
+
+# ✅ CORRECT: DELETE then VACUUM
+spark.sql("DELETE FROM events WHERE user_id = 'user_to_forget'")
+spark.sql("VACUUM events RETAIN 0 HOURS")  # physically removes old files
+
+# ❌ WRONG: VACUUM with 0 hours while readers are active
+# Active queries may fail with FileNotFoundException
+
+# ✅ CORRECT: Schedule VACUUM during maintenance window
+```
+
+---
+
+## **PROBLEM TYPE 17: Cost Optimization**
+
+### **Trigger Words:**
+```
+"cost", "expensive", "storage cost", "compute cost", "optimize spend",
+"reduce cost", "file size", "over-partitioning", "write amplification",
+"idle cluster", "right-sizing"
+```
+
+### **Key Pattern:**
+```python
+# Template: Full cost optimization setup
+spark.sql("""
+    ALTER TABLE t SET TBLPROPERTIES (
+        'delta.enableDeletionVectors' = 'true',
+        'delta.autoOptimize.optimizeWrite' = 'true',
+        'delta.autoOptimize.autoCompact' = 'true'
+    )
+""")
+spark.sql("ALTER TABLE t CLUSTER BY (col1, col2)")  # replace partitioning
+```
+
+### **Cost Optimization Matrix:**
+
+| Problem | Solution | Impact |
+|---------|----------|--------|
+| Old file versions consuming storage | `VACUUM RETAIN 168 HOURS` | 20-40% storage reduction |
+| Small files (many tiny Parquet files) | `OPTIMIZE` + autoCompact | Fewer files = less overhead |
+| Over-partitioning (millions of dirs) | Liquid Clustering | Eliminates small file problem |
+| Write amplification (UPDATE/DELETE) | Deletion Vectors | 50-1000x less write I/O |
+| Full table scans on filtered queries | Z-ORDER / CLUSTER BY | 90%+ files skipped |
+| Idle streaming cluster | `trigger(availableNow=True)` | No idle compute cost |
+| Uncompressed / poorly compressed | `zstd` compression codec | 20-40% better compression |
+| SELECT * on wide tables | Column pruning | Read only needed columns |
+
+### **Examples:**
+```python
+# Example 1: Storage optimization workflow
+spark.sql("OPTIMIZE events")                       # Compact small files
+spark.sql("VACUUM events RETAIN 168 HOURS")        # Remove old versions
+
+# Example 2: Switch to zstd compression
+spark.conf.set("spark.sql.parquet.compression.codec", "zstd")
+
+# Example 3: Replace over-partitioning with Liquid Clustering
+# Before: partitionBy("user_id") → millions of tiny files
+# After:
+spark.sql("ALTER TABLE events CLUSTER BY (user_id, event_date)")
+
+# Example 4: Batch-style streaming (no idle cluster)
+stream.writeStream \
+    .trigger(availableNow=True) \
+    .format("delta") \
+    .option("checkpointLocation", cp).start(target)
+# Processes available data then STOPS — schedule as periodic job
+
+# Example 5: Monitor table efficiency
+detail = spark.sql("DESCRIBE DETAIL events").collect()[0]
+avg_mb = detail["sizeInBytes"] / detail["numFiles"] / (1024**2)
+print(f"Avg file: {avg_mb:.0f} MB (target: 128-1024 MB)")
+if avg_mb < 32:
+    print("ACTION: Run OPTIMIZE — small files wasting I/O")
+```
+
+### **Common Pitfalls:**
+```python
+# ❌ WRONG: Never running VACUUM (storage grows unboundedly)
+# ❌ WRONG: Never running OPTIMIZE on streaming tables
+# ❌ WRONG: Continuous streaming when hourly batches suffice
+# ❌ WRONG: SELECT * FROM huge_table (reads all columns)
+
+# ✅ CORRECT: Regular maintenance + right-sized processing
+```
+
+---
+
+## **PROBLEM TYPE 18: Disaster Recovery & Backup**
+
+### **Trigger Words:**
+```
+"disaster recovery", "backup", "DR", "restore", "failover",
+"cross-region", "RPO", "RTO", "data loss", "table corruption",
+"accidental delete"
+```
+
+### **Key Pattern:**
+```python
+# Template: Backup with DEEP CLONE
+spark.sql("CREATE OR REPLACE TABLE backup DEEP CLONE production_table")
+
+# Template: Recover from bad write
+spark.sql("RESTORE TABLE t TO VERSION AS OF N")
+```
+
+### **DR Strategy Matrix:**
+
+| Strategy | RTO | RPO | Cost | Protects Against |
+|----------|-----|-----|------|-----------------|
+| `RESTORE` command | Minutes | 0 (ACID) | Free | Bad writes, accidental updates |
+| DEEP CLONE (same region) | Minutes | Hours | 1x storage | Table corruption |
+| Cross-region DEEP CLONE | Hours | Hours | 2x+ storage | Regional outage |
+| S3/ADLS versioning | Hours | 0 | ~0.3x storage | Accidental file deletion |
+
+### **Examples:**
+```python
+# Example 1: Undo bad write (fastest recovery)
+spark.sql("RESTORE TABLE events TO VERSION AS OF 42")
+
+# Example 2: Scheduled backup
+for table, path in critical_tables.items():
+    spark.sql(f"""
+        CREATE OR REPLACE TABLE delta.`{path}`
+        DEEP CLONE {table}
+    """)
+# CREATE OR REPLACE DEEP CLONE only copies changed files (incremental)
+
+# Example 3: Point-in-time recovery to separate table
+spark.sql("""
+    CREATE TABLE events_recovered
+    DEEP CLONE events TIMESTAMP AS OF '2024-02-07T23:59:59'
+""")
+
+# Example 4: Validate backup integrity
+source_count = spark.table("production.events").count()
+backup_count = spark.read.format("delta").load("/backup/events").count()
+assert source_count == backup_count, f"Mismatch: {source_count} vs {backup_count}"
+```
+
+### **Common Pitfalls:**
+```python
+# ❌ WRONG: DEEP CLONE is NOT an undo tool
+# DEEP CLONE creates a COPY — it doesn't revert the source table
+# Use RESTORE to revert the source table
+
+# ❌ WRONG: Relying only on RESTORE (VACUUM removes old versions)
+# If you VACUUM'd, old versions are gone — RESTORE won't work
+
+# ✅ CORRECT: Backup schedule + VACUUM retention alignment
+# VACUUM retention >= backup frequency
+# DEEP CLONE daily + VACUUM 7 days = safe
+```
+
+---
+
 ## **QUICK DECISION TREE**
 
 ```
@@ -1384,16 +1877,44 @@ What Delta Lake operation do I need?
 │   ├── Drop column → enable column mapping + ALTER TABLE DROP COLUMN
 │   └── Replace schema → overwriteSchema (destructive)
 │
-├── Testing / Backup?
+├── Testing / Backup / DR?
 │   ├── Dev/test copy → SHALLOW CLONE
 │   ├── Backup → DEEP CLONE
-│   └── Point-in-time snapshot → DEEP CLONE VERSION AS OF N
+│   ├── Point-in-time snapshot → DEEP CLONE VERSION AS OF N
+│   ├── Undo bad write → RESTORE TABLE TO VERSION AS OF N
+│   └── Cross-region DR → DEEP CLONE to another region
 │
-└── Data quality?
-    ├── Hard invariants → CHECK constraints
-    ├── NOT NULL → ALTER COLUMN SET NOT NULL
-    ├── Auto-compute values → Generated columns
-    └── Auto-increment keys → Identity columns
+├── Data quality?
+│   ├── Hard invariants → CHECK constraints
+│   ├── NOT NULL → ALTER COLUMN SET NOT NULL
+│   ├── Auto-compute values → Generated columns
+│   ├── Auto-increment keys → Identity columns
+│   └── DLT expectations → @dlt.expect / expect_or_drop / expect_or_fail
+│
+├── Architecture / Layers?
+│   ├── Layered data pipeline → Medallion (Bronze → Silver → Gold)
+│   ├── Declarative ETL → Delta Live Tables (DLT)
+│   ├── Cross-org data sharing → Delta Sharing
+│   └── Domain ownership → Data Mesh (catalog per domain)
+│
+├── Governance / Security?
+│   ├── Access control → Unity Catalog GRANT/REVOKE
+│   ├── Row-level security → SET ROW FILTER func ON (col)
+│   ├── Column masking → ALTER COLUMN SET MASK func
+│   ├── Data classification → SET TAGS ('pii' = 'true')
+│   └── Lineage tracking → Automatic in Unity Catalog
+│
+├── Compliance / GDPR?
+│   ├── Delete user data → DELETE + VACUUM (physical removal)
+│   ├── Anonymize user → UPDATE SET pii = SHA2(pii, 'salt')
+│   ├── Data retention → Scheduled DELETE + VACUUM by date
+│   └── Audit trail → GDPR audit log table
+│
+└── Cost optimization?
+    ├── Storage cost → VACUUM + OPTIMIZE + zstd compression
+    ├── Compute cost → Column pruning + partition pruning + Photon
+    ├── Write cost → Deletion Vectors + idempotent writes
+    └── Cluster cost → availableNow trigger (no idle streaming)
 ```
 
 ---
@@ -1448,6 +1969,12 @@ What Delta Lake operation do I need?
 | Over-partitioning | Millions of tiny files | Use Liquid Clustering instead |
 | Missing checkpoint in streaming | Data reprocessed on restart | Always set `checkpointLocation` |
 | CDF metadata in downstream writes | Extra columns in target | Drop `_change_type`, `_commit_version`, `_commit_timestamp` |
+| GRANT SELECT without USAGE on parent | User can't access table | Grant USAGE on catalog + schema first |
+| Bronze layer filtering | Lost raw data, can't replay | Bronze = append-only, filter in Silver |
+| GDPR DELETE without VACUUM | PII still in old Parquet files | DELETE + VACUUM to physically remove |
+| Never running OPTIMIZE on streaming | Small files accumulate forever | Schedule OPTIMIZE or enable autoCompact |
+| Continuous streaming for hourly data | Idle cluster costs | Use `trigger(availableNow=True)` as batch |
+| DEEP CLONE confused with RESTORE | Clone doesn't revert source | Use RESTORE to revert, CLONE to copy |
 
 ---
 
@@ -1471,6 +1998,17 @@ What Delta Lake operation do I need?
 | "point lookup" / "UUID search" | Bloom Filter | `CREATE BLOOMFILTER INDEX ON TABLE ...` |
 | "SCD Type 2" / "history" | MERGE + insert new version | Close old row + insert new (see MERGE patterns) |
 | "concurrent writes" / "S3" | Multi-cluster | `S3DynamoDBLogStore` for external locking |
+| "bronze silver gold" / "layers" | Medallion Architecture | Bronze (raw) → Silver (clean) → Gold (agg) |
+| "governance" / "access control" | Unity Catalog | `GRANT SELECT ON TABLE t TO group` |
+| "declarative ETL" / "pipeline" | Delta Live Tables | `@dlt.table` + `@dlt.expect_or_drop(...)` |
+| "share data" / "cross-org" | Delta Sharing | `CREATE SHARE` + `ALTER SHARE ADD TABLE` |
+| "GDPR" / "forget me" / "PII" | Deletion + VACUUM | `DELETE WHERE user_id=x` + `VACUUM 0 HOURS` |
+| "cost" / "expensive" / "optimize spend" | Cost Optimization | VACUUM + Clustering + DVs + availableNow |
+| "disaster recovery" / "backup" | DEEP CLONE + RESTORE | `DEEP CLONE` (backup) / `RESTORE` (undo) |
+| "row security" / "column masking" | Unity Catalog RLS | `SET ROW FILTER func` / `SET MASK func` |
+| "data mesh" / "domain ownership" | Catalog per domain | `CREATE CATALOG sales` + `Delta Sharing` |
+| "feature store" / "ML features" | Delta + time travel | Point-in-time joins + versioned features |
+| "Photon" / "vectorized" / "fast queries" | Photon Engine | Enable Photon runtime (no code change) |
 
 ---
 
@@ -1478,7 +2016,7 @@ What Delta Lake operation do I need?
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                  DELTA LAKE CHEAT SHEET — TOP 20 COMMANDS            │
+│              DELTA LAKE CHEAT SHEET — TOP 25 COMMANDS                │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  1. CREATE TABLE t (...) USING DELTA CLUSTER BY (c1, c2)             │
@@ -1494,19 +2032,19 @@ What Delta Lake operation do I need?
 │ 10. RESTORE TABLE t TO VERSION AS OF N                               │
 │ 11. ALTER TABLE t CLUSTER BY (col1, col2)                            │
 │ 12. ALTER TABLE t ADD CONSTRAINT ck CHECK (amount > 0)               │
-│ 13. ALTER TABLE t SET TBLPROPERTIES('delta.enableDeletionVectors'    │
-│     = 'true')                                                        │
-│ 14. ALTER TABLE t SET TBLPROPERTIES('delta.enableChangeDataFeed'     │
-│     = 'true')                                                        │
-│ 15. ALTER TABLE t SET TBLPROPERTIES('delta.columnMapping.mode'       │
-│     = 'name')                                                        │
+│ 13. SET TBLPROPERTIES('delta.enableDeletionVectors' = 'true')        │
+│ 14. SET TBLPROPERTIES('delta.enableChangeDataFeed' = 'true')         │
+│ 15. SET TBLPROPERTIES('delta.columnMapping.mode' = 'name')           │
 │ 16. ALTER TABLE t RENAME COLUMN old TO new                           │
 │ 17. CREATE TABLE copy SHALLOW CLONE source                           │
 │ 18. CREATE TABLE backup DEEP CLONE source VERSION AS OF N            │
-│ 19. spark.readStream.format("delta").option("readChangeFeed",        │
-│     "true").table("t")                                               │
-│ 20. df.write.option("txnAppId","j").option("txnVersion","v")        │
-│     .format("delta").save(path)                                      │
+│ 19. readStream.option("readChangeFeed","true").table("t")            │
+│ 20. .option("txnAppId","j").option("txnVersion","v").save(path)      │
+│ 21. CREATE CATALOG prod / CREATE SCHEMA prod.analytics               │
+│ 22. GRANT SELECT ON TABLE t TO `group`                               │
+│ 23. CREATE SHARE name / ALTER SHARE name ADD TABLE t                 │
+│ 24. @dlt.table + @dlt.expect_or_drop("name", "expr")                │
+│ 25. DELETE + VACUUM RETAIN 0 HOURS (GDPR physical removal)           │
 │                                                                      │
 ├──────────────────────────────────────────────────────────────────────┤
 │  NEW TABLE CHECKLIST:                                                │
@@ -1518,12 +2056,21 @@ What Delta Lake operation do I need?
 │  □ NOT NULL on required columns                                      │
 │  □ Generated columns for partition derivation                        │
 │  □ delta.enableChangeDataFeed = 'true' (if downstream CDC needed)    │
+│  □ Unity Catalog: GRANT permissions to appropriate groups            │
+│  □ Tags: SET TAGS for PII classification                             │
 ├──────────────────────────────────────────────────────────────────────┤
 │  MAINTENANCE SCHEDULE:                                               │
 │  Daily:   OPTIMIZE (if streaming or frequent small writes)           │
 │  Weekly:  OPTIMIZE + ZORDER (batch tables)                           │
 │  Monthly: VACUUM RETAIN 720 HOURS (30 days)                          │
+│  Monthly: DEEP CLONE critical tables (backup)                        │
 │  As needed: DESCRIBE HISTORY, DESCRIBE DETAIL (monitoring)           │
+│  As needed: GDPR deletion requests (DELETE + VACUUM)                 │
+├──────────────────────────────────────────────────────────────────────┤
+│  MEDALLION PATTERN:                                                  │
+│  Bronze: append-only, raw, long retention, no transforms             │
+│  Silver: MERGE dedupe, CHECK constraints, canonical schema           │
+│  Gold:   aggregated, star schema, optimized for BI/ML queries        │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
