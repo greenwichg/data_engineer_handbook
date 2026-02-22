@@ -33,10 +33,11 @@
 23. STEP 22: Speculation Settings
 24. STEP 23: Compression Codec
 25. STEP 24: Data Partitioning (Write Layout)
-26. Full Calculation Summary
-27. Final spark-submit Command
-28. Scaling Formula: Any Data Size
-29. Verification Checklist
+26. STEP 25: Number of Partitions — Master Formula (5 TB)
+27. Full Calculation Summary
+28. Final spark-submit Command
+29. Scaling Formula: Any Data Size
+30. Verification Checklist
 ```
 
 ---
@@ -711,7 +712,128 @@ RULES:
 
 ---
 
-## 26. Full Calculation Summary
+## 26. STEP 25: Number of Partitions — Master Formula (5 TB)
+
+> This section unifies all partition calculations into one place with clear formulas applied to the 5 TB dataset.
+
+### A. Input Read Partitions (when Spark reads the 5 TB source)
+
+```
+FORMULA:
+  input_partitions = ceil(total_file_size / maxPartitionBytes)
+
+GIVEN:
+  total_file_size     = D = 5 TB = 5,120 GB = 5,242,880 MB
+  maxPartitionBytes   = spark.sql.files.maxPartitionBytes = 128 MB (default)
+  openCostInBytes     = spark.sql.files.openCostInBytes   = 4 MB  (default)
+
+CALCULATION:
+  input_partitions = ceil(5,242,880 MB / 128 MB)
+  input_partitions = ceil(40,960)
+  input_partitions = 40,960 partitions
+
+WHAT THIS MEANS:
+  - Spark will create ~40,960 tasks for the initial read stage
+  - Each task reads ~128 MB of compressed Parquet
+  - Each task decompresses to ~384 MB in memory (128 MB × 3x compression ratio)
+
+VERIFY:
+  partition_in_memory = 128 MB × CR = 128 × 3 = 384 MB
+  384 MB << 2.14 GB memory_per_task → fits comfortably ✅
+  40,960 tasks / 375 cores = ~109 waves → acceptable for initial scan ✅
+```
+
+**Config:** `spark.sql.files.maxPartitionBytes = 128MB` _(default, rarely needs changing)_
+
+### B. Shuffle Partitions (after joins, groupBy, aggregations)
+
+```
+FORMULA:
+  shuffle_partitions = ceil(data_in_memory_after_shuffle / target_partition_size)
+
+GIVEN:
+  data_in_memory = D × CR = 5 TB × 3 = 15 TB = 15,360 GB
+  shuffle_selectivity = 0.50  (assume 50% of data survives filters before shuffle)
+  shuffled_data = 15,360 GB × 0.50 = 7,680 GB
+  target_partition_size = 256 MB (sweet spot for shuffle: 128 MB – 1 GB)
+
+CALCULATION:
+  shuffle_partitions = ceil(7,680 GB / 0.256 GB)
+  shuffle_partitions = ceil(30,000)
+  shuffle_partitions = 30,000 (theoretical upper bound)
+
+PRACTICAL ADJUSTMENT (with AQE):
+  Start with fewer partitions; AQE will split skewed partitions automatically.
+  Recommended = 3,000 to 5,000
+
+VERIFY (at 3,000 partitions):
+  partition_size = 7,680 GB / 3,000 = 2.56 GB
+  memory_per_task = 2.14 GB → BORDERLINE (may spill to disk) ⚠️
+  With AQE auto-coalesce, small partitions merge → effective sizes stay optimal ✅
+
+VERIFY (at 5,000 partitions):
+  partition_size = 7,680 GB / 5,000 = 1.54 GB
+  memory_per_task = 2.14 GB → fits with headroom ✅
+```
+
+**Config:** `spark.sql.shuffle.partitions = 3000` _(with AQE enabled)_
+
+### C. Output/Write Partitions (final write to storage)
+
+```
+FORMULA:
+  output_partitions = ceil(output_data_size / target_output_file_size)
+
+GIVEN:
+  output_data_compressed = 5 TB  (assuming 1:1 output-to-input ratio)
+  target_output_file_size = 512 MB (Parquet best practice: 256 MB – 1 GB)
+
+CALCULATION:
+  output_partitions = ceil(5,120 GB / 0.512 GB)
+  output_partitions = ceil(10,000)
+  output_partitions = 10,000 output files
+
+  If heavy aggregation reduces output to 500 GB:
+    output_partitions = ceil(500 GB / 0.256 GB) = 1,953 ≈ 2,000 files
+
+APPLY:
+  df.repartition(10000).write.parquet(...)   # uniform file sizes
+  # OR
+  df.coalesce(10000).write.parquet(...)      # if already near target count
+```
+
+### D. Unified Partition Count Summary for 5 TB
+
+```
+┌──────────────────────────┬─────────────────────────────────────────────────┬──────────────┐
+│ Stage                    │ Formula                                         │ Value (5 TB) │
+├──────────────────────────┼─────────────────────────────────────────────────┼──────────────┤
+│ Input Read Partitions    │ ceil(D / maxPartitionBytes)                     │ 40,960       │
+│                          │ ceil(5 TB / 128 MB)                             │              │
+├──────────────────────────┼─────────────────────────────────────────────────┼──────────────┤
+│ Shuffle Partitions       │ ceil(D × CR × selectivity / target_part_size)  │ 3,000–5,000  │
+│                          │ ceil(5 TB × 3 × 0.5 / 256 MB)                 │ (30K theor.) │
+├──────────────────────────┼─────────────────────────────────────────────────┼──────────────┤
+│ Default Parallelism(RDD) │ total_cores × 2                                │ 750          │
+│                          │ 375 × 2                                         │              │
+├──────────────────────────┼─────────────────────────────────────────────────┼──────────────┤
+│ Output Write Partitions  │ ceil(output_size / target_file_size)            │ 2,000–10,000 │
+│                          │ ceil(5 TB / 512 MB)                             │              │
+├──────────────────────────┼─────────────────────────────────────────────────┼──────────────┤
+│ Data Layout Partitions   │ unique(partition_columns)                       │ ~730         │
+│ (year/month/day)         │ ~365 days/year × 2 years                       │              │
+└──────────────────────────┴─────────────────────────────────────────────────┴──────────────┘
+
+KEY CONSTRAINT:
+  Every partition must satisfy:
+    partition_size_in_memory ≤ memory_per_task
+    partition_size_in_memory ≤ execution_memory / cores_per_executor
+    partition_size_in_memory ≤ 10.7 GB / 5 = 2.14 GB
+```
+
+---
+
+## 27. Full Calculation Summary
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -756,13 +878,17 @@ RULES:
 │  Driver Memory Overhead ............. 2 GB                                   │
 │  Max Result Size .................... 4 GB                                   │
 │                                                                             │
-│  PARALLELISM                                                                │
-│  ───────────                                                                │
+│  PARALLELISM & PARTITIONS                                                   │
+│  ────────────────────────                                                   │
 │  Total Executors .................... 75                                     │
 │  Total Cores ........................ 375                                    │
-│  Shuffle Partitions ................. 3,000                                  │
-│  Default Parallelism ................ 750                                    │
-│  Partition Size ..................... ~1.7 GB  (5 TB / 3000)               │
+│  Input Read Partitions .............. 40,960  (5 TB / 128 MB)              │
+│  Shuffle Partitions ................. 3,000   (with AQE; 30K theoretical)   │
+│  Default Parallelism (RDD) .......... 750     (375 cores × 2)              │
+│  Output Write Partitions ............ 2,000–10,000  (target 512 MB files)  │
+│  Data Layout Partitions ............. ~730    (year/month/day)              │
+│  Partition Size (shuffle) ........... ~1.7 GB  (5 TB / 3000)              │
+│  Memory Per Task Limit .............. 2.14 GB (10.7 GB / 5 cores)         │
 │  Broadcast Join Threshold ........... 256 MB                                │
 │                                                                             │
 │  DYNAMIC ALLOCATION                                                         │
@@ -790,7 +916,7 @@ RULES:
 
 ---
 
-## 27. Final spark-submit Command
+## 28. Final spark-submit Command
 
 ```bash
 spark-submit \
@@ -877,7 +1003,7 @@ spark-submit \
 
 ---
 
-## 28. Scaling Formula: Any Data Size
+## 29. Scaling Formula: Any Data Size
 
 Replace `D` with your data size and recalculate every parameter:
 
@@ -902,29 +1028,31 @@ CALCULATE:
   driver_memory          = max(8, total_executors / 10)  in GB
   driver_overhead        = max(1, driver_memory × 0.10)
   max_result_size        = min(driver_memory × 0.4, 4)
+  input_read_partitions  = ceil((D × 1024) / 0.128)  in GB (128 MB maxPartitionBytes)
   shuffle_partitions     = max(total_cores × 4, (D × 1024) / 1)
   default_parallelism    = total_cores × 2
+  output_write_partitions= ceil((D × 1024) / 0.512)  (target 512 MB files)
   broadcast_threshold    = min(executor_memory × 0.15, 1)  in GB
   network_timeout        = max(300, (D × 1024) / 31.25 × 3)  in seconds
 ```
 
 ### Quick Lookup Table
 
-| Data Size | Nodes (128GB) | Executors | Total Cores | Shuffle Partitions | Executor Mem |
-|-----------|---------------|-----------|-------------|--------------------|--------------|
-| 100 GB    | 3             | 9         | 45          | 200                | 36g          |
-| 500 GB    | 5             | 15        | 75          | 500                | 36g          |
-| 1 TB      | 8             | 24        | 120         | 1,000              | 36g          |
-| 2 TB      | 13            | 39        | 195         | 2,000              | 36g          |
-| 5 TB      | 25            | 75        | 375         | 3,000              | 36g          |
-| 10 TB     | 45            | 135       | 675         | 6,000              | 36g          |
-| 20 TB     | 85            | 255       | 1,275       | 10,000             | 36g          |
-| 50 TB     | 200           | 600       | 3,000       | 25,000             | 36g          |
-| 100 TB    | 380           | 1,140     | 5,700       | 50,000             | 36g          |
+| Data Size | Nodes (128GB) | Executors | Total Cores | Input Partitions | Shuffle Partitions | Output Partitions | Executor Mem |
+|-----------|---------------|-----------|-------------|------------------|--------------------|-------------------|--------------|
+| 100 GB    | 3             | 9         | 45          | 800              | 200                | 200               | 36g          |
+| 500 GB    | 5             | 15        | 75          | 4,096            | 500                | 1,000             | 36g          |
+| 1 TB      | 8             | 24        | 120         | 8,192            | 1,000              | 2,000             | 36g          |
+| 2 TB      | 13            | 39        | 195         | 16,384           | 2,000              | 4,000             | 36g          |
+| 5 TB      | 25            | 75        | 375         | 40,960           | 3,000              | 10,000            | 36g          |
+| 10 TB     | 45            | 135       | 675         | 81,920           | 6,000              | 20,000            | 36g          |
+| 20 TB     | 85            | 255       | 1,275       | 163,840          | 10,000             | 40,000            | 36g          |
+| 50 TB     | 200           | 600       | 3,000       | 409,600          | 25,000             | 100,000           | 36g          |
+| 100 TB    | 380           | 1,140     | 5,700       | 819,200          | 50,000             | 200,000           | 36g          |
 
 ---
 
-## 29. Verification Checklist
+## 30. Verification Checklist
 
 After calculating, verify every parameter passes these checks:
 
