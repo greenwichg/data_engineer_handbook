@@ -33,11 +33,13 @@
 23. STEP 22: Speculation Settings
 24. STEP 23: Compression Codec
 25. STEP 24: Data Partitioning (Write Layout)
-26. STEP 25: Number of Partitions — Master Formula (5 TB)
-27. Full Calculation Summary
-28. Final spark-submit Command
-29. Scaling Formula: Any Data Size
-30. Verification Checklist
+26. STEP 25: AQE (Adaptive Query Execution) Settings
+27. STEP 26: Shuffle Buffer & Reducer I/O Settings
+28. STEP 27: Number of Partitions — Master Formula (5 TB)
+29. Full Calculation Summary
+30. Final spark-submit Command
+31. Scaling Formula: Any Data Size
+32. Verification Checklist
 ```
 
 ---
@@ -712,7 +714,169 @@ RULES:
 
 ---
 
-## 26. STEP 25: Number of Partitions — Master Formula (5 TB)
+## 26. STEP 25: AQE (Adaptive Query Execution) Settings
+
+```
+AQE automatically optimizes query plans at runtime based on actual data statistics.
+Enabled by default in Spark 3.2+, but thresholds should be tuned to your cluster.
+
+──────────────────────────────────────────────────────────────────────
+A. ADVISORY PARTITION SIZE (post-shuffle coalescing target)
+──────────────────────────────────────────────────────────────────────
+FORMULA:
+  advisory_partition_size = target_partition_size from Step 12
+  advisory_partition_size = 256 MB
+
+  WHY 256 MB?
+    - Matches the shuffle partition target (128 MB – 1 GB sweet spot)
+    - AQE coalesces tiny post-shuffle partitions UP to this size
+    - Prevents 3,000 partitions from producing 3,000 tiny files if most are small
+
+VERIFY:
+  256 MB << 2.14 GB memory_per_task → safe ✅
+  256 MB > 64 MB minimum → avoids scheduling overhead ✅
+
+──────────────────────────────────────────────────────────────────────
+B. SKEW JOIN: SKEWED PARTITION THRESHOLD
+──────────────────────────────────────────────────────────────────────
+FORMULA:
+  skew_threshold = advisory_partition_size × skew_factor_multiplier
+  skew_threshold = 256 MB × 1  (same as advisory; Spark splits partitions exceeding this)
+
+  ALTERNATIVELY:
+    skew_threshold = memory_per_task × safety_factor
+    skew_threshold = 2.14 GB × 0.12
+    skew_threshold = 256 MB
+
+  A partition is "skewed" if:
+    partition_size > skew_threshold  AND
+    partition_size > median_partition_size × skewedPartitionFactor
+
+VERIFY:
+  Skewed partitions > 256 MB get split → each sub-partition ≤ 256 MB
+  256 MB fits easily in 2.14 GB memory_per_task ✅
+
+──────────────────────────────────────────────────────────────────────
+C. SKEW JOIN: SKEWED PARTITION FACTOR
+──────────────────────────────────────────────────────────────────────
+FORMULA:
+  skewed_partition_factor = N  (a partition is skewed if N× larger than median)
+
+  CALCULATION:
+    For 5 TB with 3,000 shuffle partitions:
+      median_partition_size ≈ 5 TB / 3,000 = 1.7 GB
+      If a key has 10x more data → skewed partition = 17 GB
+      17 GB / 1.7 GB = 10x → definitely skewed
+
+    RECOMMENDED: 5  (triggers when a partition is 5× the median)
+      At 5×: skew detection triggers at 1.7 GB × 5 = 8.5 GB → will split into ~33 sub-partitions
+      At 10×: too lenient, may miss moderate skew
+
+──────────────────────────────────────────────────────────────────────
+D. COALESCE PARTITIONS (merge small partitions)
+──────────────────────────────────────────────────────────────────────
+FORMULA:
+  coalesce_min_partitions = total_cores  (at minimum, keep 1 partition per core)
+  coalesce_min_partitions = 375
+
+  WHY:
+    - After filters/aggregations, many of 3,000 partitions may be nearly empty
+    - AQE merges them until each reaches advisory_partition_size (256 MB)
+    - Floor is total_cores to maintain parallelism
+
+SUMMARY:
+  AQE will dynamically adjust the 3,000 shuffle partitions:
+    - Merge small partitions → target 256 MB each (coalesce)
+    - Split large partitions → target 256 MB each (skew join)
+    - Result: self-tuning partition sizes at runtime ✅
+```
+
+**Config:**
+```
+spark.sql.adaptive.enabled = true
+spark.sql.adaptive.coalescePartitions.enabled = true
+spark.sql.adaptive.coalescePartitions.minPartitionSize = 64MB
+spark.sql.adaptive.advisoryPartitionSizeInBytes = 256MB
+spark.sql.adaptive.skewJoin.enabled = true
+spark.sql.adaptive.skewJoin.skewedPartitionFactor = 5
+spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes = 256MB
+```
+
+---
+
+## 27. STEP 26: Shuffle Buffer & Reducer I/O Settings
+
+```
+These control how shuffle data is written to disk and read over the network.
+
+──────────────────────────────────────────────────────────────────────
+A. SHUFFLE FILE BUFFER (write-side buffer)
+──────────────────────────────────────────────────────────────────────
+FORMULA:
+  shuffle_file_buffer = optimal_disk_write_buffer for NVMe SSD
+  Default = 32 KB (too small for large shuffles)
+
+  CALCULATION:
+    shuffle_data_per_executor = total_shuffle_data / total_executors
+    shuffle_data_per_executor = 7.5 TB / 75 = 100 GB
+
+    At 32 KB buffer → 100 GB / 32 KB = 3,276,800 disk writes per executor
+    At 1 MB buffer  → 100 GB / 1 MB  = 102,400 disk writes per executor
+                    → 32× fewer I/O operations ✅
+
+  RECOMMENDED: 1 MB (reduces disk I/O syscalls by 32×)
+
+  CONSTRAINT:
+    buffer_memory_per_executor = shuffle_file_buffer × active_shuffle_files
+    buffer_memory = 1 MB × 200 (open shuffle files) = 200 MB
+    200 MB << 36 GB executor_memory → negligible overhead ✅
+
+──────────────────────────────────────────────────────────────────────
+B. REDUCER MAX SIZE IN FLIGHT (read-side network buffer)
+──────────────────────────────────────────────────────────────────────
+FORMULA:
+  max_in_flight = memory_per_task × fraction_for_network_buffer
+  max_in_flight = 2.14 GB × 0.04 to 0.05
+  max_in_flight = 86 MB to 107 MB ≈ 96 MB
+
+  WHAT THIS IS:
+    - Max total size of shuffle blocks fetched simultaneously per reduce task
+    - Larger → more network pipelining, fewer round-trips
+    - Too large → competes with execution memory
+
+  DEFAULT: 48 MB (too conservative for 5 TB)
+
+  CALCULATION:
+    With 96 MB buffer and 10 Gbps network:
+      fetch_time_per_batch = 96 MB / (10 Gbps / 8) = 96 / 1,250 = 0.077s
+      Overlaps with processing → near-zero network wait ✅
+
+  VERIFY:
+    5 cores × 96 MB = 480 MB per executor for reducer buffers
+    480 MB << 10.7 GB execution_memory → safe ✅
+
+──────────────────────────────────────────────────────────────────────
+C. SHUFFLE SORT SPILL THRESHOLD
+──────────────────────────────────────────────────────────────────────
+FORMULA:
+  sort_spill_threshold = execution_memory / cores_per_executor × 0.5
+  sort_spill_threshold = 10.7 GB / 5 × 0.5
+  sort_spill_threshold ≈ 1 GB
+
+  (Controlled internally by Spark; listed here for understanding)
+```
+
+**Config:**
+```
+spark.shuffle.file.buffer = 1m
+spark.reducer.maxSizeInFlight = 96m
+spark.shuffle.compress = true
+spark.shuffle.spill.compress = true
+```
+
+---
+
+## 28. STEP 27: Number of Partitions — Master Formula (5 TB)
 
 > This section unifies all partition calculations into one place with clear formulas applied to the 5 TB dataset.
 
@@ -833,7 +997,7 @@ KEY CONSTRAINT:
 
 ---
 
-## 27. Full Calculation Summary
+## 29. Full Calculation Summary
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -891,6 +1055,20 @@ KEY CONSTRAINT:
 │  Memory Per Task Limit .............. 2.14 GB (10.7 GB / 5 cores)         │
 │  Broadcast Join Threshold ........... 256 MB                                │
 │                                                                             │
+│  AQE (ADAPTIVE QUERY EXECUTION)                                             │
+│  ──────────────────────────────                                             │
+│  Advisory Partition Size ............. 256 MB                                │
+│  Skew Join Threshold ................ 256 MB                                │
+│  Skew Join Factor ................... 5× median                             │
+│  Coalesce Min Partition Size ........ 64 MB                                 │
+│                                                                             │
+│  SHUFFLE BUFFER & REDUCER I/O                                               │
+│  ────────────────────────────                                               │
+│  Shuffle File Buffer ................ 1 MB    (32× fewer I/O syscalls)     │
+│  Reducer Max In Flight .............. 96 MB   (per reduce task)            │
+│  Shuffle Compress ................... true                                   │
+│  Spill Compress ..................... true                                   │
+│                                                                             │
 │  DYNAMIC ALLOCATION                                                         │
 │  ──────────────────                                                         │
 │  Min Executors ...................... 10                                     │
@@ -916,7 +1094,7 @@ KEY CONSTRAINT:
 
 ---
 
-## 28. Final spark-submit Command
+## 30. Final spark-submit Command
 
 ```bash
 spark-submit \
@@ -947,7 +1125,7 @@ spark-submit \
   # ── Broadcast (Step 14) ──
   --conf spark.sql.autoBroadcastJoinThreshold=256MB \
   \
-  # ── Shuffle & Compression (Step 17, 23) ──
+  # ── Shuffle Buffer & I/O (Step 17, 23, 26) ──
   --conf spark.shuffle.compress=true \
   --conf spark.shuffle.spill.compress=true \
   --conf spark.shuffle.file.buffer=1m \
@@ -976,13 +1154,14 @@ spark-submit \
   --conf spark.speculation.multiplier=1.5 \
   --conf spark.speculation.quantile=0.75 \
   \
-  # ── AQE (Adaptive Query Execution) ──
+  # ── AQE (Adaptive Query Execution, Step 25) ──
   --conf spark.sql.adaptive.enabled=true \
   --conf spark.sql.adaptive.coalescePartitions.enabled=true \
+  --conf spark.sql.adaptive.coalescePartitions.minPartitionSize=64MB \
+  --conf spark.sql.adaptive.advisoryPartitionSizeInBytes=256MB \
   --conf spark.sql.adaptive.skewJoin.enabled=true \
   --conf spark.sql.adaptive.skewJoin.skewedPartitionFactor=5 \
   --conf spark.sql.adaptive.skewJoin.skewedPartitionThresholdInBytes=256MB \
-  --conf spark.sql.adaptive.advisoryPartitionSizeInBytes=256MB \
   \
   # ── Dynamic Allocation (Step 21) ──
   --conf spark.dynamicAllocation.enabled=true \
@@ -1003,7 +1182,7 @@ spark-submit \
 
 ---
 
-## 29. Scaling Formula: Any Data Size
+## 31. Scaling Formula: Any Data Size
 
 Replace `D` with your data size and recalculate every parameter:
 
@@ -1033,6 +1212,10 @@ CALCULATE:
   default_parallelism    = total_cores × 2
   output_write_partitions= ceil((D × 1024) / 0.512)  (target 512 MB files)
   broadcast_threshold    = min(executor_memory × 0.15, 1)  in GB
+  advisory_partition_size= 256 MB  (AQE coalesce/split target, same as target_partition_size)
+  skew_threshold         = 256 MB  (AQE skew join split threshold)
+  shuffle_file_buffer    = 1 MB  (constant for multi-TB; 32 KB default for < 100 GB)
+  reducer_max_in_flight  = memory_per_task × 0.04 to 0.05  in MB
   network_timeout        = max(300, (D × 1024) / 31.25 × 3)  in seconds
 ```
 
@@ -1052,7 +1235,7 @@ CALCULATE:
 
 ---
 
-## 30. Verification Checklist
+## 32. Verification Checklist
 
 After calculating, verify every parameter passes these checks:
 
@@ -1073,6 +1256,19 @@ PARTITION CHECKS:
   ☐ partition_size = D / shuffle_partitions ≤ memory_per_task (execution_memory / cores)
   ☐ partition_size ≥ 64 MB (avoid scheduling overhead)
   ☐ shuffle_partitions ≥ total_cores × 2 (enough work for all cores)
+  ☐ input_read_partitions = D / maxPartitionBytes (verify initial scan parallelism)
+  ☐ input_partition_in_memory = maxPartitionBytes × CR ≤ memory_per_task
+
+AQE CHECKS:
+  ☐ advisoryPartitionSizeInBytes ≤ memory_per_task (2.14 GB for this config)
+  ☐ skewedPartitionThresholdInBytes ≤ memory_per_task
+  ☐ skewedPartitionFactor ≥ 3 (too low = false positives; too high = misses real skew)
+  ☐ AQE coalesce enabled when shuffle_partitions is set high
+
+SHUFFLE I/O CHECKS:
+  ☐ shuffle_file_buffer ≥ 256 KB for multi-TB workloads (1 MB recommended)
+  ☐ reducer_max_in_flight × cores_per_executor ≤ execution_memory × 0.10
+  ☐ shuffle.compress = true (reduces network and disk I/O)
 
 NETWORK CHECKS:
   ☐ network_timeout ≥ 300s for multi-TB workloads
