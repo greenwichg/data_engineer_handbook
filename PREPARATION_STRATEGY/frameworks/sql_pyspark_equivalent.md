@@ -32,6 +32,8 @@
 22. Syntax Quick Reference
 23. Interview Pattern Recognition
 24. Common Gotchas
+25. Merge & Upsert
+26. Type 2 Slowly Changing Dimensions (SCD2)
 ```
 
 ---
@@ -2600,6 +2602,520 @@ Statistical analysis?
 | Not broadcasting small tables    | N/A                                | Use `broadcast()` for tables < 10MB       |
 | Ignoring data skew               | N/A                                | Salt keys or repartition                  |
 | Type mismatch in operations      | Explicit `CAST()`                  | Explicit `.cast()` before operations      |
+
+---
+
+## 25. Merge & Upsert
+
+### SQL MERGE (Standard / Delta Lake SQL)
+
+```sql
+-- MERGE: Insert new rows, update existing rows, optionally delete
+-- Works in databases that support MERGE (SQL Server, Oracle, PostgreSQL 15+, Delta Lake SQL)
+
+MERGE INTO target_table AS t
+USING source_table AS s
+ON t.id = s.id
+
+-- When a match is found → UPDATE
+WHEN MATCHED AND s.is_deleted = 1 THEN
+    DELETE
+
+WHEN MATCHED THEN
+    UPDATE SET
+        t.name = s.name,
+        t.email = s.email,
+        t.updated_at = CURRENT_TIMESTAMP
+
+-- When no match in target → INSERT
+WHEN NOT MATCHED THEN
+    INSERT (id, name, email, created_at, updated_at)
+    VALUES (s.id, s.name, s.email, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+```
+
+```sql
+-- Simple UPSERT using INSERT ... ON CONFLICT (PostgreSQL)
+INSERT INTO target_table (id, name, email, updated_at)
+VALUES (1, 'Alice', 'alice@example.com', CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    email = EXCLUDED.email,
+    updated_at = CURRENT_TIMESTAMP;
+```
+
+```sql
+-- Batch UPSERT from source table (PostgreSQL)
+INSERT INTO target_table (id, name, email, updated_at)
+SELECT id, name, email, CURRENT_TIMESTAMP
+FROM source_table
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    email = EXCLUDED.email,
+    updated_at = CURRENT_TIMESTAMP;
+```
+
+```sql
+-- MySQL equivalent: INSERT ... ON DUPLICATE KEY UPDATE
+INSERT INTO target_table (id, name, email, updated_at)
+VALUES (1, 'Alice', 'alice@example.com', NOW())
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    email = VALUES(email),
+    updated_at = NOW();
+```
+
+### PySpark MERGE — Delta Lake
+
+```python
+# PySpark: Delta Lake MERGE (preferred approach)
+from delta.tables import DeltaTable
+
+target = DeltaTable.forPath(spark, "/path/to/target")
+source = spark.read.table("source_table")
+
+target.alias("t").merge(
+    source.alias("s"),
+    "t.id = s.id"
+).whenMatchedUpdate(
+    set={
+        "name": "s.name",
+        "email": "s.email",
+        "updated_at": "current_timestamp()"
+    }
+).whenNotMatchedInsert(
+    values={
+        "id": "s.id",
+        "name": "s.name",
+        "email": "s.email",
+        "created_at": "current_timestamp()",
+        "updated_at": "current_timestamp()"
+    }
+).execute()
+```
+
+```python
+# Delta Lake MERGE with DELETE condition
+target.alias("t").merge(
+    source.alias("s"),
+    "t.id = s.id"
+).whenMatchedDelete(
+    condition="s.is_deleted = true"
+).whenMatchedUpdate(
+    condition="s.is_deleted = false",
+    set={
+        "name": "s.name",
+        "email": "s.email",
+        "updated_at": "current_timestamp()"
+    }
+).whenNotMatchedInsert(
+    condition="s.is_deleted = false",
+    values={
+        "id": "s.id",
+        "name": "s.name",
+        "email": "s.email",
+        "created_at": "current_timestamp()",
+        "updated_at": "current_timestamp()"
+    }
+).execute()
+```
+
+```python
+# Delta Lake MERGE with updateAll / insertAll (schema must match)
+target.alias("t").merge(
+    source.alias("s"),
+    "t.id = s.id"
+).whenMatchedUpdateAll(
+).whenNotMatchedInsertAll(
+).execute()
+```
+
+### PySpark UPSERT — Without Delta Lake (Manual Approach)
+
+```python
+# Manual upsert using left anti join + union
+# Step 1: Identify new rows (in source but not in target)
+new_rows = source.join(target, on="id", how="left_anti")
+
+# Step 2: Identify existing rows to update (take source version)
+updated_rows = source.join(target.select("id"), on="id", how="inner")
+
+# Step 3: Identify unchanged rows (in target but not in source)
+unchanged_rows = target.join(source.select("id"), on="id", how="left_anti")
+
+# Step 4: Combine
+result = unchanged_rows.unionByName(updated_rows).unionByName(new_rows)
+
+# Step 5: Overwrite target
+result.write.mode("overwrite").saveAsTable("target_table")
+```
+
+```python
+# Alternative manual upsert: coalesce approach with full outer join
+from pyspark.sql import functions as F
+
+result = source.alias("s").join(
+    target.alias("t"),
+    on="id",
+    how="full_outer"
+).select(
+    F.coalesce(F.col("s.id"), F.col("t.id")).alias("id"),
+    # Source values take priority (upsert), fall back to target
+    F.coalesce(F.col("s.name"), F.col("t.name")).alias("name"),
+    F.coalesce(F.col("s.email"), F.col("t.email")).alias("email"),
+    F.when(F.col("s.id").isNotNull(), F.current_timestamp())
+     .otherwise(F.col("t.updated_at")).alias("updated_at"),
+    F.coalesce(F.col("t.created_at"), F.current_timestamp()).alias("created_at")
+)
+```
+
+### Merge/Upsert Quick Reference
+
+| Operation                    | SQL                                        | PySpark (Delta Lake)                       | PySpark (No Delta)                    |
+|------------------------------|--------------------------------------------|--------------------------------------------|---------------------------------------|
+| Upsert (insert or update)   | `MERGE INTO ... WHEN MATCHED / NOT MATCHED`| `DeltaTable.merge().whenMatched...`        | `left_anti` join + `union`            |
+| Insert if not exists         | `INSERT ... ON CONFLICT DO NOTHING`        | `.whenNotMatchedInsert()`                  | `left_anti` join + `union`            |
+| Conditional update           | `WHEN MATCHED AND condition THEN UPDATE`   | `.whenMatchedUpdate(condition=...)`        | Filter + join + union                 |
+| Delete on match              | `WHEN MATCHED THEN DELETE`                 | `.whenMatchedDelete()`                     | `left_anti` join (exclude matched)    |
+| Full sync (mirror source)    | MERGE with INSERT + UPDATE + DELETE        | `whenMatched` + `whenNotMatched` + delete  | Overwrite entire table                |
+
+---
+
+## 26. Type 2 Slowly Changing Dimensions (SCD2)
+
+> **SCD2 Pattern**: Track historical changes by creating new rows for each change.
+> Each row has `effective_date`, `end_date`, and `is_current` flag.
+
+### Understanding SCD2
+
+```
+Dimension table tracks FULL HISTORY of changes:
+
+| customer_id | name    | city      | effective_date | end_date   | is_current |
+|-------------|---------|-----------|----------------|------------|------------|
+| 101         | Alice   | New York  | 2023-01-01     | 2024-03-14 | false      |
+| 101         | Alice   | Chicago   | 2024-03-15     | 9999-12-31 | true       |
+| 102         | Bob     | Boston    | 2023-06-01     | 9999-12-31 | true       |
+
+When Alice moves from New York to Chicago:
+  - Old row: end_date updated to day before change, is_current → false
+  - New row: inserted with new city, effective_date = change date, end_date = 9999-12-31, is_current = true
+```
+
+### SQL: SCD2 Implementation with MERGE
+
+```sql
+-- SQL MERGE for SCD Type 2
+-- source_updates contains incoming changes
+-- dim_customer is the SCD2 dimension table
+
+-- Step 1: Identify changed records
+WITH changes AS (
+    SELECT
+        s.customer_id,
+        s.name,
+        s.city,
+        s.email
+    FROM source_updates s
+    INNER JOIN dim_customer t
+        ON s.customer_id = t.customer_id
+        AND t.is_current = true
+    WHERE s.name != t.name
+       OR s.city != t.city
+       OR s.email != t.email
+)
+
+-- Step 2: MERGE to expire old rows and insert new ones
+MERGE INTO dim_customer AS t
+USING (
+    -- Union: rows to expire + new version rows + brand new customers
+    SELECT customer_id, name, city, email,
+           CAST(CURRENT_DATE AS DATE) AS effective_date,
+           CAST('9999-12-31' AS DATE) AS end_date,
+           true AS is_current,
+           'insert' AS merge_action
+    FROM changes
+
+    UNION ALL
+
+    SELECT customer_id, name, city, email,
+           CAST(CURRENT_DATE AS DATE) AS effective_date,
+           CAST('9999-12-31' AS DATE) AS end_date,
+           true AS is_current,
+           'insert' AS merge_action
+    FROM source_updates s
+    WHERE NOT EXISTS (
+        SELECT 1 FROM dim_customer d
+        WHERE d.customer_id = s.customer_id
+    )
+) AS s
+ON t.customer_id = s.customer_id
+   AND t.is_current = true
+   AND s.merge_action = 'insert'
+
+-- Expire old current record
+WHEN MATCHED THEN
+    UPDATE SET
+        t.is_current = false,
+        t.end_date = CURRENT_DATE - INTERVAL '1 day'
+
+-- Insert new version / new customer
+WHEN NOT MATCHED THEN
+    INSERT (customer_id, name, city, email, effective_date, end_date, is_current)
+    VALUES (s.customer_id, s.name, s.city, s.email,
+            s.effective_date, s.end_date, s.is_current);
+```
+
+```sql
+-- Simpler SQL SCD2 approach (two-step, no MERGE)
+-- Step 1: Expire changed rows
+UPDATE dim_customer t
+SET
+    is_current = false,
+    end_date = CURRENT_DATE - INTERVAL '1 day'
+WHERE t.is_current = true
+  AND EXISTS (
+      SELECT 1 FROM source_updates s
+      WHERE s.customer_id = t.customer_id
+        AND (s.name != t.name OR s.city != t.city OR s.email != t.email)
+  );
+
+-- Step 2: Insert new versions of changed rows
+INSERT INTO dim_customer (customer_id, name, city, email, effective_date, end_date, is_current)
+SELECT
+    s.customer_id, s.name, s.city, s.email,
+    CURRENT_DATE,
+    CAST('9999-12-31' AS DATE),
+    true
+FROM source_updates s
+WHERE EXISTS (
+    -- Row was just expired (changed record)
+    SELECT 1 FROM dim_customer t
+    WHERE t.customer_id = s.customer_id
+      AND t.is_current = false
+      AND t.end_date = CURRENT_DATE - INTERVAL '1 day'
+)
+OR NOT EXISTS (
+    -- Brand new customer
+    SELECT 1 FROM dim_customer t
+    WHERE t.customer_id = s.customer_id
+);
+```
+
+### PySpark: SCD2 with Delta Lake
+
+```python
+from delta.tables import DeltaTable
+from pyspark.sql import functions as F
+
+# Load target dimension and source updates
+dim_table = DeltaTable.forPath(spark, "/path/to/dim_customer")
+dim_df = dim_table.toDF()
+source_df = spark.read.table("source_updates")
+
+# Step 1: Identify changed records (compare source vs current dimension)
+current_dim = dim_df.filter(F.col("is_current") == True)
+
+changed = source_df.alias("s").join(
+    current_dim.alias("t"),
+    on="customer_id",
+    how="inner"
+).filter(
+    (F.col("s.name") != F.col("t.name")) |
+    (F.col("s.city") != F.col("t.city")) |
+    (F.col("s.email") != F.col("t.email"))
+).select("s.*")
+
+# Step 2: Identify new customers (not in dimension at all)
+new_customers = source_df.join(
+    dim_df.select("customer_id").distinct(),
+    on="customer_id",
+    how="left_anti"
+)
+
+# Step 3: Build staged updates for MERGE
+# Rows to insert (new versions of changed + brand new)
+new_rows = changed.unionByName(new_customers).withColumn(
+    "effective_date", F.current_date()
+).withColumn(
+    "end_date", F.lit("9999-12-31").cast("date")
+).withColumn(
+    "is_current", F.lit(True)
+).withColumn(
+    "merge_key", F.lit(None).cast("long")  # dummy key to force NOT MATCHED
+)
+
+# Rows to expire (use real key so they MATCH)
+expire_rows = changed.select(
+    F.col("customer_id").alias("merge_key"),
+    "customer_id", "name", "city", "email"
+).withColumn("effective_date", F.current_date()
+).withColumn("end_date", F.lit("9999-12-31").cast("date")
+).withColumn("is_current", F.lit(True))
+
+# Combine: expire rows (will match) + new rows (will not match)
+staged = expire_rows.unionByName(new_rows)
+
+# Step 4: Execute MERGE
+dim_table.alias("t").merge(
+    staged.alias("s"),
+    "t.customer_id = s.merge_key AND t.is_current = true"
+).whenMatchedUpdate(
+    set={
+        "is_current": "false",
+        "end_date": "current_date() - interval 1 day"
+    }
+).whenNotMatchedInsert(
+    values={
+        "customer_id": "s.customer_id",
+        "name": "s.name",
+        "city": "s.city",
+        "email": "s.email",
+        "effective_date": "s.effective_date",
+        "end_date": "s.end_date",
+        "is_current": "s.is_current"
+    }
+).execute()
+```
+
+### PySpark: SCD2 Without Delta Lake (Manual Approach)
+
+```python
+from pyspark.sql import functions as F
+
+# Load existing dimension and source
+dim_df = spark.read.parquet("/path/to/dim_customer")
+source_df = spark.read.table("source_updates")
+
+# Current records from dimension
+current_dim = dim_df.filter(F.col("is_current") == True)
+historical_dim = dim_df.filter(F.col("is_current") == False)
+
+# Step 1: Identify what changed
+joined = current_dim.alias("t").join(
+    source_df.alias("s"),
+    on="customer_id",
+    how="inner"
+).filter(
+    (F.col("s.name") != F.col("t.name")) |
+    (F.col("s.city") != F.col("t.city")) |
+    (F.col("s.email") != F.col("t.email"))
+)
+
+changed_ids = joined.select(F.col("t.customer_id"))
+
+# Step 2: Expire old rows (set is_current=false, end_date=yesterday)
+expired_rows = current_dim.join(
+    changed_ids, on="customer_id", how="inner"
+).withColumn(
+    "is_current", F.lit(False)
+).withColumn(
+    "end_date", F.date_sub(F.current_date(), 1)
+)
+
+# Step 3: Create new version rows for changed records
+new_versions = source_df.join(
+    changed_ids, on="customer_id", how="inner"
+).withColumn(
+    "effective_date", F.current_date()
+).withColumn(
+    "end_date", F.lit("9999-12-31").cast("date")
+).withColumn(
+    "is_current", F.lit(True)
+)
+
+# Step 4: Identify brand new customers
+new_customers = source_df.join(
+    dim_df.select("customer_id").distinct(),
+    on="customer_id",
+    how="left_anti"
+).withColumn(
+    "effective_date", F.current_date()
+).withColumn(
+    "end_date", F.lit("9999-12-31").cast("date")
+).withColumn(
+    "is_current", F.lit(True)
+)
+
+# Step 5: Unchanged current rows
+unchanged = current_dim.join(
+    changed_ids, on="customer_id", how="left_anti"
+)
+
+# Step 6: Combine everything
+final_dim = (
+    historical_dim        # all historical rows (untouched)
+    .unionByName(expired_rows)   # newly expired rows
+    .unionByName(unchanged)      # current rows that didn't change
+    .unionByName(new_versions)   # new versions of changed records
+    .unionByName(new_customers)  # brand new customers
+)
+
+# Step 7: Write out
+final_dim.write.mode("overwrite").parquet("/path/to/dim_customer")
+```
+
+### SCD2 Query Patterns
+
+```sql
+-- SQL: Get current state of a customer
+SELECT * FROM dim_customer
+WHERE customer_id = 101
+  AND is_current = true;
+
+-- SQL: Get customer state at a specific point in time
+SELECT * FROM dim_customer
+WHERE customer_id = 101
+  AND effective_date <= '2023-06-15'
+  AND end_date >= '2023-06-15';
+
+-- SQL: Get full history of a customer
+SELECT * FROM dim_customer
+WHERE customer_id = 101
+ORDER BY effective_date;
+
+-- SQL: Count how many times a customer changed
+SELECT customer_id, COUNT(*) - 1 AS num_changes
+FROM dim_customer
+GROUP BY customer_id
+HAVING COUNT(*) > 1;
+```
+
+```python
+# PySpark: Get current state of a customer
+dim_df.filter(
+    (F.col("customer_id") == 101) &
+    (F.col("is_current") == True)
+)
+
+# PySpark: Get customer state at a specific point in time
+dim_df.filter(
+    (F.col("customer_id") == 101) &
+    (F.col("effective_date") <= "2023-06-15") &
+    (F.col("end_date") >= "2023-06-15")
+)
+
+# PySpark: Get full history of a customer
+dim_df.filter(
+    F.col("customer_id") == 101
+).orderBy("effective_date")
+
+# PySpark: Count how many times a customer changed
+dim_df.groupBy("customer_id").count().filter(
+    F.col("count") > 1
+).withColumn("num_changes", F.col("count") - 1)
+```
+
+### SCD2 Quick Reference
+
+| Operation                   | SQL                                               | PySpark (Delta Lake)                        | PySpark (No Delta)                        |
+|-----------------------------|----------------------------------------------------|---------------------------------------------|-------------------------------------------|
+| Expire old record           | `UPDATE SET is_current=false, end_date=yesterday`  | `.whenMatchedUpdate(set={...})`             | `.withColumn("is_current", lit(False))`   |
+| Insert new version          | `INSERT ... effective_date=today, end_date=9999`   | `.whenNotMatchedInsert(values={...})`       | `.unionByName(new_versions)`              |
+| Detect changes              | `JOIN + WHERE col != col`                          | `.join().filter(col != col)`                | `.join().filter(col != col)`              |
+| Point-in-time query         | `WHERE eff_date <= X AND end_date >= X`            | `.filter((eff <= X) & (end >= X))`          | Same                                      |
+| Get current records         | `WHERE is_current = true`                          | `.filter(is_current == True)`               | Same                                      |
+| Full history                | `ORDER BY effective_date`                          | `.orderBy("effective_date")`                | Same                                      |
+| Merge key trick (Delta)     | N/A                                                | `merge_key=None` for inserts                | N/A                                       |
 
 ---
 
