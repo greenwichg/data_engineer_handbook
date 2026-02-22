@@ -18,6 +18,18 @@
 	16. JSON Arrays at Root Level
 	17. Handling Malformed / Corrupt JSON
 	18. JSON Diffing & Change Detection
+	19. Complete Array Functions Reference
+	20. Complete Map Functions Reference
+	21. Struct Manipulation (withField / dropFields)
+	22. inline & inline_outer (Array of Structs → Columns)
+	23. Re-Aggregation After Explode (collect_list / collect_set)
+	24. arrays_zip & Parallel Array Combining
+	25. JSON Read Options (Complete Reference)
+	26. JSON Write Options (Complete Reference)
+	27. JSON in CSV / Text Columns
+	28. LATERAL VIEW EXPLODE (Spark SQL Syntax)
+	29. str_to_map & Delimited String Parsing
+	30. Schema Export, Import & Validation
 
 ---
 
@@ -1121,3 +1133,856 @@ df_changed = (df_new.alias("new")
 - Floating-point precision can cause false positives in hash comparison
 - NULL handling in `sha2` — NULL input returns NULL hash
 - For large datasets, compare hashes first, then fetch full diff only for changed rows
+
+---
+
+### 19. Complete Array Functions Reference
+#### Trigger Words
+	- "array operations", "list functions", "array manipulation"
+	- "array_sort", "array_distinct", "array_union", "slice"
+
+**Complete Array Functions Matrix**
+
+|Function                     |Purpose                                    |Example                                                  |
+|-----------------------------|-------------------------------------------|---------------------------------------------------------|
+|`explode(col)`               |One row per element                        |`[1,2,3]` → 3 rows                                      |
+|`explode_outer(col)`         |Same, keeps NULL/empty                     |`NULL` → 1 row with NULL                                 |
+|`posexplode(col)`            |Explode with index                         |`[a,b]` → `(0,a),(1,b)`                                 |
+|`posexplode_outer(col)`      |Same, keeps NULL/empty                     |`NULL` → `(NULL, NULL)`                                  |
+|`flatten(col)`               |Flatten nested arrays                      |`[[1,2],[3]]` → `[1,2,3]`                               |
+|`inline(col)`                |Explode array of structs to columns        |`[{a:1,b:2}]` → columns a, b                            |
+|`inline_outer(col)`          |Same, keeps NULL/empty                     |`NULL` → row with NULL columns                           |
+|`size(col)`                  |Array length (-1 for NULL)                 |`[a,b,c]` → 3                                           |
+|`array_contains(col, val)`   |Check if value exists                      |`[1,2,3]` contains 2 → true                             |
+|`array_sort(col)`            |Sort elements ascending                    |`[3,1,2]` → `[1,2,3]`                                   |
+|`array_distinct(col)`        |Remove duplicates                          |`[1,2,2,3]` → `[1,2,3]`                                 |
+|`array_union(col1, col2)`    |Union with dedup                           |`[1,2]` + `[2,3]` → `[1,2,3]`                           |
+|`array_intersect(col1, col2)`|Common elements                            |`[1,2,3]` & `[2,3,4]` → `[2,3]`                         |
+|`array_except(col1, col2)`   |Elements in first not in second            |`[1,2,3]` - `[2,3]` → `[1]`                             |
+|`array_join(col, delim)`     |Join elements into string                  |`["a","b","c"]` → `"a,b,c"`                              |
+|`array_repeat(col, n)`       |Repeat value n times                       |`"x"` × 3 → `["x","x","x"]`                             |
+|`arrays_zip(col1, col2)`     |Zip parallel arrays                        |`[1,2]` + `[a,b]` → `[{1,a},{2,b}]`                     |
+|`arrays_overlap(col1, col2)` |Check common elements exist                |`[1,2]` & `[2,3]` → true                                |
+|`concat(col1, col2)`         |Concatenate arrays                         |`[1,2]` + `[3,4]` → `[1,2,3,4]`                         |
+|`reverse(col)`               |Reverse order                              |`[1,2,3]` → `[3,2,1]`                                   |
+|`shuffle(col)`               |Random order                               |`[1,2,3]` → `[2,3,1]` (random)                          |
+|`slice(col, start, len)`     |Extract subarray                           |`slice([1,2,3,4], 2, 2)` → `[2,3]`                      |
+|`sequence(start, stop, step)`|Generate array of numbers                  |`sequence(1, 5, 2)` → `[1,3,5]`                         |
+|`element_at(col, idx)`       |Get element (1-based)                      |`element_at([a,b,c], 2)` → `b`                          |
+|`sort_array(col, asc)`       |Sort with direction                        |`sort_array([3,1,2], False)` → `[3,2,1]`                |
+|`array_max(col)`             |Maximum element                            |`[3,1,5,2]` → 5                                         |
+|`array_min(col)`             |Minimum element                            |`[3,1,5,2]` → 1                                         |
+|`array_position(col, val)`   |Find index (1-based, 0 if not found)       |`array_position([a,b,c], "b")` → 2                      |
+|`array_remove(col, val)`     |Remove all occurrences                     |`array_remove([1,2,1,3], 1)` → `[2,3]`                  |
+
+### Higher-Order Array Functions (Spark 3.1+)
+
+|Function                              |Purpose                                |Signature                                          |
+|--------------------------------------|---------------------------------------|----------------------------------------------------|
+|`transform(col, func)`               |Apply function to each element         |`transform("arr", lambda x: x * 2)`                |
+|`filter(col, func)`                  |Keep matching elements                 |`filter("arr", lambda x: x > 0)`                   |
+|`aggregate(col, init, merge, finish)` |Reduce to single value                 |`aggregate("arr", lit(0), lambda a,x: a+x)`        |
+|`exists(col, func)`                  |Any element matches?                   |`exists("arr", lambda x: x > 100)`                 |
+|`forall(col, func)`                  |All elements match?                    |`forall("arr", lambda x: x > 0)`                   |
+|`zip_with(col1, col2, func)`         |Zip + transform                        |`zip_with("a","b", lambda x,y: x+y)`               |
+
+### Examples
+```python
+from pyspark.sql.functions import (
+    array_sort, array_distinct, array_union, array_intersect,
+    array_except, array_join, slice, sequence, array_max, array_min,
+    array_position, array_remove, forall, arrays_overlap, concat
+)
+
+# Set operations on arrays
+df.select(
+    array_union("tags_v1", "tags_v2").alias("all_tags"),
+    array_intersect("tags_v1", "tags_v2").alias("common_tags"),
+    array_except("tags_v1", "tags_v2").alias("removed_tags")
+).show()
+
+# Array to string
+df.select(array_join("tags", ", ").alias("tag_string")).show()
+# Result: "python, spark, sql"
+
+# Subarray extraction
+df.select(slice("items", 1, 3).alias("first_3_items")).show()
+
+# Generate number sequence
+df.select(sequence(lit(1), lit(10), lit(2)).alias("odds")).show()
+# Result: [1, 3, 5, 7, 9]
+
+# Check ALL elements positive
+df.select(forall("scores", lambda x: x > 0).alias("all_positive")).show()
+
+# Check overlap between arrays
+df.select(arrays_overlap("user_tags", "promo_tags").alias("eligible")).show()
+```
+
+### Pitfalls
+- `size()` returns **-1** for NULL arrays, not 0 — always null-check first
+- `element_at()` is 1-based; `col("arr")[0]` is 0-based
+- `array_sort()` puts NULLs at the end by default
+- Higher-order functions require Spark 3.1+ — check your cluster version
+- `forall()` returns TRUE for empty arrays (vacuous truth)
+
+---
+
+### 20. Complete Map Functions Reference
+#### Trigger Words
+	- "map operations", "dictionary", "key-value", "dynamic schema"
+	- "map_filter", "map_from_entries", "str_to_map"
+
+**Complete Map Functions Matrix**
+
+|Function                           |Purpose                                    |Example                                           |
+|-----------------------------------|-------------------------------------------|--------------------------------------------------|
+|`create_map(k1,v1,k2,v2,...)`      |Build map from column pairs                |`create_map(lit("a"),col("x"))` → `{"a": x}`     |
+|`map_from_arrays(keys, vals)`      |Build map from key & value arrays          |`[a,b]` + `[1,2]` → `{a:1, b:2}`                |
+|`map_from_entries(col)`            |Array of structs(k,v) → map               |`[{a,1},{b,2}]` → `{a:1, b:2}`                   |
+|`map_entries(col)`                 |Map → array of structs(key,value)          |`{a:1, b:2}` → `[{a,1},{b,2}]`                   |
+|`map_keys(col)`                    |Get all keys as array                      |`{a:1, b:2}` → `[a, b]`                          |
+|`map_values(col)`                  |Get all values as array                    |`{a:1, b:2}` → `[1, 2]`                          |
+|`map_concat(col1, col2)`           |Merge two maps (right wins on conflict)    |`{a:1}` + `{b:2}` → `{a:1, b:2}`                |
+|`map_filter(col, func)`            |Keep entries matching condition            |`map_filter(m, lambda k,v: v > 0)`               |
+|`map_zip_with(col1, col2, func)`   |Combine maps with function                 |Merge values from matching keys                   |
+|`element_at(col, key)`             |Get value by key (NULL if missing)         |`element_at(map, "key")` → value                 |
+|`col("map")[key]`                  |Bracket access (NULL if missing)           |`col("props")["color"]` → `"red"`                |
+|`explode(col)`                     |Map → key, value rows                      |`{a:1, b:2}` → `(a,1), (b,2)`                   |
+|`str_to_map(col, pairDelim, kvDelim)`|Parse delimited string to map            |`"a:1,b:2"` → `{a:1, b:2}`                      |
+|`size(col)`                        |Number of entries                          |`{a:1, b:2}` → 2                                 |
+
+### Examples
+```python
+from pyspark.sql.functions import (
+    map_from_arrays, map_from_entries, map_entries,
+    map_filter, map_zip_with, str_to_map, element_at
+)
+
+# Build map from two arrays
+df.select(map_from_arrays("key_array", "value_array").alias("props")).show()
+
+# Filter map entries
+df.select(
+    map_filter("metrics", lambda k, v: v > 100).alias("high_metrics")
+).show()
+
+# Map entries to array of structs (useful for further processing)
+df.select(map_entries("props").alias("entries")).show()
+# [{key: "color", value: "red"}, {key: "size", value: "L"}]
+
+# Parse delimited string into map
+df.select(str_to_map("config_str", ",", ":").alias("config")).show()
+# Input: "host:localhost,port:8080,db:mydb"
+# Output: {host: localhost, port: 8080, db: mydb}
+
+# Combine two maps with custom merge logic
+df.select(
+    map_zip_with("map1", "map2",
+        lambda k, v1, v2: coalesce(v2, v1)  # Right wins
+    ).alias("merged")
+).show()
+```
+
+### Pitfalls
+- Map keys must be non-null; values can be null
+- `create_map` requires an even number of arguments (key-value pairs)
+- `map_concat` — on duplicate keys, the **last map's value** wins
+- `element_at` on map is key-based (not index-based like arrays)
+- `str_to_map` with NULL input returns NULL, not empty map
+
+---
+
+### 21. Struct Manipulation (withField / dropFields)
+#### Trigger Words
+	- "modify struct field", "add field to struct", "remove struct field"
+	- "withField", "dropFields", "update nested", "named_struct"
+
+**Key Pattern**
+
+```python
+from pyspark.sql.functions import col, lit, struct
+
+# Add or update a field in an existing struct (Spark 3.1+)
+df = df.withColumn("address",
+    col("address").withField("country", lit("US"))
+)
+
+# Drop a field from a struct (Spark 3.1+)
+df = df.withColumn("address",
+    col("address").dropFields("zipcode")
+)
+
+# Build struct from scratch (all Spark versions)
+df = df.withColumn("address",
+    struct(
+        col("street"),
+        col("city"),
+        lit("US").alias("country")
+    )
+)
+
+# named_struct in SQL
+df = df.selectExpr("named_struct('name', name, 'age', age) as person")
+```
+
+### Function Choice Matrix
+
+|Need                                |Use                                        |Spark Version|
+|------------------------------------|-------------------------------------------|-------------|
+|Add/update one field in struct      |`col("s").withField("f", expr)`            |3.1+         |
+|Remove field from struct            |`col("s").dropFields("f1", "f2")`          |3.1+         |
+|Build new struct from columns       |`struct(col1, col2, ...)`                  |All          |
+|Build struct with explicit names    |`named_struct('k1',v1,'k2',v2)` (SQL)      |All          |
+|Rename field in struct              |`withField` new name + `dropFields` old    |3.1+         |
+|Update deeply nested struct field   |Chain: `col("a").withField("b", ...)`      |3.1+         |
+
+### Examples
+```python
+from pyspark.sql.functions import col, lit, struct, upper
+
+# Example 1: Add country field to address struct
+df = df.withColumn("address",
+    col("address").withField("country", lit("US"))
+)
+# address: {street, city, zip} → {street, city, zip, country}
+
+# Example 2: Drop sensitive field from struct
+df = df.withColumn("customer",
+    col("customer").dropFields("ssn", "credit_card")
+)
+
+# Example 3: Update nested field (uppercase city)
+df = df.withColumn("address",
+    col("address").withField("city", upper(col("address.city")))
+)
+
+# Example 4: Rename struct field (Spark 3.1+)
+df = df.withColumn("address",
+    col("address")
+        .withField("postal_code", col("address.zipcode"))
+        .dropFields("zipcode")
+)
+
+# Example 5: Reconstruct struct (all Spark versions)
+df = df.withColumn("address_v2",
+    struct(
+        col("address.street").alias("street"),
+        col("address.city").alias("city"),
+        col("address.zipcode").alias("postal_code"),
+        lit("US").alias("country")
+    )
+)
+```
+
+### Pitfalls
+- `withField` / `dropFields` require Spark 3.1+ — use `struct()` reconstruction for older versions
+- `dropFields` returns NULL if the struct itself is NULL (not an empty struct)
+- `withField` on a NULL struct returns NULL — guard with `when()`
+- Cannot chain `withField` on deeply nested paths in one call — must rebuild outer layers
+
+---
+
+### 22. inline & inline_outer (Array of Structs → Columns)
+#### Trigger Words
+	- "array of structs to columns", "inline", "unnest structs"
+	- "expand array of objects", "each struct field as column"
+
+**Key Pattern**
+
+```python
+from pyspark.sql.functions import inline, inline_outer
+
+# inline: Explode array of structs directly to columns
+df.select("id", inline("items")).show()
+# Equivalent to: explode("items") then select("item.*")
+
+# inline_outer: Null-safe version
+df.select("id", inline_outer("items")).show()
+```
+
+### Comparison: inline vs explode + select
+
+```python
+# These are equivalent:
+
+# Approach 1: explode + select (two steps)
+df.withColumn("item", explode("items")).select("id", "item.*")
+
+# Approach 2: inline (one step, more concise)
+df.select("id", inline("items"))
+
+# Both produce:
+# +---+--------+-----+
+# | id| product|price|
+# +---+--------+-----+
+# |  1|  Laptop|  999|
+# |  1|   Mouse|   25|
+# +---+--------+-----+
+```
+
+### Function Choice Matrix
+
+|Function          |NULL/Empty Array   |Use Case                              |
+|------------------|-------------------|--------------------------------------|
+|`inline()`        |Row **dropped**    |When NULLs are impossible             |
+|`inline_outer()`  |Row kept as NULLs  |Production default                    |
+|`explode()` + `.*`|Row **dropped**    |When you need intermediate processing |
+
+### Pitfalls
+- `inline` only works on `array<struct>` — not on plain arrays or maps
+- Like `explode`, `inline` drops NULL/empty arrays — use `inline_outer` for safety
+- Cannot alias individual output columns — they take struct field names
+
+---
+
+### 23. Re-Aggregation After Explode (collect_list / collect_set)
+#### Trigger Words
+	- "re-aggregate", "collect back", "group after explode"
+	- "collect_list", "collect_set", "reconstruct array", "reverse explode"
+
+**Key Pattern**
+
+```python
+from pyspark.sql.functions import collect_list, collect_set, struct
+
+# After exploding and transforming, re-aggregate back into arrays
+
+# collect_list: Preserves duplicates and order
+df_reagg = df_flat.groupBy("customer_id").agg(
+    collect_list("product").alias("products"),
+    collect_list(struct("product", "price")).alias("items")
+)
+
+# collect_set: Deduplicated (unordered)
+df_reagg = df_flat.groupBy("customer_id").agg(
+    collect_set("category").alias("unique_categories")
+)
+```
+
+### Function Choice Matrix
+
+|Function           |Duplicates    |Order         |NULL Handling       |
+|-------------------|--------------|--------------|--------------------|
+|`collect_list()`   |Keeps all     |Preserves     |Includes NULLs      |
+|`collect_set()`    |Removes dupes |Not guaranteed|Excludes NULLs      |
+
+### Examples
+```python
+from pyspark.sql.functions import (
+    collect_list, collect_set, struct, sort_array, array_distinct
+)
+
+# Example 1: Explode → Transform → Re-aggregate
+# Start: customer with items array
+# Goal: Get uppercase product names back as array
+from pyspark.sql.functions import upper, explode
+
+df_flat = df.withColumn("item", explode("items"))
+df_transformed = df_flat.withColumn("product_upper", upper(col("item.product")))
+df_result = df_transformed.groupBy("customer_id").agg(
+    collect_list("product_upper").alias("products")
+)
+
+# Example 2: Sorted aggregation
+df_result = df_flat.groupBy("customer_id").agg(
+    sort_array(collect_list("product")).alias("products_sorted")
+)
+
+# Example 3: Collect structs (preserve structure)
+df_result = df_flat.groupBy("customer_id").agg(
+    collect_list(struct("product", "price", "quantity")).alias("items")
+)
+
+# Example 4: Collect with dedup
+df_result = df_flat.groupBy("customer_id").agg(
+    collect_set("category").alias("unique_categories"),
+    collect_list("product").alias("all_products")
+)
+```
+
+### Pitfalls
+- `collect_list` can cause OOM if groups are very large — check with `size()` after
+- `collect_set` does NOT preserve insertion order
+- Both functions include NULL values differently — `collect_list` includes, `collect_set` excludes
+- Consider `sort_array(collect_list(...))` for deterministic output
+
+---
+
+### 24. arrays_zip & Parallel Array Combining
+#### Trigger Words
+	- "combine arrays", "zip arrays", "parallel arrays", "element-wise"
+	- "arrays_zip", "merge arrays", "pair up elements"
+
+**Key Pattern**
+
+```python
+from pyspark.sql.functions import arrays_zip, col, explode
+
+# Zip two parallel arrays into array of structs
+df = df.withColumn("zipped",
+    arrays_zip("names", "scores")
+)
+# names: ["Alice","Bob"], scores: [90,85]
+# zipped: [{names:"Alice", scores:90}, {names:"Bob", scores:85}]
+
+# Then explode to get paired rows
+df_flat = df.select("id", explode("zipped").alias("pair"))
+df_flat = df_flat.select("id",
+    col("pair.names").alias("name"),
+    col("pair.scores").alias("score")
+)
+```
+
+### Function Choice Matrix
+
+|Need                              |Use                                    |Result Type             |
+|----------------------------------|---------------------------------------|------------------------|
+|Pair elements by index            |`arrays_zip(a, b)`                     |`array<struct<a,b>>`    |
+|Pair + transform                  |`zip_with(a, b, func)`                 |`array<T>`              |
+|Concatenate arrays                |`concat(a, b)`                         |`array<T>`              |
+|Interleave arrays                 |`zip_with` + `flatten`                 |`array<T>`              |
+|Unequal length arrays             |`arrays_zip` pads shorter with NULL    |`array<struct>`         |
+
+### Examples
+```python
+from pyspark.sql.functions import arrays_zip, zip_with, col, explode
+
+# Example 1: Zip product names with prices
+df.withColumn("items",
+    arrays_zip("product_names", "prices", "quantities")
+).show()
+# [{product_names:"Laptop", prices:999, quantities:1}, ...]
+
+# Example 2: Element-wise operations with zip_with
+df.withColumn("totals",
+    zip_with("prices", "quantities", lambda p, q: p * q)
+).show()
+# prices: [100, 50], quantities: [2, 3]
+# totals: [200, 150]
+
+# Example 3: Unequal length arrays
+# names: ["A", "B", "C"], scores: [90, 85]
+# arrays_zip result: [{A,90}, {B,85}, {C,NULL}]  — padded with NULL
+```
+
+### Pitfalls
+- `arrays_zip` pads shorter arrays with NULL — does NOT truncate
+- Output struct field names match input column names — rename with alias if needed
+- `zip_with` requires Spark 3.1+ (higher-order function)
+- For 3+ arrays, `arrays_zip` handles them: `arrays_zip("a", "b", "c")`
+
+---
+
+### 25. JSON Read Options (Complete Reference)
+#### Trigger Words
+	- "read options", "JSON parsing options", "multiLine"
+	- "allowComments", "dateFormat", "encoding", "corrupt records"
+
+**Complete JSON Read Options Matrix**
+
+|Option                                |Default      |Purpose                                            |Example                           |
+|--------------------------------------|-------------|---------------------------------------------------|----------------------------------|
+|`multiLine`                           |`false`      |Parse multi-line JSON (not splittable)              |`True` for pretty-printed JSON    |
+|`mode`                                |`PERMISSIVE` |Error handling: PERMISSIVE/DROPMALFORMED/FAILFAST   |`FAILFAST` for strict validation  |
+|`columnNameOfCorruptRecord`           |`_corrupt_record`|Column name for corrupt lines                    |`"_bad_data"`                     |
+|`primitivesAsString`                  |`false`      |Read all primitives as strings                      |`True` for schema-agnostic reads  |
+|`prefersDecimal`                      |`false`      |Infer decimals instead of doubles                   |`True` for financial data         |
+|`allowComments`                       |`false`      |Allow `//` and `/* */` comments in JSON             |`True` for config files           |
+|`allowUnquotedFieldNames`             |`false`      |Allow `{name: "Alice"}` instead of `{"name":"Alice"}`|`True` for relaxed JSON          |
+|`allowSingleQuotes`                   |`false`      |Allow `{'name':'Alice'}`                            |`True` for Python-style JSON      |
+|`allowNumericLeadingZeros`            |`false`      |Allow `007` as valid number                         |`True` for legacy systems         |
+|`allowBackslashEscapingAnyCharacter`  |`false`      |Allow `\q` (not just `\n`, `\t`)                    |`True` for non-standard JSON      |
+|`allowNonNumericNumbers`              |`false`      |Allow `NaN`, `Infinity`, `-Infinity`                |`True` for scientific data        |
+|`dateFormat`                          |`yyyy-MM-dd` |Custom date parsing format                          |`"MM/dd/yyyy"`                    |
+|`timestampFormat`                     |ISO 8601     |Custom timestamp parsing format                     |`"yyyy-MM-dd HH:mm:ss"`          |
+|`timestampNTZFormat`                  |ISO 8601     |Timestamp without timezone format                   |`"yyyy-MM-dd'T'HH:mm:ss"`        |
+|`encoding` / `charset`               |`UTF-8`      |Character encoding of source file                   |`"UTF-16"`, `"ISO-8859-1"`       |
+|`lineSep`                             |`\n`,`\r\n`,`\r`|Custom line separator                            |`"\u0001"` for SOH separator      |
+|`samplingRatio`                       |`1.0`        |Fraction of data for schema inference               |`0.1` for 10% sampling           |
+|`dropFieldIfAllNull`                  |`false`      |Remove field from schema if all values are null     |`True` for sparse data            |
+|`locale`                              |`en-US`      |Locale for parsing                                  |`"de-DE"` for German dates        |
+
+### Examples
+```python
+# Example 1: Relaxed JSON parsing (config files with comments)
+df = spark.read \
+    .option("multiLine", True) \
+    .option("allowComments", True) \
+    .option("allowSingleQuotes", True) \
+    .option("allowUnquotedFieldNames", True) \
+    .json("config.json")
+
+# Example 2: Scientific data with NaN/Infinity
+df = spark.read \
+    .option("allowNonNumericNumbers", True) \
+    .schema("sensor_id STRING, value DOUBLE") \
+    .json("sensor_data.json")
+
+# Example 3: Custom date/timestamp formats
+df = spark.read \
+    .option("dateFormat", "MM/dd/yyyy") \
+    .option("timestampFormat", "yyyy-MM-dd'T'HH:mm:ss.SSSZ") \
+    .schema("id STRING, event_date DATE, event_time TIMESTAMP") \
+    .json("events.json")
+
+# Example 4: Non-UTF8 encoding
+df = spark.read \
+    .option("charset", "ISO-8859-1") \
+    .option("multiLine", True) \
+    .json("legacy_data.json")
+
+# Example 5: All primitives as strings (schema-agnostic)
+df = spark.read \
+    .option("primitivesAsString", True) \
+    .json("unknown_schema.json")
+# All fields become StringType — cast later as needed
+```
+
+### Pitfalls
+- `multiLine=True` makes file non-splittable — entire file = one Spark task
+- `samplingRatio < 1.0` can miss fields present in unsampled records
+- `allowComments=True` is non-standard JSON — won't work with strict parsers downstream
+- `primitivesAsString=True` reads 42 as `"42"` — must explicitly cast
+- `dropFieldIfAllNull=True` makes schema non-deterministic across batches
+
+---
+
+### 26. JSON Write Options (Complete Reference)
+#### Trigger Words
+	- "write JSON", "output options", "compression", "formatting"
+	- "ignoreNullFields", "dateFormat", "timestampFormat"
+
+**Complete JSON Write Options Matrix**
+
+|Option                  |Default      |Purpose                                    |Example                    |
+|------------------------|-------------|-------------------------------------------|---------------------------|
+|`compression`           |`none`       |Compression codec                          |`"gzip"`, `"snappy"`, `"bzip2"`, `"deflate"`, `"zstd"`|
+|`dateFormat`            |`yyyy-MM-dd` |Custom date output format                  |`"MM/dd/yyyy"`             |
+|`timestampFormat`       |ISO 8601     |Custom timestamp output format             |`"yyyy-MM-dd HH:mm:ss"`   |
+|`ignoreNullFields`      |`true`       |Exclude null fields from output            |`"false"` to include nulls |
+|`encoding`              |`UTF-8`      |Output character encoding                  |`"UTF-16"`                 |
+|`lineSep`               |`\n`         |Line separator between records             |`"\r\n"` for Windows       |
+
+### Examples
+```python
+# Example 1: Compressed JSON output
+df.write \
+    .option("compression", "gzip") \
+    .mode("overwrite") \
+    .json("output/compressed/")
+
+# Example 2: Include null fields in output
+df.write \
+    .option("ignoreNullFields", "false") \
+    .json("output/with_nulls/")
+# Default: {"name":"Alice"} (age omitted if null)
+# With false: {"name":"Alice","age":null}
+
+# Example 3: Custom timestamp format
+df.write \
+    .option("timestampFormat", "yyyy-MM-dd HH:mm:ss") \
+    .option("dateFormat", "MM/dd/yyyy") \
+    .json("output/formatted/")
+
+# Example 4: Write single JSON file (use coalesce)
+df.coalesce(1).write.mode("overwrite").json("output/single_file/")
+```
+
+### Pitfalls
+- `ignoreNullFields=true` (default) omits keys — downstream consumers may break if they expect all keys
+- `coalesce(1)` for single file defeats parallelism — use only for small outputs
+- Compression adds overhead — `snappy` is fastest, `gzip` has best ratio
+- JSON output is always one JSON per line (JSONL) — not pretty-printed
+
+---
+
+### 27. JSON in CSV / Text Columns
+#### Trigger Words
+	- "JSON embedded in CSV", "JSON in text column", "parse column"
+	- "CSV with JSON", "mixed format", "log parsing"
+
+**Key Pattern**
+
+```python
+from pyspark.sql.functions import from_json, col
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+# Step 1: Read CSV normally
+df = spark.read.option("header", True).csv("data_with_json.csv")
+# Columns: id, name, metadata_json
+
+# Step 2: Parse the JSON string column
+schema = StructType([
+    StructField("source", StringType(), True),
+    StructField("version", IntegerType(), True),
+    StructField("tags", ArrayType(StringType()), True)
+])
+
+df = df.withColumn("metadata", from_json("metadata_json", schema))
+
+# Step 3: Expand into columns
+df_flat = df.select("id", "name", "metadata.*")
+```
+
+### Examples
+```python
+# Example 1: CSV with JSON column
+# CSV: id,name,payload
+# 1,Alice,"{""event"":""login"",""ip"":""1.2.3.4""}"
+df = spark.read.option("header", True).csv("logs.csv")
+schema = "event STRING, ip STRING"
+df = df.withColumn("parsed", from_json("payload", schema))
+df.select("id", "name", "parsed.*").show()
+
+# Example 2: Text file with JSON after delimiter
+# Log: 2026-01-20 INFO {"user":"alice","action":"click"}
+from pyspark.sql.functions import regexp_extract
+
+df = spark.read.text("app.log")
+df = df.withColumn("json_part",
+    regexp_extract("value", r"(\{.*\})", 1)
+)
+schema = "user STRING, action STRING"
+df = df.withColumn("parsed", from_json("json_part", schema))
+df.select("parsed.*").show()
+
+# Example 3: Multiple JSON columns in one CSV
+df = spark.read.option("header", True).csv("multi_json.csv")
+schema_user = "name STRING, email STRING"
+schema_order = "order_id INT, total DOUBLE"
+
+df = (df
+    .withColumn("user", from_json("user_json", schema_user))
+    .withColumn("order", from_json("order_json", schema_order))
+    .select("id", "user.*", "order.*")
+)
+```
+
+### Pitfalls
+- CSV with embedded JSON often has escaped quotes: `""` instead of `\"` — Spark handles this
+- Very long JSON strings in CSV can hit `maxColumnWidth` limits — increase if needed
+- Some CSV files use single quotes around JSON — use `option("escape", "'")`
+- Always verify with `df.select("json_col").show(truncate=False)` before parsing
+
+---
+
+### 28. LATERAL VIEW EXPLODE (Spark SQL Syntax)
+#### Trigger Words
+	- "SQL explode", "LATERAL VIEW", "SQL array flattening"
+	- "Spark SQL JSON", "SQL syntax for arrays"
+
+**Key Pattern**
+
+```sql
+-- LATERAL VIEW is the SQL equivalent of withColumn + explode
+SELECT
+    id,
+    name,
+    item.product,
+    item.price
+FROM customers
+LATERAL VIEW explode(items) AS item
+
+-- Null-safe version
+SELECT id, tag
+FROM customers
+LATERAL VIEW OUTER explode(tags) AS tag
+```
+
+### SQL vs DataFrame API Equivalents
+
+|SQL Syntax                                 |DataFrame API                                     |
+|-------------------------------------------|--------------------------------------------------|
+|`LATERAL VIEW explode(arr) t AS elem`      |`.withColumn("elem", explode("arr"))`             |
+|`LATERAL VIEW OUTER explode(arr) t AS elem`|`.withColumn("elem", explode_outer("arr"))`       |
+|`LATERAL VIEW posexplode(arr) t AS pos, elem`|`.select(posexplode("arr").alias("pos","elem"))` |
+|`LATERAL VIEW inline(arr) t AS c1, c2`     |`.select(inline("arr"))`                          |
+|`LATERAL VIEW json_tuple(j, 'a','b') t AS a, b`|`.select(json_tuple("j","a","b").alias("a","b"))`|
+
+### Examples
+```sql
+-- Example 1: Explode + flatten in SQL
+SELECT
+    c.customer_id,
+    c.name,
+    o.order_id,
+    i.product,
+    i.price
+FROM customers c
+LATERAL VIEW explode(c.orders) orders_table AS o
+LATERAL VIEW explode(o.items) items_table AS i
+
+-- Example 2: Null-safe explode in SQL
+SELECT c.id, t.tag
+FROM customers c
+LATERAL VIEW OUTER explode(c.tags) tags_table AS tag
+
+-- Example 3: json_tuple in SQL
+SELECT
+    id,
+    j.name,
+    j.age
+FROM events
+LATERAL VIEW json_tuple(json_col, 'name', 'age') j AS name, age
+
+-- Example 4: inline array of structs in SQL
+SELECT c.id, i.product, i.price
+FROM customers c
+LATERAL VIEW inline(c.items) i AS product, price
+
+-- Example 5: Multiple LATERAL VIEWs (chained explode)
+SELECT c.id, o.order_id, i.product
+FROM customers c
+LATERAL VIEW explode(c.orders) AS o
+LATERAL VIEW explode(o.items) AS i
+```
+
+### Pitfalls
+- `LATERAL VIEW` requires a table alias even if not used: `AS t`
+- `LATERAL VIEW OUTER` (with OUTER keyword) = `explode_outer` — easy to forget
+- Chaining multiple `LATERAL VIEW` compounds row multiplication (same as DataFrame API)
+- SQL syntax uses `AS alias` for the output column — must be provided
+
+---
+
+### 29. str_to_map & Delimited String Parsing
+#### Trigger Words
+	- "parse delimited string", "key-value string", "config string"
+	- "str_to_map", "split to map", "query string parsing"
+
+**Key Pattern**
+
+```python
+from pyspark.sql.functions import str_to_map
+
+# Parse "key1:value1,key2:value2" into a map
+df = df.withColumn("params",
+    str_to_map("query_string", ",", ":")
+)
+
+# Then access individual keys
+df = df.withColumn("host", col("params")["host"])
+```
+
+### Examples
+```python
+from pyspark.sql.functions import str_to_map, col, explode
+
+# Example 1: Parse URL query string
+# Input: "page=home&user=alice&lang=en"
+df = df.withColumn("params", str_to_map("query_string", "&", "="))
+df.select(
+    col("params")["page"].alias("page"),
+    col("params")["user"].alias("user")
+).show()
+
+# Example 2: Parse config strings
+# Input: "host:localhost,port:8080,db:mydb"
+df = df.withColumn("config", str_to_map("config_str", ",", ":"))
+df.select(
+    col("config")["host"].alias("host"),
+    col("config")["port"].alias("port")
+).show()
+
+# Example 3: Parse HTTP headers
+# Input: "Content-Type=application/json;Accept=text/html"
+df = df.withColumn("headers", str_to_map("header_str", ";", "="))
+
+# Example 4: Explode parsed map to rows
+df.select("id", explode(str_to_map("tags_str", ",", ":")).alias("tag", "value")).show()
+```
+
+### Pitfalls
+- Default delimiters: pair delimiter = `,`, key-value delimiter = `:`
+- No automatic trimming — `" key "` is different from `"key"`
+- NULL input returns NULL (not empty map)
+- Duplicate keys: last value wins
+- No support for escape characters — delimiters inside values will break parsing
+
+---
+
+### 30. Schema Export, Import & Validation
+#### Trigger Words
+	- "save schema", "export schema", "validate schema"
+	- "schema registry", "schema JSON", "StructType from JSON"
+
+**Key Pattern**
+
+```python
+# Export schema to JSON string
+schema_json = df.schema.json()
+# Save to file for reuse
+with open("schema.json", "w") as f:
+    f.write(schema_json)
+
+# Import schema from JSON string
+from pyspark.sql.types import StructType
+import json
+
+with open("schema.json", "r") as f:
+    schema = StructType.fromJson(json.loads(f.read()))
+df = spark.read.schema(schema).json("data.json")
+
+# Export as DDL string
+ddl = df.schema.simpleString()
+# "struct<name:string,age:int,address:struct<city:string,zip:string>>"
+```
+
+### Function Choice Matrix
+
+|Need                          |Use                                    |Output Format               |
+|------------------------------|---------------------------------------|----------------------------|
+|Export schema to JSON         |`df.schema.json()`                     |JSON string                 |
+|Import schema from JSON       |`StructType.fromJson(json_dict)`       |StructType object           |
+|Export schema as DDL          |`df.schema.simpleString()`             |DDL string                  |
+|Import schema from DDL        |`spark.read.schema("DDL string")`      |Used directly               |
+|Get schema as tree            |`df.printSchema()`                     |Human-readable tree         |
+|Compare schemas               |`df1.schema == df2.schema`             |Boolean                     |
+|Get field names               |`df.schema.fieldNames()`               |List of strings             |
+|Check field exists            |`"field" in df.schema.fieldNames()`    |Boolean                     |
+
+### Examples
+```python
+import json
+from pyspark.sql.types import StructType
+
+# Example 1: Round-trip schema persistence
+# Save
+with open("/tmp/my_schema.json", "w") as f:
+    f.write(df.schema.json())
+
+# Load
+with open("/tmp/my_schema.json", "r") as f:
+    saved_schema = StructType.fromJson(json.loads(f.read()))
+
+df_new = spark.read.schema(saved_schema).json("new_data.json")
+
+# Example 2: Schema validation
+expected = StructType.fromJson(json.loads(open("expected_schema.json").read()))
+actual = spark.read.json("data.json").schema
+
+if expected == actual:
+    print("Schema matches!")
+else:
+    # Find differences
+    expected_fields = set(expected.fieldNames())
+    actual_fields = set(actual.fieldNames())
+    print(f"Missing: {expected_fields - actual_fields}")
+    print(f"Extra: {actual_fields - expected_fields}")
+
+# Example 3: Schema from DDL string (quick usage)
+df = spark.read.schema(
+    "id BIGINT, name STRING, scores ARRAY<INT>, address STRUCT<city: STRING, zip: STRING>"
+).json("data.json")
+
+# Example 4: Programmatic schema inspection
+for field in df.schema.fields:
+    print(f"{field.name}: {field.dataType} (nullable={field.nullable})")
+```
+
+### Pitfalls
+- `schema.json()` includes full metadata — `simpleString()` is more compact but lossy
+- `StructType.fromJson()` expects a dict — use `json.loads()` on the JSON string first
+- Schema equality checks field names, types, AND nullability — all must match
+- Schema JSON format changed between Spark 2.x and 3.x — verify compatibility
