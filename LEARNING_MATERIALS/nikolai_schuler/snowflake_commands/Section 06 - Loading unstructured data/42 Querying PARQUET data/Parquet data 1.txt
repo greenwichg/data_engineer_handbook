@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION 6.42: QUERYING PARQUET DATA FROM STAGE (Parquet Part 1)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows how to query Parquet files directly from
+--   a stage using $1:column notation, type casting, and aliases.
+-- KEY INTERVIEW CONCEPTS:
+--   - FILE FORMAT TYPE='parquet' for Parquet ingestion
+--   - $1:column_name to access Parquet fields from staged files
+--   - Type casting (::INT, ::VARCHAR) on Parquet columns
+--   - SELECT * FROM @stage to preview staged Parquet data
+--   - File format can be set on stage or passed in query
+-- REMEMBER: Parquet is columnar and self-describing. Unlike CSV,
+--   you reference columns by name ($1:col), not just position.
+-- ============================================================
 
     // Create file format and stage object
     

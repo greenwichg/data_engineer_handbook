@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Loading Data from S3
+-- ============================================================
+-- LEARNING NOTES:
+--   Demonstrates end-to-end CSV loading from S3: create table, file format,
+--   stage with STORAGE_INTEGRATION, and COPY INTO.
+-- KEY INTERVIEW CONCEPTS:
+--   - Stage object references integration + URL + file format
+--   - File format options: FIELD_DELIMITER, SKIP_HEADER, NULL_IF, FIELD_OPTIONALLY_ENCLOSED_BY
+--   - COPY INTO is the primary bulk loading command in Snowflake
+-- REMEMBER:
+--   - STORAGE_INTEGRATION on the stage avoids embedding credentials
+--   - FIELD_OPTIONALLY_ENCLOSED_BY handles quoted CSV fields with commas inside
+-- ============================================================
+
 // Create table first
 CREATE OR REPLACE TABLE OUR_FIRST_DB.PUBLIC.movie_titles (
   show_id STRING,

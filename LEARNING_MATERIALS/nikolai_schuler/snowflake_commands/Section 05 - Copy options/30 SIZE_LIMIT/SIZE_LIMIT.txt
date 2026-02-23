@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION 5.30: SIZE_LIMIT OPTION
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates the SIZE_LIMIT option, which caps
+--   the total bytes loaded per COPY command execution.
+-- KEY INTERVIEW CONCEPTS:
+--   - SIZE_LIMIT = n (value in bytes, not rows)
+--   - Snowflake finishes loading the current file even if limit
+--     is exceeded, then stops loading additional files
+--   - Useful for incremental/throttled data loading
+-- REMEMBER: SIZE_LIMIT does not split files -- it only controls
+--   how many files are loaded. A single large file loads fully.
+-- ============================================================
 
 
 ---- SIZE_LIMIT ----

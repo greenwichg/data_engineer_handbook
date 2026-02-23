@@ -1,3 +1,19 @@
+-- =============================================================
+-- SECTION 12: USING TIME TRAVEL
+-- =============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how to query historical data using
+--   Snowflake's Time Travel feature with three methods:
+--   1) AT(OFFSET => -seconds) to go back a relative time
+--   2) BEFORE(TIMESTAMP => '...'::timestamp) for a specific point in time
+--   3) BEFORE(STATEMENT => 'query-id') to retrieve data before a query ran
+-- KEY INTERVIEW CONCEPTS:
+--   - Time travel allows querying data as it existed in the past
+--   - OFFSET uses seconds (negative value); TIMESTAMP uses exact datetime
+--   - BEFORE(STATEMENT) uses a query ID to reference a specific change
+-- REMEMBER: Default retention is 1 day; Enterprise Edition supports up to 90 days
+-- =============================================================
+
 // Setting up table
 
 CREATE OR REPLACE TABLE OUR_FIRST_DB.public.test (

@@ -1,4 +1,20 @@
-// Publicly accessible staging area    
+-- ============================================================
+-- SECTION: Clustering Keys (Practice)
+-- ============================================================
+-- LEARNING NOTES:
+--   Demonstrates how clustering keys improve query pruning on large tables.
+--   Shows adding cluster keys on columns and expressions (e.g., MONTH(DATE)).
+-- KEY INTERVIEW CONCEPTS:
+--   - CLUSTER BY defines the clustering key for micro-partition ordering
+--   - SYSTEM$CLUSTERING_INFORMATION shows clustering depth and overlap
+--   - Snowflake automatically re-clusters in the background (no manual rebuild)
+--   - Best for large tables (multi-TB) with frequent filters on specific columns
+-- REMEMBER:
+--   - Clustering keys have maintenance costs (credit usage for re-clustering)
+--   - Choose columns frequently used in WHERE clauses and JOIN conditions
+-- ============================================================
+
+// Publicly accessible staging area
 
 CREATE OR REPLACE STAGE MANAGE_DB.external_stages.aws_stage
     url='s3://bucketsnowflakes3';

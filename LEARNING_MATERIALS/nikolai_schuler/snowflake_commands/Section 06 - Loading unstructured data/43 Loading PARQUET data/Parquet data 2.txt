@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION 6.43: LOADING PARQUET DATA INTO TABLE (Parquet Part 2)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates COPY INTO from Parquet with column
+--   mapping, metadata injection, and destination table creation.
+-- KEY INTERVIEW CONCEPTS:
+--   - COPY INTO with SELECT subquery for Parquet column mapping
+--   - METADATA$FILENAME and METADATA$FILE_ROW_NUMBER for lineage
+--   - TO_TIMESTAMP_NTZ(current_timestamp) for load audit columns
+--   - CREATE TABLE with DEFAULT for auto-populated load timestamps
+-- REMEMBER: METADATA$ columns are only available during COPY/query
+--   from stage. Store them explicitly if needed for auditing.
+-- ============================================================
 
     // Adding metadata
     

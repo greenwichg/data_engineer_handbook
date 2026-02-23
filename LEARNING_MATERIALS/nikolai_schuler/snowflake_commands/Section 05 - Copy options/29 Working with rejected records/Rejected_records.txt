@@ -1,4 +1,20 @@
-   
+-- ============================================================
+-- SECTION 5.29: WORKING WITH REJECTED RECORDS
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows how to capture and parse rejected records
+--   using VALIDATION_MODE, result_scan(), validate(), and
+--   SPLIT_PART to extract individual field values from errors.
+-- KEY INTERVIEW CONCEPTS:
+--   - result_scan(last_query_id()) to capture validation output
+--   - validate(table, job_id => '_last') after ON_ERROR=CONTINUE
+--   - CREATE TABLE AS SELECT from result_scan for error storage
+--   - SPLIT_PART(rejected_record, ',', n) to parse CSV error rows
+-- REMEMBER: result_scan() only works for the most recent query.
+--   Save rejected records immediately or they will be lost.
+-- ============================================================
+
+
 ---- Use files with errors ----
 CREATE OR REPLACE STAGE COPY_DB.PUBLIC.aws_stage_copy
     url='s3://snowflakebucket-copyoption/returnfailed/';
@@ -83,7 +99,7 @@ SELECT
 SPLIT_PART(rejected_record,',',1) as ORDER_ID, 
 SPLIT_PART(rejected_record,',',2) as AMOUNT, 
 SPLIT_PART(rejected_record,',',3) as PROFIT, 
-SPLIT_PART(rejected_record,',',4) as QUATNTITY, 
+SPLIT_PART(rejected_record,',',4) as QUANTITY, 
 SPLIT_PART(rejected_record,',',5) as CATEGORY, 
 SPLIT_PART(rejected_record,',',6) as SUBCATEGORY
 FROM rejected; 

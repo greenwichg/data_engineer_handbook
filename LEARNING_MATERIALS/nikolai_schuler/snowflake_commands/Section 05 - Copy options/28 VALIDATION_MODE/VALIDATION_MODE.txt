@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION 5.28: VALIDATION_MODE (Dry-Run Validation)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates VALIDATION_MODE, which lets you
+--   validate staged data without actually loading it into tables.
+-- KEY INTERVIEW CONCEPTS:
+--   - VALIDATION_MODE = RETURN_ERRORS (returns all error rows)
+--   - VALIDATION_MODE = RETURN_n_ROWS (returns first n rows as preview)
+--   - No data is loaded when VALIDATION_MODE is used
+--   - Useful for pre-flight checks before production loads
+-- REMEMBER: VALIDATION_MODE and COPY INTO are mutually exclusive
+--   actions -- data is never inserted when validating.
+-- ============================================================
+
 ---- VALIDATION_MODE ----
 // Prepare database & table
 CREATE OR REPLACE DATABASE COPY_DB;

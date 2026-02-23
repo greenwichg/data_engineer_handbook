@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION: Load JSON from Azure Blob Storage
+-- ============================================================
+-- LEARNING NOTES:
+--   Demonstrates loading JSON from Azure: direct COPY with transformation
+--   and the alternative raw VARIANT table approach with INSERT INTO SELECT.
+-- KEY INTERVIEW CONCEPTS:
+--   - $1:"key" (colon notation with quotes) for keys containing spaces/special chars
+--   - Raw VARIANT table pattern: load first, transform later via INSERT INTO SELECT
+--   - FLATTEN function (not shown here) is used for nested/array JSON structures
+-- REMEMBER:
+--   - Two loading strategies: transform-on-load (COPY subquery) vs load-then-transform (raw table)
+--   - Raw VARIANT approach is more flexible for evolving JSON schemas
+-- ============================================================
 
 --- Load JSON ----
 

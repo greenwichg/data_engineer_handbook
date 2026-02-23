@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION 5.31: RETURN_FAILED_ONLY OPTION
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows RETURN_FAILED_ONLY=TRUE, which filters
+--   the COPY command output to show only files that had errors.
+-- KEY INTERVIEW CONCEPTS:
+--   - RETURN_FAILED_ONLY = TRUE (only error files in output)
+--   - Default is FALSE (all files shown in COPY result)
+--   - Best combined with ON_ERROR=CONTINUE to see which files failed
+--   - Helps quickly identify problematic source files
+-- REMEMBER: This option controls COPY output metadata only --
+--   it does not change how errors are handled (use ON_ERROR for that).
+-- ============================================================
 
 
 ---- RETURN_FAILED_ONLY ----

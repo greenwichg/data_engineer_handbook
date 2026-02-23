@@ -1,4 +1,19 @@
-// Second step: Parse & Analyse Raw JSON 
+-- ============================================================
+-- SECTION 6.38: PARSING JSON DATA (JSON Part 2)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section teaches how to query JSON stored in VARIANT
+--   columns using colon notation and type casting.
+-- KEY INTERVIEW CONCEPTS:
+--   - Colon notation: RAW_FILE:key to access JSON fields
+--   - $1:key as alternative syntax for positional + key access
+--   - Type casting with ::STRING, ::INT for proper data types
+--   - Selecting multiple JSON attributes into a structured result
+-- REMEMBER: Without ::TYPE casting, values remain as VARIANT.
+--   Always cast to the appropriate type for joins and aggregations.
+-- ============================================================
+
+// Second step: Parse & Analyse Raw JSON
 
    // Selecting attribute/column
 

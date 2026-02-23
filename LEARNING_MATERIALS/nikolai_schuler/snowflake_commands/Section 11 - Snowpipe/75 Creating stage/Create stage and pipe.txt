@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION: Snowpipe Setup (Stage, Table, and Pipe)
+-- ============================================================
+-- LEARNING NOTES:
+--   Walks through the full Snowpipe setup: target table, file format,
+--   stage, and pipe with auto_ingest for continuous loading.
+-- KEY INTERVIEW CONCEPTS:
+--   - Snowpipe enables continuous, event-driven loading (not batch)
+--   - auto_ingest = TRUE triggers loading via S3 event notifications (SQS)
+--   - DESC PIPE reveals the notification_channel (SQS ARN) to configure in S3
+--   - Pipe definition wraps a COPY INTO statement
+-- REMEMBER:
+--   - Snowpipe uses a serverless compute model (no warehouse needed)
+--   - The SQS notification_channel must be set as the S3 event destination
+-- ============================================================
+
 // Create table first
 CREATE OR REPLACE TABLE OUR_FIRST_DB.PUBLIC.employees (
   id INT,

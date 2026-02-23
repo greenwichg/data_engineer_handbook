@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION 4.25: FILE FORMAT OBJECTS
+-- ============================================================
+-- LEARNING NOTES:
+--   This section teaches how to create reusable file format objects
+--   instead of inline format specs. Covers CREATE, ALTER, DESC,
+--   overriding properties at COPY time, and CSV vs JSON types.
+-- KEY INTERVIEW CONCEPTS:
+--   - CREATE FILE FORMAT with TYPE=CSV/JSON and properties
+--   - FORMAT_NAME= reference in COPY command
+--   - ALTER FILE FORMAT to change properties (cannot change TYPE)
+--   - Overriding file format properties inline in COPY command
+--   - DESC FILE FORMAT to inspect current settings
+-- REMEMBER: You cannot ALTER the TYPE of a file format -- you
+--   must recreate it. Inline overrides do not change the object.
+-- ============================================================
 
 // Specifying file_format in Copy command
 COPY INTO OUR_FIRST_DB.PUBLIC.ORDERS_EX

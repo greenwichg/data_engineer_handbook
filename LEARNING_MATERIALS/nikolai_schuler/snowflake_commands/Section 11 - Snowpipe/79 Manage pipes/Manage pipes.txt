@@ -1,4 +1,20 @@
--- Manage pipes -- 
+-- ============================================================
+-- SECTION: Manage Pipes (Snowpipe)
+-- ============================================================
+-- LEARNING NOTES:
+--   Demonstrates pipe lifecycle management: listing, pausing, altering,
+--   refreshing, and resuming pipes.
+-- KEY INTERVIEW CONCEPTS:
+--   - SHOW PIPES lists pipes with filters (LIKE, IN DATABASE/SCHEMA)
+--   - SYSTEM$PIPE_STATUS() checks execution state and pending files
+--   - ALTER PIPE SET PIPE_EXECUTION_PAUSED = true/false to pause/resume
+--   - To change a pipe definition, pause it, recreate, then resume
+-- REMEMBER:
+--   - Always pause a pipe and verify pendingFileCount = 0 before modifying
+--   - After recreating a pipe, use REFRESH or manual COPY for existing files
+-- ============================================================
+
+-- Manage pipes --
 
 DESC pipe MANAGE_DB.pipes.employee_pipe;
 

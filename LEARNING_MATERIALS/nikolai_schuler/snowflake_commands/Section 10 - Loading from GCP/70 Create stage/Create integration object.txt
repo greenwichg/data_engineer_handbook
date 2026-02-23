@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Create Storage Integration (GCP)
+-- ============================================================
+-- LEARNING NOTES:
+--   Shows how to create a storage integration for Google Cloud Storage (GCS).
+--   The pattern is similar to AWS/Azure but uses GCS-specific provider and URLs.
+-- KEY INTERVIEW CONCEPTS:
+--   - STORAGE_PROVIDER = GCS for Google Cloud Storage buckets
+--   - STORAGE_ALLOWED_LOCATIONS uses gcs:// URL scheme
+--   - DESC INTEGRATION reveals the service account to grant access in GCS IAM
+-- REMEMBER:
+--   - After creation, grant the Snowflake service account Storage Object Viewer role in GCS
+--   - Integration objects are reusable across multiple stages
+-- ============================================================
+
 -- create integration object that contains the access information
 CREATE STORAGE INTEGRATION gcp_integration
   TYPE = EXTERNAL_STAGE

@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION: Load CSV from Azure Blob Storage
+-- ============================================================
+-- LEARNING NOTES:
+--   Shows querying staged CSV files with positional notation ($1, $2, ...)
+--   and loading them into a Snowflake table using COPY INTO.
+-- KEY INTERVIEW CONCEPTS:
+--   - $1..$N positional column references for staged CSV data
+--   - COPY INTO loads data from stage to table in bulk
+--   - Column transformations can be applied during COPY via a subquery
+-- REMEMBER:
+--   - Table column types must match the data being loaded
+--   - COPY INTO tracks loaded files to prevent duplicate loading by default
+-- ============================================================
 
 ---- Query files & Load data ----
 

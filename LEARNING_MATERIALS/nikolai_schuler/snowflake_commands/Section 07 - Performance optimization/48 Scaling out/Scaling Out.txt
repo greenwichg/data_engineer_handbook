@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Scaling Out (Multi-Cluster Warehouses)
+-- ============================================================
+-- LEARNING NOTES:
+--   Demonstrates scaling out to handle high concurrency by adding
+--   clusters to a warehouse (multi-cluster warehouse).
+-- KEY INTERVIEW CONCEPTS:
+--   - Scaling OUT = more clusters (concurrency) vs Scaling UP = bigger warehouse (complex queries)
+--   - MIN_CLUSTER_COUNT and MAX_CLUSTER_COUNT control auto-scaling
+--   - SCALING_POLICY: STANDARD (adds clusters conservatively) vs ECONOMY (cost-saving)
+-- REMEMBER:
+--   - Multi-cluster warehouses are an Enterprise Edition+ feature
+--   - Scaling out helps when many users queue queries, not when a single query is slow
+-- ============================================================
+
 SELECT * FROM SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.WEB_SITE T1
 CROSS JOIN SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.WEB_SITE T2
 CROSS JOIN SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.WEB_SITE T3

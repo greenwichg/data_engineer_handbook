@@ -67,7 +67,7 @@ SET JOB = 'Snowflake Analyst'
 
 
 // Using time travel: Method 2 - before Query
-SELECT * FROM OUR_FIRST_DB.public.time_travel_clone before (statement => '<your-query-id>)
+SELECT * FROM OUR_FIRST_DB.public.time_travel_clone before (statement => '<your-query-id>')
 
 CREATE OR REPLACE TABLE OUR_FIRST_DB.PUBLIC.time_travel_clone_of_clone
 CLONE OUR_FIRST_DB.public.time_travel_clone before (statement => '<your-query-id>')

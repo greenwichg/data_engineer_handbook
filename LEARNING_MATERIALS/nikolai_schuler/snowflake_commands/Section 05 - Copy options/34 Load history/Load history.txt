@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION 5.34: QUERYING LOAD HISTORY
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows two ways to query load history:
+--   INFORMATION_SCHEMA (database-level) and ACCOUNT_USAGE (global).
+-- KEY INTERVIEW CONCEPTS:
+--   - information_schema.load_history (current DB, real-time, 14 days)
+--   - snowflake.account_usage.load_history (all DBs, up to 365 days)
+--   - ACCOUNT_USAGE has ~45 min latency vs real-time for INFO_SCHEMA
+--   - Filter by schema_name, table_name, error_count, date
+-- REMEMBER: INFORMATION_SCHEMA is scoped to the current database.
+--   Use ACCOUNT_USAGE for cross-database or long-term audit queries.
+-- ============================================================
 
 -- Query load history within a database --
 
