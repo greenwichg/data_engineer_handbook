@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 22.3: SYSADMIN IN PRACTICE
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows how SYSADMIN creates and manages
+--   warehouses, databases, and grants ownership of database
+--   objects to custom roles for departmental autonomy.
+-- KEY INTERVIEW CONCEPTS:
+--   - SYSADMIN creates and manages all warehouses and databases
+--   - GRANT OWNERSHIP transfers full control of objects to custom roles
+--   - SYSADMIN can grant warehouse usage to the PUBLIC role for broad access
+--   - auto_suspend and auto_resume on warehouses control cost management
+--   - SYSADMIN can only manage objects owned by roles in its hierarchy
+--   - Ownership transfer includes databases and their schemas
+--   - The PUBLIC role is automatically granted to every user in the account
+-- REMEMBER: SYSADMIN is the "infrastructure admin" -- it creates
+--   warehouses and databases, then transfers ownership to department
+--   roles. It does NOT manage users or security policies.
+-- ============================================================
+
 -- SYSADMIN --
 
 -- Create a warehouse of size X-SMALL

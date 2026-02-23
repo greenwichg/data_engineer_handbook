@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 22.4: CUSTOM ROLES IN PRACTICE
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how custom roles (e.g., SALES_ADMIN,
+--   SALES_USERS) operate in practice -- creating tables, granting
+--   granular privileges, and validating access controls.
+-- KEY INTERVIEW CONCEPTS:
+--   - Custom roles enable granular, least-privilege access control
+--   - GRANT SELECT allows read-only access; GRANT DELETE allows row deletion
+--   - Privilege grants are explicit: USAGE on database, USAGE on schema, SELECT on table
+--   - Role admins (SALES_ADMIN) manage privileges for their department users
+--   - Users can only perform actions allowed by their current role's privileges
+--   - DROP TABLE requires OWNERSHIP privilege, not just DELETE
+--   - Three-level grant pattern: DATABASE usage -> SCHEMA usage -> TABLE privileges
+-- REMEMBER: In Snowflake RBAC, privileges are never implicit. You must
+--   grant USAGE on the database AND schema before any table-level
+--   privileges will work -- a common pitfall in interviews.
+-- ============================================================
+
 USE ROLE SALES_ADMIN;
 USE SALES_DATABASE;
 

@@ -1,6 +1,24 @@
+-- ============================================================
+-- SECTION 21.3: ALTERING EXISTING MASKING POLICIES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows how to modify the body of an existing
+--   masking policy using ALTER MASKING POLICY without needing
+--   to drop and recreate it or unset it from columns.
+-- KEY INTERVIEW CONCEPTS:
+--   - ALTER MASKING POLICY ... SET BODY modifies the policy logic in place
+--   - No need to unset/re-apply the policy when using ALTER to change the body
+--   - This is more efficient than DROP/RECREATE for updating mask expressions
+--   - The altered policy takes effect immediately on all columns where it is applied
+--   - UNSET MASKING POLICY is still needed to fully remove a policy from a column
+--   - ALTER vs REPLACE: ALTER modifies in place; REPLACE requires unset-drop-recreate cycle
+-- REMEMBER: Use ALTER MASKING POLICY SET BODY to update masking logic
+--   without the hassle of unsetting from all columns -- changes apply
+--   instantly wherever the policy is attached.
+-- ============================================================
 
 
--- Alter existing policies 
+-- Alter existing policies
 
 USE ROLE ANALYST_MASKED;
 SELECT * FROM CUSTOMERS;

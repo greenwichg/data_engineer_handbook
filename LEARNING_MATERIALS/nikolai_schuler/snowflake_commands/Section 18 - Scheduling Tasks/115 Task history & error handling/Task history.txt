@@ -1,3 +1,27 @@
+-- ============================================================
+-- SECTION 18.5: TASK HISTORY AND ERROR HANDLING
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers how to monitor task execution using
+--   the TASK_HISTORY() table function in INFORMATION_SCHEMA,
+--   including filtering by time range and task name.
+-- KEY INTERVIEW CONCEPTS:
+--   - INFORMATION_SCHEMA.TASK_HISTORY() returns execution
+--     history including status, scheduled time, and errors.
+--   - Filter by task name using task_name => 'TASK_NAME'.
+--   - Filter by time range using scheduled_time_range_start
+--     and scheduled_time_range_end parameters.
+--   - DATEADD('hour', -n, CURRENT_TIMESTAMP()) is useful for
+--     looking back at recent task runs.
+--   - Task states include SUCCEEDED, FAILED, SKIPPED, and
+--     CANCELLED -- monitor these for pipeline health.
+--   - result_limit controls max rows returned from history.
+--   - This is critical for debugging failed pipelines and
+--     building operational monitoring dashboards.
+-- REMEMBER: Always check TASK_HISTORY() when debugging --
+--   it shows whether tasks ran, succeeded, or failed and why.
+-- ============================================================
+
 SHOW TASKS;
 
 

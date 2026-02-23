@@ -1,3 +1,22 @@
+-- ============================================================
+-- SECTION 21.2: UNSETTING AND REPLACING MASKING POLICIES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers how to unset (remove) masking policies
+--   from columns, replace existing policies with new ones, and
+--   use metadata functions to inspect applied policies.
+-- KEY INTERVIEW CONCEPTS:
+--   - UNSET MASKING POLICY removes a policy from a column without dropping it
+--   - You must UNSET a policy before you can DROP or REPLACE it if it is in use
+--   - DESC MASKING POLICY shows the policy definition details
+--   - SHOW MASKING POLICIES lists all masking policies in the current schema
+--   - information_schema.policy_references() shows which columns use a policy
+--   - A masking policy can be applied to multiple columns of the same data type
+--   - Replacing a policy requires unsetting it from all columns first
+-- REMEMBER: You cannot drop or replace a masking policy while it is
+--   attached to any column -- always UNSET first, then DROP/REPLACE,
+--   then re-apply the new policy.
+-- ============================================================
 
  #### More examples  #####
 

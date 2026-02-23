@@ -1,3 +1,22 @@
+-- ============================================================
+-- SECTION 20.3: MATERIALIZED VIEW MAINTENANCE COSTS
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers how to monitor the maintenance costs
+--   associated with materialized views, including credit usage
+--   for background refresh operations managed by Snowflake.
+-- KEY INTERVIEW CONCEPTS:
+--   - Materialized views incur storage costs (for storing precomputed results)
+--   - Background refresh consumes Snowflake-managed compute credits (not your warehouse)
+--   - SHOW MATERIALIZED VIEWS displays view metadata and refresh state
+--   - information_schema.materialized_view_refresh_history() tracks refresh costs
+--   - Cost is proportional to the frequency of base table changes
+--   - Best practice: only use materialized views when query performance gains justify costs
+--   - Avoid materialized views on tables with very frequent DML operations
+-- REMEMBER: Materialized views have a triple cost -- storage for results,
+--   compute credits for automatic refresh, and cloud services overhead.
+--   Always weigh performance gains against these ongoing costs.
+-- ============================================================
 
 SHOW MATERIALIZED VIEWS;
 

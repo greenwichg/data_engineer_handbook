@@ -1,3 +1,28 @@
+-- ============================================================
+-- SECTION 19.5: COMBINING STREAMS AND TASKS FOR AUTOMATION
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates the powerful pattern of combining
+--   streams with tasks to build fully automated, incremental
+--   data pipelines that process changes on a schedule.
+-- KEY INTERVIEW CONCEPTS:
+--   - SYSTEM$STREAM_HAS_DATA('stream_name') returns TRUE when
+--     the stream has unconsumed changes -- use it in the WHEN
+--     clause to skip unnecessary task executions.
+--   - Pattern: CREATE TASK ... WHEN SYSTEM$STREAM_HAS_DATA(...)
+--     AS MERGE INTO ... USING stream ...
+--   - This avoids wasting compute credits when no changes exist.
+--   - The task + stream + MERGE combo is Snowflake's native
+--     approach to automated incremental ELT pipelines.
+--   - TASK_HISTORY() lets you verify that the automated
+--     pipeline executed successfully after data changes.
+--   - This pattern replaces traditional ETL tools for many
+--     use cases, keeping all logic within Snowflake.
+--   - The WHEN clause is evaluated before the warehouse starts,
+--     so no credits are consumed if the stream is empty.
+-- REMEMBER: SYSTEM$STREAM_HAS_DATA() in the WHEN clause is
+--   the key to cost-efficient automated CDC pipelines.
+-- ============================================================
 
 
 ------- Automatate the updates using tasks --
@@ -8,7 +33,7 @@ CREATE OR REPLACE TASK all_data_changes
     WAREHOUSE = COMPUTE_WH
     SCHEDULE = '1 MINUTE'
     WHEN SYSTEM$STREAM_HAS_DATA('SALES_STREAM')
-    AS 
+    AS
 merge into SALES_FINAL_TABLE F      -- Target table to merge changes from source table
 USING ( SELECT STRE.*,ST.location,ST.employees
         FROM SALES_STREAM STRE
@@ -17,20 +42,20 @@ USING ( SELECT STRE.*,ST.location,ST.employees
        ) S
 ON F.id=S.id
 when matched                        -- DELETE condition
-    and S.METADATA$ACTION ='DELETE' 
+    and S.METADATA$ACTION ='DELETE'
     and S.METADATA$ISUPDATE = 'FALSE'
-    then delete                   
+    then delete
 when matched                        -- UPDATE condition
-    and S.METADATA$ACTION ='INSERT' 
-    and S.METADATA$ISUPDATE  = 'TRUE'       
-    then update 
+    and S.METADATA$ACTION ='INSERT'
+    and S.METADATA$ISUPDATE  = 'TRUE'
+    then update
     set f.product = s.product,
         f.price = s.price,
         f.amount= s.amount,
         f.store_id=s.store_id
-when not matched 
+when not matched
     and S.METADATA$ACTION ='INSERT'
-    then insert 
+    then insert
     (id,product,price,store_id,amount,employees,location)
     values
     (s.id, s.product,s.price,s.store_id,s.amount,s.employees,s.location)
@@ -48,14 +73,14 @@ INSERT INTO SALES_RAW_STAGING VALUES (13,'Cheese',3.89,1,1);
 UPDATE SALES_RAW_STAGING
 SET PRODUCT = 'Chocolate bar'
 WHERE PRODUCT ='Chocolate';
-       
+
 DELETE FROM SALES_RAW_STAGING
-WHERE PRODUCT = 'Mango';    
+WHERE PRODUCT = 'Mango';
 
 
 // Verify results
-SELECT * FROM SALES_RAW_STAGING;     
-        
+SELECT * FROM SALES_RAW_STAGING;
+
 SELECT * FROM SALES_STREAM;
 
 SELECT * FROM SALES_FINAL_TABLE;

@@ -1,3 +1,20 @@
+-- ============================================================
+-- SECTION 16.100: CREATING A READER ACCOUNT
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers creating managed reader accounts for
+--   sharing data with consumers who don't have a Snowflake account.
+--   Includes setting up warehouses, users, and granting privileges.
+-- KEY INTERVIEW CONCEPTS:
+--   - CREATE MANAGED ACCOUNT with TYPE=READER for non-SF consumers
+--   - ALTER SHARE ADD ACCOUNT to grant share access to reader
+--   - SHARE_RESTRICTIONS=false for cross-region/cloud sharing
+--   - CREATE DATABASE FROM SHARE to consume shared data
+--   - GRANT IMPORTED PRIVILEGES for reader account users
+-- REMEMBER: Reader accounts are managed by the provider and
+--   incur compute costs on the provider's account. The provider
+--   must create the warehouse for the reader.
+-- ============================================================
 
 -- Create Reader Account --
 

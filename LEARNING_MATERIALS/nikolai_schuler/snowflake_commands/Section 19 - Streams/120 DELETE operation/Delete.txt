@@ -1,29 +1,52 @@
+-- ============================================================
+-- SECTION 19.3: STREAMS - DELETE OPERATION
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how Snowflake Streams capture
+--   DELETE operations and how to use MERGE to propagate
+--   deletions from a staging table into a final target table.
+-- KEY INTERVIEW CONCEPTS:
+--   - Deleted rows appear in the stream with METADATA$ACTION
+--     = 'DELETE' and METADATA$ISUPDATE = 'FALSE'.
+--   - MERGE with WHEN MATCHED ... THEN DELETE is used to
+--     apply delete changes from the stream to the target.
+--   - Distinguishing deletes from updates: true deletes have
+--     METADATA$ISUPDATE = 'FALSE', while update-related
+--     deletes have METADATA$ISUPDATE = 'TRUE'.
+--   - This pattern is critical for keeping target tables in
+--     sync with source tables in CDC pipelines.
+--   - After the MERGE consumes the stream, deleted records
+--     are removed from the target and the stream resets.
+-- REMEMBER: True DELETE = METADATA$ACTION='DELETE' AND
+--   METADATA$ISUPDATE='FALSE'. This distinguishes it from
+--   the DELETE half of an UPDATE operation.
+-- ============================================================
 
 
-        
--- ******* DELETE  ********        
-        
-        
+
+-- ******* DELETE  ********
+
+
 SELECT * FROM SALES_FINAL_TABLE
 
-SELECT * FROM SALES_RAW_STAGING;     
-        
-SELECT * FROM SALES_STREAM;    
+SELECT * FROM SALES_RAW_STAGING;
+
+SELECT * FROM SALES_STREAM;
 
 DELETE FROM SALES_RAW_STAGING
 WHERE PRODUCT = 'Lemon';
-        
-        
-        
-        
--- ******* Process stream  ********            
 
-        
+
+
+
+-- ******* Process stream  ********
+
+
 merge into SALES_FINAL_TABLE F      -- Target table to merge changes from source table
 using SALES_STREAM S                -- Stream that has captured the changes
-   on  f.id = s.id          
-when matched 
-    and S.METADATA$ACTION ='DELETE' 
+   on  f.id = s.id
+when matched
+    and S.METADATA$ACTION ='DELETE'
     and S.METADATA$ISUPDATE = 'FALSE'
-    then delete               
-        
+    then delete
+

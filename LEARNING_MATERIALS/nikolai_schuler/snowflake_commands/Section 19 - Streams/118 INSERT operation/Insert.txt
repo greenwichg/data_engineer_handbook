@@ -1,3 +1,29 @@
+-- ============================================================
+-- SECTION 19.1: STREAMS - INSERT OPERATION (CHANGE DATA CAPTURE)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section introduces Snowflake Streams for Change Data
+--   Capture (CDC). It demonstrates creating a stream on a staging
+--   table, detecting INSERT changes, and consuming the stream
+--   to propagate new rows into a final/reporting table.
+-- KEY INTERVIEW CONCEPTS:
+--   - Streams track DML changes (INSERT, UPDATE, DELETE) on a
+--     source table without additional storage cost.
+--   - CREATE STREAM ... ON TABLE creates a CDC stream object.
+--   - Querying a stream shows only unconsumed changes since
+--     the last DML transaction that consumed the stream.
+--   - Consuming a stream (using it in DML like INSERT INTO ...
+--     SELECT FROM stream) advances the stream offset and
+--     clears the tracked changes.
+--   - Streams enable incremental/delta processing -- only new
+--     data is processed, not the entire table each time.
+--   - SHOW STREAMS and DESC STREAM reveal stream metadata
+--     including the current offset and staleness.
+--   - Streams are the foundation of Snowflake's CDC pattern
+--     for building efficient ELT pipelines.
+-- REMEMBER: A stream is consumed (reset) when its data is used
+--   in a DML statement within a transaction -- query it first!
+-- ============================================================
 
 -------------------- Stream example: INSERT ------------------------
 CREATE OR REPLACE TRANSIENT DATABASE STREAMS_DB;

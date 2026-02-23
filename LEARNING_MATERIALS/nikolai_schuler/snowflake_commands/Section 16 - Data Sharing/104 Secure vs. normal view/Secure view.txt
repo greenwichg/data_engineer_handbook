@@ -1,3 +1,22 @@
+-- ============================================================
+-- SECTION 16.4: SECURE VIEWS VS. NORMAL VIEWS
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates the difference between regular views
+--   and secure views in Snowflake. It covers creating both types,
+--   granting access via roles, and understanding why secure views
+--   are essential for data sharing.
+-- KEY INTERVIEW CONCEPTS:
+--   - Regular views expose their DDL definition to users with access
+--   - Secure views (CREATE SECURE VIEW) hide the view definition and query logic
+--   - Secure views prevent users from reverse-engineering filter conditions or business logic
+--   - The SHOW VIEWS command displays an "is_secure" flag to identify secure views
+--   - Secure views are required for sharing data via Snowflake Data Sharing
+--   - Normal views shared via Data Sharing will fail; only secure views are allowed
+--   - Secure views may have slightly different query optimization behavior
+-- REMEMBER: Always use SECURE views when sharing data externally. Regular views
+--   leak their SQL definition, which could expose sensitive filter logic.
+-- ============================================================
 
 -- Create database & table --
 CREATE OR REPLACE DATABASE CUSTOMER_DB;

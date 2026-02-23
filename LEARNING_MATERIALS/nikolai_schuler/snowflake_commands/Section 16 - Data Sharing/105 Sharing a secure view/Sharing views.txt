@@ -1,3 +1,22 @@
+-- ============================================================
+-- SECTION 16.5: SHARING VIEWS VIA DATA SHARING
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how to share views (both regular and
+--   secure) through Snowflake's Data Sharing mechanism. It shows
+--   creating a share object, granting the necessary privileges, and
+--   adding a consumer account.
+-- KEY INTERVIEW CONCEPTS:
+--   - Shares can include views (not just tables) to expose curated subsets of data
+--   - Only SECURE views can be successfully shared; regular views will cause errors for consumers
+--   - The grant chain for sharing views: DATABASE usage -> SCHEMA usage -> VIEW select
+--   - Sharing views allows providers to control exactly which columns and rows consumers see
+--   - ALTER SHARE ... ADD ACCOUNT is used to authorize a consumer account
+--   - This pattern enables multi-tenant data delivery from a single source of truth
+-- REMEMBER: When sharing views, always use SECURE views. Sharing a non-secure
+--   view will result in an error when the consumer tries to create a database from the share.
+-- ============================================================
+
 SHOW SHARES;
 
 // Create share object
