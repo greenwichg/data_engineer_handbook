@@ -1,4 +1,18 @@
-  
+-- ============================================================
+-- SECTION: Create Stage Object (Azure)
+-- ============================================================
+-- LEARNING NOTES:
+--   Demonstrates creating file format and stage objects for Azure Blob Storage.
+--   The stage combines integration, URL, and file format into one object.
+-- KEY INTERVIEW CONCEPTS:
+--   - Stage object = integration + cloud URL + file format reference
+--   - FILE_FORMAT can be defined inline or as a named object
+--   - LIST @stage verifies connectivity and shows available files
+-- REMEMBER:
+--   - The stage URL must fall within STORAGE_ALLOWED_LOCATIONS of the integration
+--   - Named file format objects promote reuse across multiple stages/COPY commands
+-- ============================================================
+
 ---- Create file format & stage objects ----
 
 -- create file format

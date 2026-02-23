@@ -1,3 +1,27 @@
+-- ============================================================
+-- SECTION 18.4: CALLING A STORED PROCEDURE FROM A TASK
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how to invoke a stored procedure
+--   from a Snowflake task, combining procedural logic with
+--   scheduled automation.
+-- KEY INTERVIEW CONCEPTS:
+--   - Tasks can call stored procedures using AS CALL syntax.
+--   - Stored procedures enable parameterized, reusable logic
+--     (e.g., passing CURRENT_TIMESTAMP as an argument).
+--   - JavaScript-based stored procedures use snowflake.execute()
+--     with bind variables (:1, :2, etc.) for safe SQL execution.
+--   - Combining tasks + stored procedures is a common pattern
+--     for production ETL: tasks handle scheduling, procedures
+--     handle complex transformation logic.
+--   - Stored procedures can return status strings for logging
+--     and debugging (e.g., "Successfully executed.").
+--   - This pattern is preferred over embedding complex SQL
+--     directly in task definitions for maintainability.
+-- REMEMBER: Use AS CALL <procedure>(args) in your task
+--   definition to invoke a stored procedure on schedule.
+-- ============================================================
+
 // Create a stored procedure
 USE TASK_DB;
 

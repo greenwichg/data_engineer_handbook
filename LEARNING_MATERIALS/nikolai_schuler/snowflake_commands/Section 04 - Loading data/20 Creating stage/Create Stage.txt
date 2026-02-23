@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION 4.20: CREATING EXTERNAL STAGES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers creating and managing external stage objects
+--   that point to S3 buckets, with and without credentials.
+-- KEY INTERVIEW CONCEPTS:
+--   - CREATE STAGE with url and credentials (aws_key_id, aws_secret_key)
+--   - ALTER STAGE to update credentials
+--   - Public vs private stages (no credentials = public bucket)
+--   - LIST @stage to view files in the external location
+-- REMEMBER: Stages decouple storage location from COPY commands,
+--   making data pipelines more maintainable and reusable.
+-- ============================================================
+
 // Database to manage stage objects, fileformats etc.
 
 CREATE OR REPLACE DATABASE MANAGE_DB;

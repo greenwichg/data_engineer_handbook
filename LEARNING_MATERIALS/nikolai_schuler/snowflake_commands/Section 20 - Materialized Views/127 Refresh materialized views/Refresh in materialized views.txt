@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 20.2: REFRESHING MATERIALIZED VIEWS
+-- ============================================================
+-- LEARNING NOTES:
+--   This section explores how materialized views are refreshed
+--   in Snowflake, including automatic refresh after DML changes
+--   and how to inspect refresh history using information_schema.
+-- KEY INTERVIEW CONCEPTS:
+--   - Snowflake refreshes materialized views automatically (no manual REFRESH needed)
+--   - Refresh is triggered by DML operations (INSERT, UPDATE, DELETE) on base tables
+--   - Use information_schema.materialized_view_refresh_history() to monitor refreshes
+--   - Refresh happens in the background using Snowflake-managed compute resources
+--   - There is a slight delay between base table changes and materialized view update
+--   - Unlike other platforms, Snowflake does NOT support manual/on-demand refresh
+--   - The refresh process is incremental, not a full recomputation
+-- REMEMBER: Snowflake handles materialized view refresh automatically and
+--   incrementally -- you cannot manually trigger a refresh, but you can
+--   monitor refresh history via information_schema.
+-- ============================================================
+
 -- Remove caching just to have a fair test -- Part 2
 
 ALTER SESSION SET USE_CACHED_RESULT=FALSE; -- disable global caching

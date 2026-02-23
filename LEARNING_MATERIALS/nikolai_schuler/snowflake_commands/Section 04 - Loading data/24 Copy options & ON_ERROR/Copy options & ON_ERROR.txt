@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION 4.24: COPY OPTIONS & ON_ERROR HANDLING
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers the ON_ERROR option for controlling how
+--   COPY INTO handles rows/files with errors, plus SIZE_LIMIT.
+-- KEY INTERVIEW CONCEPTS:
+--   - ON_ERROR = CONTINUE (skip bad rows, load the rest)
+--   - ON_ERROR = ABORT_STATEMENT (default -- stop on first error)
+--   - ON_ERROR = SKIP_FILE (skip entire file if any error)
+--   - ON_ERROR = SKIP_FILE_n / SKIP_FILE_n% (threshold-based skip)
+--   - SIZE_LIMIT = n (max bytes to load per COPY execution)
+-- REMEMBER: ABORT_STATEMENT is the default. CONTINUE loads good
+--   rows but may leave partial data. Always validate after load.
+-- ============================================================
+
  // Create new stage
  CREATE OR REPLACE STAGE MANAGE_DB.external_stages.aws_stage_errorex
     url='s3://bucketsnowflakes4'

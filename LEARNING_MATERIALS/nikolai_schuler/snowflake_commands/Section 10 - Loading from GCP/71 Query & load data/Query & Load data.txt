@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Query & Load Data from GCS
+-- ============================================================
+-- LEARNING NOTES:
+--   Demonstrates querying staged files from a GCS stage and loading
+--   data into a Snowflake table using COPY INTO.
+-- KEY INTERVIEW CONCEPTS:
+--   - SELECT $1,$2,...$N FROM @stage queries files before loading
+--   - COPY INTO @stage_name loads data in bulk from cloud storage
+--   - Same COPY INTO pattern works across AWS, Azure, and GCP
+-- REMEMBER:
+--   - Always preview staged data with SELECT before loading
+--   - COPY INTO is idempotent by default (won't reload same files)
+-- ============================================================
+
 ---- Query files & Load data ----
 
 --query files

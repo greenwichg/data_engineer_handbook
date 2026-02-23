@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Maximize Caching
+-- ============================================================
+-- LEARNING NOTES:
+--   Shows how Snowflake caches improve performance automatically.
+--   Covers result cache, local disk cache, and metadata cache.
+-- KEY INTERVIEW CONCEPTS:
+--   - Result cache: reuses results for identical queries (24-hour TTL, no compute cost)
+--   - Local disk cache: SSD caching of table data on warehouse nodes
+--   - Metadata cache: row counts, min/max stats stored in Cloud Services layer
+--   - USE_CACHED_RESULT = FALSE to bypass result cache for testing
+-- REMEMBER:
+--   - Result cache is invalidated when underlying data changes
+--   - Suspending a warehouse clears its local disk cache
+-- ============================================================
 
 
 SELECT AVG(C_BIRTH_YEAR) FROM SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.CUSTOMER

@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Dedicated Virtual Warehouses
+-- ============================================================
+-- LEARNING NOTES:
+--   Teaches how to isolate workloads by creating separate warehouses
+--   for different teams (e.g., Data Scientists vs DBAs).
+-- KEY INTERVIEW CONCEPTS:
+--   - Warehouse sizing (XSMALL to 4XLARGE) based on workload needs
+--   - AUTO_SUSPEND / AUTO_RESUME for cost control
+--   - RBAC: granting warehouse usage to roles, assigning roles to users
+-- REMEMBER:
+--   - Each warehouse is an independent compute cluster with its own billing
+--   - Dedicated warehouses prevent resource contention between teams
+-- ============================================================
+
 //  Create virtual warehouse for data scientist & DBA
 
 // Data Scientists

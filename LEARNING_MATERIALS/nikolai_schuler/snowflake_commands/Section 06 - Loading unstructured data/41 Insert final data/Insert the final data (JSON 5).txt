@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION 6.41: INSERT FINAL DATA FROM JSON (JSON Part 5)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates materializing parsed JSON into a
+--   permanent structured table using CREATE TABLE AS and INSERT INTO.
+-- KEY INTERVIEW CONCEPTS:
+--   - CREATE TABLE AS SELECT (CTAS) to create and populate at once
+--   - INSERT INTO SELECT from VARIANT with FLATTEN for denormalization
+--   - Two-step pattern: raw VARIANT staging -> structured final table
+--   - TRUNCATE + re-INSERT for idempotent reload workflows
+-- REMEMBER: The raw VARIANT table is a staging layer. Always create
+--   a final structured table for analytics and downstream queries.
+-- ============================================================
+
 // Option 1: CREATE TABLE AS
 
 CREATE OR REPLACE TABLE Languages AS

@@ -1,3 +1,22 @@
+-- ============================================================
+-- SECTION 14.1: PERMANENT TABLES AND DATABASES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates creating permanent tables (the default
+--   table type in Snowflake), loading data via stages, and querying
+--   storage metrics to observe active, Time Travel, and Fail-Safe
+--   byte usage for permanent tables.
+-- KEY INTERVIEW CONCEPTS:
+--   - Permanent tables are the default table type in Snowflake (no keyword needed)
+--   - Permanent tables support up to 90 days of Time Travel (Enterprise+) and 7 days of Fail-Safe
+--   - CROSS JOIN can be used to generate large datasets for testing storage behavior
+--   - TABLE_STORAGE_METRICS view shows ACTIVE_BYTES, TIME_TRAVEL_BYTES, and FAILSAFE_BYTES
+--   - Permanent tables have the highest storage cost due to Fail-Safe overhead
+--   - IS_TRANSIENT flag in metadata helps distinguish table types
+-- REMEMBER: Permanent = full protection (Time Travel + Fail-Safe). If cost
+--   matters more than recovery, consider transient or temporary tables instead.
+-- ============================================================
+
 CREATE OR REPLACE DATABASE PDB;
 
 CREATE OR REPLACE TABLE PDB.public.customers (

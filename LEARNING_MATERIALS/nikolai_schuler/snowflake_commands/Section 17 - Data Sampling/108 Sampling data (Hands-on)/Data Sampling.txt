@@ -1,3 +1,26 @@
+-- ============================================================
+-- SECTION 17.1: DATA SAMPLING IN SNOWFLAKE
+-- ============================================================
+-- LEARNING NOTES:
+--   This section teaches how to sample data from large tables
+--   in Snowflake using ROW and SYSTEM (BLOCK) sampling methods,
+--   including the use of SEED for reproducibility and creating
+--   sampled views.
+-- KEY INTERVIEW CONCEPTS:
+--   - ROW sampling (Bernoulli) selects each row independently
+--     with the specified probability -- more random but slower.
+--   - SYSTEM sampling (BLOCK) selects entire micro-partitions
+--     -- faster but less uniform, best for very large tables.
+--   - SEED ensures reproducible sampling results across runs.
+--   - Sampled views can be created with CREATE VIEW ... AS
+--     SELECT * FROM table SAMPLE ROW (n) SEED(s).
+--   - Sampling is essential for quick data exploration, testing
+--     queries, and building prototypes on massive datasets.
+--   - SAMPLE and TABLESAMPLE are synonyms in Snowflake.
+-- REMEMBER: ROW sampling = precise but slow; SYSTEM sampling =
+--   fast but approximate. Use SEED to make results repeatable.
+-- ============================================================
+
 CREATE OR REPLACE TRANSIENT DATABASE SAMPLING_DB;
 
 CREATE OR REPLACE VIEW ADDRESS_SAMPLE

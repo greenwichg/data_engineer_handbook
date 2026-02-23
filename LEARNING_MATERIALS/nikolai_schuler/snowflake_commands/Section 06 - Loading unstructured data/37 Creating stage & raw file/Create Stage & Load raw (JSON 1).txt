@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION 6.37: LOADING RAW JSON DATA (JSON Part 1)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers loading raw JSON from S3 into a VARIANT
+--   column, including stage and file format setup for JSON.
+-- KEY INTERVIEW CONCEPTS:
+--   - VARIANT data type stores semi-structured data (JSON, Avro, etc.)
+--   - FILE FORMAT TYPE=JSON for JSON file ingestion
+--   - Single VARIANT column approach for raw JSON staging
+--   - STRIP_OUTER_ARRAY handles JSON arrays at the root level
+-- REMEMBER: Always load JSON into a VARIANT column first (raw),
+--   then parse/transform into structured columns in a second step.
+-- ============================================================
+
 // First step: Load Raw JSON
 
 CREATE OR REPLACE stage MANAGE_DB.EXTERNAL_STAGES.JSONSTAGE

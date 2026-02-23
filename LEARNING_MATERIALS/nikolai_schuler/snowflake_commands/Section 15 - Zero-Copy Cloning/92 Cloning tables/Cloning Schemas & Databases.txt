@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 15.1: CLONING SCHEMAS AND DATABASES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates zero-copy cloning at the schema
+--   and database level. Cloning creates metadata-only copies that
+--   reference the same underlying micro-partitions, making clones
+--   nearly instant and initially free of additional storage.
+-- KEY INTERVIEW CONCEPTS:
+--   - CLONE works on tables, schemas, and entire databases
+--   - Zero-copy cloning does not duplicate data; it shares micro-partitions until modifications occur
+--   - Cloned schemas include all contained objects (tables, views, stages, etc.)
+--   - Cloned databases include all schemas and their objects
+--   - You can clone into a different table type (e.g., clone permanent as transient)
+--   - Storage costs only increase when cloned data is modified (copy-on-write)
+--   - Cloning is commonly used for creating dev/test environments quickly
+-- REMEMBER: Zero-copy cloning is metadata-only at creation time. Storage cost
+--   grows only as the clone diverges from the source (copy-on-write).
+-- ============================================================
+
 // Cloning Schema
 CREATE TRANSIENT SCHEMA OUR_FIRST_DB.COPIED_SCHEMA
 CLONE OUR_FIRST_DB.PUBLIC;

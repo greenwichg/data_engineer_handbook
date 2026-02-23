@@ -1,3 +1,22 @@
+-- ============================================================
+-- SECTION 21.4: REAL-LIFE DYNAMIC DATA MASKING EXAMPLES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section provides practical masking policy examples
+--   including partial email masking with regexp_replace, SHA-2
+--   hashing for pseudonymization, and date masking strategies.
+-- KEY INTERVIEW CONCEPTS:
+--   - regexp_replace() enables partial masking (e.g., hide email username but keep domain)
+--   - SHA2() hashing provides consistent pseudonymization (same input = same hash)
+--   - date_from_parts() can mask dates by replacing with a sentinel value
+--   - Different roles can see different levels of masking (full, partial, none)
+--   - Masking policies can handle multiple data types (varchar, date, number)
+--   - SHA2 masking preserves referential integrity for joins on masked data
+--   - Partial masking is useful when some context must be preserved (e.g., email domain)
+-- REMEMBER: For interviews, know three masking strategies -- full
+--   replacement (static string), partial masking (regexp_replace),
+--   and hashing (SHA2) for pseudonymization that preserves join capability.
+-- ============================================================
 
 
 

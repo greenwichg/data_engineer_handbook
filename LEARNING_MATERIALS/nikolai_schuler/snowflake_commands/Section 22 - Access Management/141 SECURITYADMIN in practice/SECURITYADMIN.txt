@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 22.2: SECURITYADMIN IN PRACTICE
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how SECURITYADMIN creates custom
+--   role hierarchies, assigns roles to users, and follows the
+--   best practice of granting custom roles up to SYSADMIN.
+-- KEY INTERVIEW CONCEPTS:
+--   - SECURITYADMIN manages roles and users (CREATE ROLE, CREATE USER, GRANT ROLE)
+--   - Role hierarchies are built by granting child roles to parent roles
+--   - Best practice: always grant custom roles up to SYSADMIN for visibility
+--   - If a role is NOT granted to SYSADMIN, SYSADMIN cannot manage its objects
+--   - SECURITYADMIN inherits the USERADMIN role capabilities
+--   - Role hierarchy example: sales_users -> sales_admin -> SYSADMIN
+--   - Each functional area (Sales, HR) should have its own admin and user roles
+-- REMEMBER: Always connect custom roles to SYSADMIN in the hierarchy.
+--   If you skip this, SYSADMIN loses visibility into those roles'
+--   objects -- a common interview gotcha about Snowflake RBAC.
+-- ============================================================
+
 -- SECURITYADMIN role --
 --  Create and Manage Roles & Users --
 

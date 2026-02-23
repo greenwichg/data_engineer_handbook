@@ -1,5 +1,20 @@
+-- ============================================================
+-- SECTION 6.39: HANDLING NESTED JSON DATA (JSON Part 3)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers accessing nested JSON objects with dot
+--   notation, array indexing with [n], and UNION ALL for arrays.
+-- KEY INTERVIEW CONCEPTS:
+--   - Dot notation: RAW_FILE:job.salary for nested object access
+--   - Array indexing: RAW_FILE:prev_company[0] for array elements
+--   - ARRAY_SIZE() to count elements in a JSON array
+--   - UNION ALL pattern to manually unnest array elements into rows
+-- REMEMBER: Array indexes are 0-based. UNION ALL unnesting is
+--   manual; use FLATTEN() (next section) for dynamic array sizes.
+-- ============================================================
+
    // Handling nested data
-   
+
 SELECT RAW_FILE:job as job  FROM OUR_FIRST_DB.PUBLIC.JSON_RAW;
 
 
@@ -16,7 +31,7 @@ SELECT
 FROM OUR_FIRST_DB.PUBLIC.JSON_RAW;
 
 
-// Handling arreys
+// Handling arrays
 
 SELECT
     RAW_FILE:prev_company as prev_company

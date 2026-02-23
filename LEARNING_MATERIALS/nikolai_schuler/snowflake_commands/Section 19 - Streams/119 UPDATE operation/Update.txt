@@ -1,6 +1,31 @@
-  
-        
-        
+-- ============================================================
+-- SECTION 19.2: STREAMS - UPDATE OPERATION
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows how Snowflake Streams capture UPDATE
+--   operations and how to use MERGE with stream metadata columns
+--   to propagate updates into a target table.
+-- KEY INTERVIEW CONCEPTS:
+--   - UPDATEs appear in streams as a pair: a DELETE of the old
+--     row and an INSERT of the new row.
+--   - METADATA$ACTION = 'INSERT' with METADATA$ISUPDATE = TRUE
+--     identifies the new version of an updated row.
+--   - MERGE INTO ... USING stream ON join_condition is the
+--     standard pattern for applying stream changes to targets.
+--   - The WHEN MATCHED clause with metadata filters lets you
+--     selectively apply only update changes.
+--   - After a MERGE consumes the stream, the stream resets
+--     and shows no pending changes.
+--   - Understanding metadata columns (METADATA$ACTION,
+--     METADATA$ISUPDATE, METADATA$ROW_ID) is essential for
+--     correctly processing CDC changes.
+-- REMEMBER: An UPDATE in a stream = DELETE (old) + INSERT (new).
+--   Filter on METADATA$ACTION='INSERT' AND METADATA$ISUPDATE='TRUE'.
+-- ============================================================
+
+
+
+
 -- ******* UPDATE 1 ********
 
 SELECT * FROM SALES_RAW_STAGING;     

@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION 5.32: TRUNCATECOLUMNS OPTION
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates TRUNCATECOLUMNS=TRUE, which silently
+--   truncates string values that exceed the target column width
+--   instead of raising an error.
+-- KEY INTERVIEW CONCEPTS:
+--   - TRUNCATECOLUMNS = TRUE (truncate to column max length)
+--   - Default is FALSE (error if data exceeds column width)
+--   - Only applies to string/varchar columns
+--   - Useful when source data has inconsistent field lengths
+-- REMEMBER: Data is silently lost when truncated. Prefer widening
+--   target columns if data integrity is critical.
+-- ============================================================
+
 ---- TRUNCATECOLUMNS ----
 
 

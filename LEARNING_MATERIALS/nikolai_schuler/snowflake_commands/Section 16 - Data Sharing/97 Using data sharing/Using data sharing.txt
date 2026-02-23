@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 16.1: USING DATA SHARING
+-- ============================================================
+-- LEARNING NOTES:
+--   This section walks through setting up Snowflake Secure Data
+--   Sharing from the provider side: creating a share object,
+--   granting privileges on database/schema/table, and adding a
+--   consumer account to the share.
+-- KEY INTERVIEW CONCEPTS:
+--   - Data Sharing in Snowflake allows sharing live data without copying or moving it
+--   - A SHARE object is created by the provider and granted access to specific objects
+--   - Grants must be layered: DATABASE -> SCHEMA -> TABLE (all three required)
+--   - Consumer accounts access shared data as read-only; no storage cost to the consumer
+--   - Data is always up-to-date because the consumer reads from the provider's storage
+--   - SHOW GRANTS TO SHARE validates what privileges are assigned to a share
+--   - ALTER SHARE ... ADD ACCOUNT adds consumer accounts to receive the share
+-- REMEMBER: Snowflake data sharing is zero-copy and real-time. The consumer
+--   never gets a copy -- they query the provider's live data directly.
+-- ============================================================
+
 CREATE OR REPLACE DATABASE DATA_S;
 
 

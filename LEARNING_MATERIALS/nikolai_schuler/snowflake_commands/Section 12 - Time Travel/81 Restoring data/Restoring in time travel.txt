@@ -1,3 +1,17 @@
+-- =============================================================
+-- SECTION 12: RESTORING DATA WITH TIME TRAVEL
+-- =============================================================
+-- LEARNING NOTES:
+--   This section covers how to restore data that was accidentally
+--   modified or deleted using CREATE TABLE ... AS SELECT with
+--   BEFORE(STATEMENT => 'query-id') to recover prior state.
+-- KEY INTERVIEW CONCEPTS:
+--   - BAD method: CREATE OR REPLACE TABLE ... AS SELECT (overwrites the table, losing time travel history)
+--   - GOOD method: Create a backup table, TRUNCATE original, INSERT from backup
+--   - Always preserve the original table to retain its time travel history
+-- REMEMBER: Replacing a table resets its time travel -- use TRUNCATE + INSERT instead
+-- =============================================================
+
 // Setting up table
 
 CREATE OR REPLACE TABLE OUR_FIRST_DB.public.test (
@@ -8,7 +22,7 @@ CREATE OR REPLACE TABLE OUR_FIRST_DB.public.test (
   gender string,
   Job string,
   Phone string);
-    
+
 
 COPY INTO OUR_FIRST_DB.public.test
 from @MANAGE_DB.external_stages.time_travel_stage

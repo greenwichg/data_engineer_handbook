@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION 5.33: FORCE OPTION
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates FORCE=TRUE, which reloads files
+--   even if they have already been loaded (bypasses load history).
+-- KEY INTERVIEW CONCEPTS:
+--   - FORCE = TRUE (reload previously loaded files)
+--   - Snowflake tracks load metadata for 64 days by default
+--   - Without FORCE, re-running COPY skips already-loaded files
+--   - Can cause duplicate data if table is not truncated first
+-- REMEMBER: FORCE bypasses deduplication. Always TRUNCATE or use
+--   a staging pattern to avoid duplicate rows in the target table.
+-- ============================================================
 
 ---- FORCE ----
 

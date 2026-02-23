@@ -1,13 +1,38 @@
-       
-        
-        
--- ******* Process UPDATE,INSERT & DELETE simultaneously  ********                
-        
-    
-        
+-- ============================================================
+-- SECTION 19.4: PROCESSING ALL DATA CHANGES SIMULTANEOUSLY
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows how to build a single MERGE statement
+--   that handles INSERT, UPDATE, and DELETE changes from a
+--   stream in one atomic operation -- the complete CDC pattern.
+-- KEY INTERVIEW CONCEPTS:
+--   - A single MERGE can handle all three DML types using
+--     multiple WHEN MATCHED / WHEN NOT MATCHED clauses.
+--   - DELETE: WHEN MATCHED AND ACTION='DELETE' AND ISUPDATE='FALSE'
+--   - UPDATE: WHEN MATCHED AND ACTION='INSERT' AND ISUPDATE='TRUE'
+--   - INSERT: WHEN NOT MATCHED AND ACTION='INSERT'
+--   - The stream can be joined with reference tables in the
+--     USING subquery to enrich data during the merge.
+--   - Multiple changes (insert + update + delete) can accumulate
+--     in a stream before being processed in one batch.
+--   - If a row is inserted and then deleted before consumption,
+--     the net effect may cancel out in the stream.
+--   - This is the production-ready CDC pattern for Snowflake
+--     data pipelines.
+-- REMEMBER: One MERGE, three clauses -- handle DELETE, UPDATE,
+--   and INSERT in a single statement for atomic CDC processing.
+-- ============================================================
 
-   
-        
+
+
+
+-- ******* Process UPDATE,INSERT & DELETE simultaneously  ********
+
+
+
+
+
+
 merge into SALES_FINAL_TABLE F      -- Target table to merge changes from source table
 USING ( SELECT STRE.*,ST.location,ST.employees
         FROM SALES_STREAM STRE
@@ -16,37 +41,37 @@ USING ( SELECT STRE.*,ST.location,ST.employees
        ) S
 ON F.id=S.id
 when matched                        -- DELETE condition
-    and S.METADATA$ACTION ='DELETE' 
+    and S.METADATA$ACTION ='DELETE'
     and S.METADATA$ISUPDATE = 'FALSE'
-    then delete                   
+    then delete
 when matched                        -- UPDATE condition
-    and S.METADATA$ACTION ='INSERT' 
-    and S.METADATA$ISUPDATE  = 'TRUE'       
-    then update 
+    and S.METADATA$ACTION ='INSERT'
+    and S.METADATA$ISUPDATE  = 'TRUE'
+    then update
     set f.product = s.product,
         f.price = s.price,
         f.amount= s.amount,
         f.store_id=s.store_id
-when not matched 
+when not matched
     and S.METADATA$ACTION ='INSERT'
-    then insert 
+    then insert
     (id,product,price,store_id,amount,employees,location)
     values
     (s.id, s.product,s.price,s.store_id,s.amount,s.employees,s.location)
-        
 
 
 
 
-SELECT * FROM SALES_RAW_STAGING;     
-        
+
+SELECT * FROM SALES_RAW_STAGING;
+
 SELECT * FROM SALES_STREAM;
 
 SELECT * FROM SALES_FINAL_TABLE;
-       
 
-       
-       
+
+
+
 
 
 
@@ -61,9 +86,9 @@ WHERE PRODUCT ='Lemon'
 
 
 
-       
+
 DELETE FROM SALES_RAW_STAGING
-WHERE PRODUCT = 'Lemonade';       
+WHERE PRODUCT = 'Lemonade';
 
 
 --- Example 2 ---
@@ -73,7 +98,7 @@ INSERT INTO SALES_RAW_STAGING VALUES (10,'Lemon Juice',2.99,1,1);
 UPDATE SALES_RAW_STAGING
 SET PRICE = 3
 WHERE PRODUCT ='Mango';
-       
+
 DELETE FROM SALES_RAW_STAGING
-WHERE PRODUCT = 'Potato';    
+WHERE PRODUCT = 'Potato';
 

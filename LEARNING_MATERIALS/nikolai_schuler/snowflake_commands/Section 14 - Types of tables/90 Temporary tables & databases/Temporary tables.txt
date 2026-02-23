@@ -1,6 +1,26 @@
+-- ============================================================
+-- SECTION 14.3: TEMPORARY TABLES AND DATABASES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates creating temporary tables, their
+--   session-scoped lifecycle, and how a temporary table with the
+--   same name as a permanent table takes precedence within the
+--   session.
+-- KEY INTERVIEW CONCEPTS:
+--   - Temporary tables exist only for the duration of the session that created them
+--   - Temporary tables have NO Fail-Safe and Time Travel of 0 or 1 day
+--   - If a temporary table has the same name as a permanent table, the temporary one takes priority
+--   - Other sessions cannot see or access your temporary tables
+--   - Once the session ends, the temporary table is automatically dropped
+--   - Temporary tables are ideal for intermediate/scratch data within a session
+--   - SHOW TABLES reveals whether a table is temporary via the "kind" column
+-- REMEMBER: Temporary tables are session-scoped and invisible to other users.
+--   They shadow permanent tables of the same name within the session.
+-- ============================================================
+
 USE DATABASE PDB;
 
-// Create permanent table 
+// Create permanent table
 
 CREATE OR REPLACE TABLE PDB.public.customers (
    id int,

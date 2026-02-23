@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION 4.21: COPY INTO COMMAND VARIATIONS
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates different ways to use COPY INTO:
+--   basic load, fully qualified stage names, specific files, and
+--   pattern-based file selection.
+-- KEY INTERVIEW CONCEPTS:
+--   - COPY INTO from @stage vs @db.schema.stage (fully qualified)
+--   - files=('file.csv') to load specific files
+--   - pattern='.*regex.*' to match file names with wildcards
+--   - LIST @stage to inspect available files before loading
+-- REMEMBER: files= takes exact names; pattern= uses regex.
+--   They cannot be combined in the same COPY command.
+-- ============================================================
+
 // Creating ORDERS table
 
 CREATE OR REPLACE TABLE OUR_FIRST_DB.PUBLIC.ORDERS (

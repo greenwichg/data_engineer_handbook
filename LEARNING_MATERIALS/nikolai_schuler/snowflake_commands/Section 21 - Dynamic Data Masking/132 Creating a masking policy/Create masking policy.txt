@@ -1,3 +1,24 @@
+-- ============================================================
+-- SECTION 21.1: CREATING A DYNAMIC DATA MASKING POLICY
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how to create and apply dynamic
+--   data masking policies in Snowflake to protect sensitive
+--   columns based on the user's role at query time.
+-- KEY INTERVIEW CONCEPTS:
+--   - Dynamic data masking applies column-level security at query time
+--   - Policies are created with CREATE MASKING POLICY using CASE expressions
+--   - current_role() determines what the user sees (full data vs masked)
+--   - Policies are applied to columns via ALTER TABLE ... SET MASKING POLICY
+--   - Masking is transparent to the user -- no query changes needed
+--   - Requires ACCOUNTADMIN or a role with CREATE MASKING POLICY privilege
+--   - A single policy can control access for multiple roles using CASE/WHEN
+--   - Masking policies are schema-level objects
+-- REMEMBER: Dynamic data masking is role-based, column-level security
+--   that masks data at query time -- the underlying data is never
+--   modified, only what the user sees changes based on their role.
+-- ============================================================
+
 USE DEMO_DB;
 USE ROLE ACCOUNTADMIN;
 

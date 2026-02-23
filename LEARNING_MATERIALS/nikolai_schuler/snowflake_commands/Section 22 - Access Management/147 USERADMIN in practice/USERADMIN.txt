@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 22.5: USERADMIN IN PRACTICE
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows the USERADMIN role creating users and
+--   granting them roles, as well as fixing role hierarchy gaps
+--   by connecting orphaned roles to SYSADMIN.
+-- KEY INTERVIEW CONCEPTS:
+--   - USERADMIN is dedicated to creating and managing users and roles
+--   - USERADMIN can create users and grant existing roles to them
+--   - USERADMIN is a child of SECURITYADMIN in the default role hierarchy
+--   - SHOW ROLES displays all roles visible to the current role
+--   - Granting orphaned roles (e.g., HR_ADMIN) to SYSADMIN restores hierarchy best practice
+--   - USERADMIN cannot manage databases, warehouses, or object privileges
+--   - Separation of duties: USERADMIN for users, SYSADMIN for objects, SECURITYADMIN for grants
+-- REMEMBER: USERADMIN is the narrowest admin role -- it can only
+--   manage users and roles, not objects. Think of the hierarchy:
+--   ACCOUNTADMIN > SECURITYADMIN > USERADMIN for user management.
+-- ============================================================
+
 -- USERADMIN --
 
 --- User 4 ---

@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 13.1: FAIL-SAFE STORAGE MONITORING
+-- ============================================================
+-- LEARNING NOTES:
+--   This section teaches how to query Snowflake's account-level
+--   and table-level storage metrics, with a focus on understanding
+--   Fail-Safe storage consumption. Fail-Safe provides a 7-day
+--   non-configurable recovery window for permanent tables after
+--   Time Travel expires.
+-- KEY INTERVIEW CONCEPTS:
+--   - Fail-Safe is a 7-day period of data recovery managed by Snowflake (not user-accessible)
+--   - Fail-Safe storage is separate from active storage and Time Travel storage
+--   - SNOWFLAKE.ACCOUNT_USAGE.STORAGE_USAGE provides account-level storage breakdown
+--   - SNOWFLAKE.ACCOUNT_USAGE.TABLE_STORAGE_METRICS provides per-table storage details
+--   - Fail-Safe incurs additional storage costs beyond active and Time Travel data
+--   - Only permanent tables have Fail-Safe; transient and temporary tables do not
+-- REMEMBER: Fail-Safe is Snowflake's last-resort recovery -- you cannot query or
+--   restore from it yourself; you must contact Snowflake Support.
+-- ============================================================
+
 // Storage usage on account level
 
 SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.STORAGE_USAGE ORDER BY USAGE_DATE DESC;

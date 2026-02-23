@@ -1,4 +1,32 @@
------ Change clause ------ 
+-- ============================================================
+-- SECTION 19.7: CHANGES CLAUSE (LIGHTWEIGHT CHANGE TRACKING)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers the CHANGES clause, an alternative to
+--   streams for querying historical changes on a table using
+--   Time Travel, without creating a persistent stream object.
+-- KEY INTERVIEW CONCEPTS:
+--   - CHANGE_TRACKING = TRUE must be enabled on the table
+--     via ALTER TABLE before using the CHANGES clause.
+--   - Syntax: SELECT * FROM table CHANGES(information => default)
+--     AT (offset => -n) or AT (timestamp => '...').
+--   - information => default returns all changes (like a
+--     standard stream); information => append_only returns
+--     only inserts.
+--   - The AT clause uses Time Travel to specify the starting
+--     point -- either by offset (seconds) or timestamp.
+--   - Unlike streams, the CHANGES clause is stateless -- it
+--     does not track an offset or get consumed.
+--   - Useful for ad-hoc change auditing and one-time data
+--     extraction without the overhead of maintaining a stream.
+--   - Results can be materialized with CREATE TABLE ... AS
+--     SELECT * FROM table CHANGES(...) AT (...).
+-- REMEMBER: CHANGES clause = stream-like query without a
+--   persistent object. Great for ad-hoc auditing, but use
+--   streams for automated pipelines.
+-- ============================================================
+
+----- Change clause ------
 
 --- Create example db & table ---
 
@@ -59,8 +87,7 @@ AT (timestamp => 'your-timestamp'::timestamp_tz)
 
 
 
-
-CREATE OR REPLACE TABLE PRODUCTS 
+CREATE OR REPLACE TABLE PRODUCTS
 AS
 SELECT * FROM SALES_RAW
 CHANGES(information  => append_only)

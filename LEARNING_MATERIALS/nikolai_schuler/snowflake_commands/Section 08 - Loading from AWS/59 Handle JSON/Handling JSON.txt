@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION: Handling JSON Data from S3
+-- ============================================================
+-- LEARNING NOTES:
+--   Teaches how to query and load semi-structured JSON from an S3 stage.
+--   Covers colon notation, type casting, DATE conversion, and DATE_FROM_PARTS.
+-- KEY INTERVIEW CONCEPTS:
+--   - $1:key_name (colon notation) extracts JSON fields from staged files
+--   - ::STRING, ::INT for explicit type casting of VARIANT values
+--   - DATE(unix_timestamp) converts epoch seconds to a date
+--   - DATE_FROM_PARTS(year, month, day) builds dates from string components
+-- REMEMBER:
+--   - JSON is loaded as a single VARIANT column ($1) in stage queries
+--   - Transformations can be applied in the COPY INTO subquery
+-- ============================================================
+
 // Taming the JSON file
 
 // First query from S3 Bucket   
@@ -111,7 +127,7 @@ DATE_FROM_PARTS(
 $1:reviewerID::STRING,
 $1:reviewerName::STRING,
 $1:summary::STRING,
-DATE($1:unixReviewTime::int) Revewtime
+DATE($1:unixReviewTime::int) as Reviewtime
 FROM @MANAGE_DB.external_stages.json_folder)
    
     

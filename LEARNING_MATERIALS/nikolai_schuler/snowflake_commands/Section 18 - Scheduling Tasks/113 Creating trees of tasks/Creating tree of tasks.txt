@@ -1,3 +1,28 @@
+-- ============================================================
+-- SECTION 18.3: CREATING TREES OF TASKS (TASK DEPENDENCIES)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section teaches how to build task dependency trees
+--   (DAGs) in Snowflake where child tasks execute only after
+--   their parent task completes successfully.
+-- KEY INTERVIEW CONCEPTS:
+--   - Use AFTER <parent_task> instead of SCHEDULE to create
+--     a child task that depends on a parent task.
+--   - Only the root task has a SCHEDULE; child tasks inherit
+--     their execution timing from the parent chain.
+--   - You must SUSPEND the parent task before adding children.
+--   - Resume order matters: resume child tasks first, then
+--     the root task last. Suspend in reverse order.
+--   - Task trees enable multi-step ETL pipelines (e.g., raw
+--     ingest -> transform -> aggregate) within Snowflake.
+--   - A task tree forms a DAG (Directed Acyclic Graph) -- no
+--     circular dependencies are allowed.
+--   - Each task in the tree can target different tables,
+--     enabling staged data processing workflows.
+-- REMEMBER: Suspend parent first when modifying the tree.
+--   Resume children before parent; suspend parent before children.
+-- ============================================================
+
 USE TASK_DB;
  
 SHOW TASKS;

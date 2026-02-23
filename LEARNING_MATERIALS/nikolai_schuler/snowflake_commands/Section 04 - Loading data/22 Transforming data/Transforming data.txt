@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION 4.22: TRANSFORMING DATA DURING COPY
+-- ============================================================
+-- LEARNING NOTES:
+--   This section shows how to apply transformations during COPY
+--   using a SELECT subquery: column selection ($1,$2...), CASE
+--   expressions, CAST, and SUBSTRING functions.
+-- KEY INTERVIEW CONCEPTS:
+--   - $1, $2, ... notation to reference CSV columns by position
+--   - CASE WHEN inside COPY for conditional derived columns
+--   - SUBSTRING() to truncate/extract parts of column values
+--   - Only a subset of SQL functions are supported in COPY transforms
+-- REMEMBER: The alias s.$1 refers to the first column in the
+--   staged file, not the target table. Column order matters.
+-- ============================================================
+
 // Transforming using the SELECT statement
 
 COPY INTO OUR_FIRST_DB.PUBLIC.ORDERS_EX

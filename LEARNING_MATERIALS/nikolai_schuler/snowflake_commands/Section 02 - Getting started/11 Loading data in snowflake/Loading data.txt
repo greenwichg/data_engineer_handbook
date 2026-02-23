@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION 2.11: LOADING DATA IN SNOWFLAKE (First Data Load)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section teaches the basic end-to-end workflow for loading
+--   CSV data from an S3 bucket into Snowflake using CREATE TABLE
+--   and COPY INTO with inline file format options.
+-- KEY INTERVIEW CONCEPTS:
+--   - CREATE TABLE with all-STRING columns for initial load
+--   - COPY INTO from S3 with file_format (type, delimiter, skip_header)
+--   - Direct S3 URL reference (without a named stage)
+-- REMEMBER: Snowflake tracks loaded files; re-running COPY skips
+--   already-loaded files unless FORCE=TRUE is used.
+-- ============================================================
+
 //Creating the table / Meta data
 
 CREATE TABLE "OUR_FIRST_DB"."PUBLIC"."LOAN_PAYMENT" (

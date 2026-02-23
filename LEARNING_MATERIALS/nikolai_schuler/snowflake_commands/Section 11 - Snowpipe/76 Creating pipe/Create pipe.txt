@@ -1,3 +1,17 @@
+-- ============================================================
+-- SECTION: Create Pipe (Snowpipe)
+-- ============================================================
+-- LEARNING NOTES:
+--   Shows the CREATE PIPE syntax with auto_ingest and the embedded
+--   COPY INTO statement that defines how data is loaded.
+-- KEY INTERVIEW CONCEPTS:
+--   - CREATE PIPE ... AS COPY INTO defines the loading logic
+--   - auto_ingest = TRUE enables automatic loading on file arrival
+--   - DESC PIPE shows notification_channel (SQS ARN for AWS)
+-- REMEMBER:
+--   - A pipe is a named object wrapping a single COPY INTO statement
+--   - Changing the COPY statement requires recreating the pipe
+-- ============================================================
 
 // Define pipe
 CREATE OR REPLACE pipe MANAGE_DB.pipes.employee_pipe

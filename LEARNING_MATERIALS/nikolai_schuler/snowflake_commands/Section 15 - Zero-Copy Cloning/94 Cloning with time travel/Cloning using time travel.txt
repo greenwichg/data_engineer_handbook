@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION 15.94: CLONING USING TIME TRAVEL
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates combining zero-copy cloning with
+--   time travel to clone a table as it existed at a past point.
+-- KEY INTERVIEW CONCEPTS:
+--   - CLONE ... AT (OFFSET => -seconds) for point-in-time clones
+--   - CLONE ... BEFORE (STATEMENT => 'query_id') for pre-DML clones
+--   - Cloning a clone is supported (clone-of-clone pattern)
+--   - Clones are independent: changes to clone don't affect source
+-- REMEMBER: Time travel cloning is a powerful recovery tool --
+--   you can restore data to any point within the retention window
+--   without needing a backup.
+-- ============================================================
 
 // Cloning using time travel
 
@@ -67,7 +82,7 @@ SET JOB = 'Snowflake Analyst'
 
 
 // Using time travel: Method 2 - before Query
-SELECT * FROM OUR_FIRST_DB.public.time_travel_clone before (statement => '<your-query-id>)
+SELECT * FROM OUR_FIRST_DB.public.time_travel_clone before (statement => '<your-query-id>')
 
 CREATE OR REPLACE TABLE OUR_FIRST_DB.PUBLIC.time_travel_clone_of_clone
 CLONE OUR_FIRST_DB.public.time_travel_clone before (statement => '<your-query-id>')

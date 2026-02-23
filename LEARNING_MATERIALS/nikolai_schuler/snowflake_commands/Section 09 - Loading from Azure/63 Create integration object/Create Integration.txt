@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Create Storage Integration (Azure)
+-- ============================================================
+-- LEARNING NOTES:
+--   Shows how to create a storage integration for Azure Blob Storage.
+--   Uses AZURE_TENANT_ID to establish trust with the Azure AD tenant.
+-- KEY INTERVIEW CONCEPTS:
+--   - STORAGE_PROVIDER = AZURE for Azure Blob / ADLS Gen2
+--   - AZURE_TENANT_ID identifies the Azure Active Directory tenant
+--   - STORAGE_ALLOWED_LOCATIONS uses azure:// URL scheme
+--   - DESC INTEGRATION provides consent URL and multi-tenant app name
+-- REMEMBER:
+--   - After creating the integration, grant Snowflake access via the Azure consent URL
+--   - URL format: azure://<storage_account>.blob.core.windows.net/<container>
+-- ============================================================
 
 USE DATABASE DEMO_DB;
 -- create integration object that contains the access information

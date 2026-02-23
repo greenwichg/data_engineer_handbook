@@ -1,4 +1,17 @@
-           
+-- =============================================================
+-- SECTION 12: UNDROP TABLES, SCHEMAS, AND DATABASES
+-- =============================================================
+-- LEARNING NOTES:
+--   This section demonstrates the UNDROP command to recover
+--   dropped tables, schemas, and databases within the retention period.
+-- KEY INTERVIEW CONCEPTS:
+--   - UNDROP TABLE / SCHEMA / DATABASE restores dropped objects
+--   - Only works within the data retention period (default 1 day)
+--   - If a table with the same name exists, rename it first before UNDROP
+--   - Permanent tables: 0-90 day retention; Transient/Temporary: 0-1 day
+-- REMEMBER: UNDROP fails if an object with the same name already exists
+-- =============================================================
+
 // Setting up table
 
 CREATE OR REPLACE STAGE MANAGE_DB.external_stages.time_travel_stage

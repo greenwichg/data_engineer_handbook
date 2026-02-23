@@ -1,3 +1,26 @@
+-- ============================================================
+-- SECTION 18.1: CREATING TASKS IN SNOWFLAKE
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers creating, scheduling, resuming, and
+--   suspending Snowflake tasks. Tasks automate SQL execution
+--   on a defined schedule using a specified warehouse.
+-- KEY INTERVIEW CONCEPTS:
+--   - Tasks are created with CREATE TASK and require a
+--     WAREHOUSE and SCHEDULE to run.
+--   - SCHEDULE = 'n MINUTE' sets a simple interval schedule.
+--   - Tasks are created in a SUSPENDED state by default and
+--     must be explicitly resumed with ALTER TASK ... RESUME.
+--   - SHOW TASKS displays all tasks and their current state.
+--   - ALTER TASK ... SUSPEND pauses a running task.
+--   - Tasks consume compute credits only when they execute,
+--     via the assigned warehouse.
+--   - AUTOINCREMENT columns pair well with scheduled inserts
+--     for generating surrogate keys automatically.
+-- REMEMBER: Tasks always start SUSPENDED -- you must ALTER
+--   TASK ... RESUME before they will execute on schedule.
+-- ============================================================
+
 CREATE OR REPLACE TRANSIENT DATABASE TASK_DB;
 
 // Prepare table

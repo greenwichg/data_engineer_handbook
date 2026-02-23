@@ -1,3 +1,25 @@
+-- ============================================================
+-- SECTION 18.2: USING CRON EXPRESSIONS FOR TASK SCHEDULING
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how to use CRON expressions in
+--   Snowflake tasks for fine-grained scheduling control beyond
+--   simple minute intervals, including timezone support.
+-- KEY INTERVIEW CONCEPTS:
+--   - CRON syntax: minute hour day-of-month month day-of-week.
+--   - Format: SCHEDULE = 'USING CRON <expr> <timezone>'.
+--   - Supports standard CRON features: ranges (9-17), lists
+--     (7,10), wildcards (*), and last-day-of-week (L).
+--   - Timezone-aware scheduling (e.g., UTC, America/Los_Angeles).
+--   - Simple interval (SCHEDULE = 'n MINUTE') vs CRON: interval
+--     is relative to task creation; CRON is absolute wall-clock.
+--   - Common patterns: every minute (* * * * *), daily at 6AM
+--     (0 6 * * *), business hours on specific days.
+--   - CRON is preferred for production pipelines needing
+--     predictable, calendar-based execution times.
+-- REMEMBER: CRON gives you wall-clock control with timezone
+--   awareness -- always specify the timezone explicitly.
+-- ============================================================
 
 
 CREATE OR REPLACE TASK CUSTOMER_INSERT

@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION: Snowpipe Error Handling
+-- ============================================================
+-- LEARNING NOTES:
+--   Covers how to diagnose and troubleshoot Snowpipe loading errors
+--   using VALIDATE_PIPE_LOAD, COPY_HISTORY, and SYSTEM$PIPE_STATUS.
+-- KEY INTERVIEW CONCEPTS:
+--   - VALIDATE_PIPE_LOAD() returns errors for recent pipe loads
+--   - INFORMATION_SCHEMA.COPY_HISTORY() shows load history and error messages
+--   - SYSTEM$PIPE_STATUS() shows current pipe state and pending file count
+--   - ALTER PIPE ... REFRESH forces re-processing of files in the stage
+-- REMEMBER:
+--   - Snowpipe silently skips bad files; always monitor COPY_HISTORY for errors
+--   - VALIDATE_PIPE_LOAD has a limited lookback window (default 14 days)
+-- ============================================================
+
 // Handling errors
 
 

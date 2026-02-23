@@ -1,3 +1,16 @@
+-- =============================================================
+-- SECTION 12: TIME TRAVEL STORAGE COST
+-- =============================================================
+-- LEARNING NOTES:
+--   This section shows how to monitor storage costs associated
+--   with time travel data using Snowflake account usage views.
+-- KEY INTERVIEW CONCEPTS:
+--   - Time travel data consumes additional storage beyond active data
+--   - SNOWFLAKE.ACCOUNT_USAGE.STORAGE_USAGE shows account-level storage
+--   - SNOWFLAKE.ACCOUNT_USAGE.TABLE_STORAGE_METRICS shows per-table breakdown
+--   - TIME_TRAVEL_BYTES column reveals storage used by time travel data
+-- REMEMBER: Longer retention periods = higher storage costs; optimize with appropriate retention settings
+-- =============================================================
 
 SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.STORAGE_USAGE ORDER BY USAGE_DATE DESC;
 

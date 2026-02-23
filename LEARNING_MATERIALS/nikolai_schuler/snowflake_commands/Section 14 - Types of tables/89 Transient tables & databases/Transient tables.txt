@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 14.2: TRANSIENT TABLES AND DATABASES
+-- ============================================================
+-- LEARNING NOTES:
+--   This section covers creating transient tables and schemas,
+--   understanding their Time Travel limitations (0 or 1 day max),
+--   the absence of Fail-Safe, and how to verify storage behavior
+--   using account usage views.
+-- KEY INTERVIEW CONCEPTS:
+--   - Transient tables are created with the TRANSIENT keyword and have NO Fail-Safe period
+--   - Time Travel for transient tables is limited to 0 or 1 day (not 90 days)
+--   - Transient tables reduce storage costs compared to permanent tables
+--   - Tables created inside a transient schema inherit the transient property
+--   - UNDROP works on transient tables only within the Time Travel retention period
+--   - DATA_RETENTION_TIME_IN_DAYS can be set to 0 to disable Time Travel entirely
+--   - Use transient tables for reproducible/staging data that does not need recovery
+-- REMEMBER: Transient = Time Travel (0-1 day) but NO Fail-Safe. Great for ETL
+--   staging tables where data can be easily reloaded.
+-- ============================================================
+
 CREATE OR REPLACE DATABASE TDB;
 
 CREATE OR REPLACE TRANSIENT TABLE TDB.public.customers_transient (

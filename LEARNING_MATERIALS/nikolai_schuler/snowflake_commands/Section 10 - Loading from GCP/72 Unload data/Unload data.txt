@@ -1,3 +1,18 @@
+-- ============================================================
+-- SECTION: Unload (Export) Data to GCS
+-- ============================================================
+-- LEARNING NOTES:
+--   Shows how to export/unload data FROM a Snowflake table TO a cloud stage
+--   using COPY INTO @stage syntax (reverse of the normal load direction).
+-- KEY INTERVIEW CONCEPTS:
+--   - COPY INTO @stage_name FROM table_name exports data to cloud storage
+--   - Unloading writes files (CSV, Parquet, JSON) to the stage location
+--   - ALTER STORAGE INTEGRATION can update allowed locations
+-- REMEMBER:
+--   - Loading = COPY INTO table FROM @stage; Unloading = COPY INTO @stage FROM table
+--   - Unloaded files are split into multiple parts by default for parallelism
+-- ============================================================
+
 ------- Unload data -----
 USE ROLE ACCOUNTADMIN;
 USE DATABASE DEMO_DB;

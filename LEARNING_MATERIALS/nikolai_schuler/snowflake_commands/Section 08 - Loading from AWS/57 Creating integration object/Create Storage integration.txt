@@ -1,3 +1,19 @@
+-- ============================================================
+-- SECTION: Create Storage Integration (AWS S3)
+-- ============================================================
+-- LEARNING NOTES:
+--   Shows how to create a storage integration object to securely
+--   connect Snowflake to an AWS S3 bucket using an IAM role.
+-- KEY INTERVIEW CONCEPTS:
+--   - Storage integrations avoid storing credentials in stage definitions
+--   - STORAGE_AWS_ROLE_ARN links to the IAM role for cross-account access
+--   - STORAGE_ALLOWED_LOCATIONS restricts which S3 paths can be accessed
+--   - DESC INTEGRATION reveals the external_id needed for IAM trust policy
+-- REMEMBER:
+--   - Integration objects are account-level objects (require ACCOUNTADMIN)
+--   - The external_id from DESC must be added to the AWS IAM trust relationship
+-- ============================================================
+
 // Create storage integration object
 
 create or replace storage integration s3_int

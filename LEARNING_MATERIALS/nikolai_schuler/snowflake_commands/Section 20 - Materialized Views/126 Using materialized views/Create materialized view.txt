@@ -1,3 +1,23 @@
+-- ============================================================
+-- SECTION 20.1: CREATING AND USING MATERIALIZED VIEWS
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates how to create materialized views
+--   in Snowflake, query them, and observe automatic refresh
+--   behavior when underlying data is updated via DML operations.
+-- KEY INTERVIEW CONCEPTS:
+--   - Materialized views store precomputed results physically, unlike regular views
+--   - Created with CREATE MATERIALIZED VIEW ... AS SELECT syntax
+--   - Snowflake automatically refreshes materialized views when base data changes
+--   - Materialized views improve query performance for expensive aggregations
+--   - SHOW MATERIALIZED VIEWS lists all materialized views and their refresh state
+--   - Ideal for queries with aggregations on large tables that are not frequently updated
+--   - Cannot contain all SQL constructs (e.g., no UDFs, no nested views)
+-- REMEMBER: Materialized views trade storage cost for query speed -- they
+--   physically store results and auto-refresh, unlike regular views which
+--   re-execute the query every time.
+-- ============================================================
+
 -- Remove caching just to have a fair test -- Part 1
 
 ALTER SESSION SET USE_CACHED_RESULT=FALSE; -- disable global caching

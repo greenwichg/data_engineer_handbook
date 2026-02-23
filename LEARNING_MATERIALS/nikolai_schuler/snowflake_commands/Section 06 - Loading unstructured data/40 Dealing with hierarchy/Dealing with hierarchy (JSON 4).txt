@@ -1,7 +1,20 @@
+-- ============================================================
+-- SECTION 6.40: FLATTEN() FOR JSON HIERARCHIES (JSON Part 4)
+-- ============================================================
+-- LEARNING NOTES:
+--   This section introduces FLATTEN() to dynamically unnest JSON
+--   arrays into rows, replacing manual UNION ALL approaches.
+-- KEY INTERVIEW CONCEPTS:
+--   - FLATTEN(input => array) to explode arrays into rows
+--   - f.value:key to access fields within each flattened element
+--   - Lateral join syntax: FROM table, table(flatten(...)) f
+--   - Compares UNION ALL (static) vs FLATTEN (dynamic) approaches
+-- REMEMBER: FLATTEN is the preferred way to handle variable-length
+--   arrays. It automatically handles any number of array elements.
+-- ============================================================
 
 
-
-SELECT 
+SELECT
     RAW_FILE:spoken_languages as spoken_languages
 FROM OUR_FIRST_DB.PUBLIC.JSON_RAW;
 

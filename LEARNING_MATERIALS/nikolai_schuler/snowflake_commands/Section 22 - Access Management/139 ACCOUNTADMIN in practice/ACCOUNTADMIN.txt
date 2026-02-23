@@ -1,3 +1,22 @@
+-- ============================================================
+-- SECTION 22.1: ACCOUNTADMIN IN PRACTICE
+-- ============================================================
+-- LEARNING NOTES:
+--   This section demonstrates the ACCOUNTADMIN role by creating
+--   users and assigning them system-defined roles including
+--   ACCOUNTADMIN, SECURITYADMIN, and SYSADMIN.
+-- KEY INTERVIEW CONCEPTS:
+--   - ACCOUNTADMIN is the top-level role in Snowflake (encapsulates SYSADMIN + SECURITYADMIN)
+--   - Only ACCOUNTADMIN (or USERADMIN/SECURITYADMIN) can create users
+--   - Best practice: limit ACCOUNTADMIN usage, assign to few trusted users
+--   - MUST_CHANGE_PASSWORD = TRUE enforces password reset on first login
+--   - DEFAULT_ROLE sets the role a user assumes upon login
+--   - ACCOUNTADMIN should NOT be used for day-to-day tasks
+--   - ACCOUNTADMIN can manage billing, resource monitors, and account-level parameters
+-- REMEMBER: ACCOUNTADMIN = SYSADMIN + SECURITYADMIN combined. Use it
+--   sparingly and never as a default role -- it is the "break glass"
+--   superadmin role in Snowflake's RBAC model.
+-- ============================================================
 
 --- User 1 ---
 CREATE USER maria PASSWORD = '123' 
