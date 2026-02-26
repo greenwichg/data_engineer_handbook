@@ -11,8 +11,8 @@ with each executor of size - 5 cpu cores / 21 GB RAM
 
 ## => 1. What's the total capacity of cluster?
 
-We will have 20 * 3 = 60 executors
-Total CPU capacity: 60 * 5 = 300 cpu Cores
+We will have 20 * 3 = 60 executors <br>
+Total CPU capacity: 60 * 5 = 300 cpu Cores <br>
 Total Memory capacity: 60 * 21 = 1260 GB RAM
 
 ---
