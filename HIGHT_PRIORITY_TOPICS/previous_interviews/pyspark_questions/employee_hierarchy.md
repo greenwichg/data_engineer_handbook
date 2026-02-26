@@ -28,7 +28,6 @@ SELECT *
 FROM EmployeeHierarchy
 ORDER BY level, id;
 
-```
 
 Result
 
@@ -50,6 +49,8 @@ Organizational Chart
     /    \          \
    /      \          \
 Diana (4) Eve (5)   Frank (6)    ← Level 2
+
+```
 
 ---
 
