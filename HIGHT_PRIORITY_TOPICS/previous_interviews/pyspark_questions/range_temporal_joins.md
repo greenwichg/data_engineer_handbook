@@ -1,6 +1,6 @@
 # PySpark Implementation: Range Joins and Temporal Joins
 
-## Problem Statement
+## Problem Statement 
 
 Given two datasets — **events** with timestamps and **promotional periods** with start/end dates — join each event to the promotional period that was active at the time of the event. This is a **range join** (also called a temporal join or interval join) where the join condition involves a range check: `event_date BETWEEN promo_start AND promo_end`. This is commonly asked in interviews for ad-tech, finance, and IoT companies.
 
