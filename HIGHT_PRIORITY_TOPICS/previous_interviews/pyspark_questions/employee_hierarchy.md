@@ -31,8 +31,6 @@ ORDER BY level, id;
 
 Result
 
-
-
 |id|employee_name|manager_id|level|
 |--|-------------|----------|-----|
 |1 |Alice        |NULL      |0    |
@@ -52,7 +50,7 @@ Organizational Chart
    /      \          \
 Diana (4) Eve (5)   Frank (6)    ← Level 2
 
-
+```
 
 ---
 
