@@ -1,6 +1,6 @@
 # PySpark Implementation: Regex and String Operations
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of raw log entries and unstructured text, extract structured information using **regular expressions** and **string functions**. Demonstrate `regexp_extract()`, `regexp_replace()`, and common string transformations. Regex operations are commonly asked in data engineering interviews because real-world data is often messy and unstructured.
 
