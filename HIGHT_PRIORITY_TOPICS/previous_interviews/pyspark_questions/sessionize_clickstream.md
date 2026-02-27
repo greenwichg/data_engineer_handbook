@@ -1,6 +1,6 @@
 # PySpark Implementation: Sessionizing Clickstream Data
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of user clickstream events with timestamps, **assign session IDs** to each event. A new session begins when the gap between two consecutive events for the same user exceeds **30 minutes**. Then compute session-level metrics (duration, event count, etc.). This is a very common data engineering interview question, especially for companies dealing with web analytics, ad-tech, or user behavior analysis.
 
