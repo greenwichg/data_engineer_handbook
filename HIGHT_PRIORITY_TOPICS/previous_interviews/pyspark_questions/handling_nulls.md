@@ -1,6 +1,6 @@
 # PySpark Implementation: Handling Nulls and Missing Data
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset with various null and missing values, demonstrate all the key techniques for detecting, filtering, filling, and transforming null data in PySpark. Null handling is a fundamental data engineering skill — interviewers test this to assess your ability to write robust, production-quality data pipelines.
 
