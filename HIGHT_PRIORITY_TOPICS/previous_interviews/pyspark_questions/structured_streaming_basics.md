@@ -1,6 +1,6 @@
 # PySpark Implementation: Structured Streaming Basics
 
-## Problem Statement
+## Problem Statement 
 
 Demonstrate the fundamentals of **Spark Structured Streaming** — reading from a streaming source, applying transformations, windowed aggregations with watermarks, and writing to a sink. Given a stream of user clickstream events, compute real-time metrics like events per window, active users, and page popularity. Structured Streaming is increasingly asked in data engineering interviews as real-time processing becomes standard.
 
