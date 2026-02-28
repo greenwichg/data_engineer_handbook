@@ -1,6 +1,6 @@
 # PySpark Implementation: Unpivot / Melt (Columns to Rows)
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset with monthly sales stored as **separate columns** (`jan_sales`, `feb_sales`, `mar_sales`), transform it into a **long format** with one row per month. This is called **unpivot** (SQL term) or **melt** (pandas term) — the reverse of pivot. It uses `explode` on a constructed map/array, making it a close cousin of the `quantity_explode` pattern.
 
