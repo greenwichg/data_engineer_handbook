@@ -1,6 +1,6 @@
 # PySpark Implementation: Pivot and Unpivot Data
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of product sales across different quarters, **pivot** the data so that each quarter becomes a separate column showing the total sales. Then demonstrate how to **unpivot** (melt) the pivoted data back to its original long format. This is a very common interview question that tests your understanding of data reshaping in PySpark.
 

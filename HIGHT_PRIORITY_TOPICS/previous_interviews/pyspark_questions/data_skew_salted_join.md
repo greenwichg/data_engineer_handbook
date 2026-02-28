@@ -1,6 +1,6 @@
 # PySpark Implementation: Handling Data Skew with Salted Joins
 
-## Problem Statement
+## Problem Statement 
 
 Given two DataFrames where one has a **highly skewed key** (one key value dominates the data), perform an efficient join. Without intervention, Spark sends all records with the same key to the same partition, causing a **data skew** problem — one task takes significantly longer than others, bottlenecking the entire job.
 

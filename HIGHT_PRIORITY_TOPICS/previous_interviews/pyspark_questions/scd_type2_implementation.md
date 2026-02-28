@@ -1,6 +1,6 @@
 # PySpark Implementation: Slowly Changing Dimension Type 2 (SCD Type 2)
 
-## Problem Statement
+## Problem Statement 
 
 Implement an SCD Type 2 merge in PySpark. Given an **existing dimension table** (with history tracking columns) and an **incoming updates table**, update the dimension to:
 1. **Close** the old record (set `end_date` and mark `is_current = false`) when a change is detected.

@@ -1,6 +1,6 @@
 # PySpark Implementation: Delta Lake MERGE Operations
 
-## Problem Statement
+## Problem Statement 
 
 Demonstrate how to use **Delta Lake's MERGE INTO** (upsert) operation to efficiently handle inserts, updates, and deletes in a single atomic transaction. Given an existing Delta table and incoming batch of changes, perform:
 1. **Update** existing records that have changed

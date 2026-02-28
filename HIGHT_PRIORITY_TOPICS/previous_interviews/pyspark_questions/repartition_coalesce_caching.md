@@ -1,6 +1,6 @@
 # PySpark Implementation: Repartition, Coalesce, and Caching
 
-## Problem Statement
+## Problem Statement 
 
 Demonstrate how to control **data distribution** across partitions and **caching strategies** in PySpark. Explain when to use `repartition()` vs `coalesce()`, how `persist()` and `cache()` work, and their impact on performance. These are fundamental Spark performance optimization questions asked in every senior data engineering interview.
 

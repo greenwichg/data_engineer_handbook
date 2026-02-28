@@ -1,6 +1,6 @@
 # PySpark Implementation: Year-over-Year (YoY) Growth Calculation
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of monthly revenue figures, calculate the **Year-over-Year (YoY) growth percentage** for each month. YoY growth compares a metric in a given month to the same month in the previous year. This is a common analytics and reporting interview question that tests your understanding of window functions with custom offsets.
 

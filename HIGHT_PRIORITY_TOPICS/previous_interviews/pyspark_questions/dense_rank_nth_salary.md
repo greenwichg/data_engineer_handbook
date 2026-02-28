@@ -1,6 +1,6 @@
 # PySpark Implementation: Find the Nth Highest Salary
 
-## Problem Statement
+## Problem Statement 
 
 Given an employee dataset with salaries, find the **Nth highest salary** across the entire company and also **per department**. This is arguably the most classic SQL/PySpark interview question. Interviewers typically start with "find the 2nd highest salary" and then generalize to Nth.
 

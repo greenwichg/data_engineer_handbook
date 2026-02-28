@@ -1,6 +1,6 @@
 # PySpark Implementation: User-Defined Functions (UDFs) and Pandas UDFs
 
-## Problem Statement
+## Problem Statement 
 
 Implement custom transformations using **Python UDFs**, **Pandas UDFs (vectorized UDFs)**, and understand when to use each. Given a dataset of customer reviews, apply custom text processing that can't be done with built-in functions — such as sentiment scoring, custom parsing, and complex business logic. UDFs are asked in almost every PySpark interview.
 

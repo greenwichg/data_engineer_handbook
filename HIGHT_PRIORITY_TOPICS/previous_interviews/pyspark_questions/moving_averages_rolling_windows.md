@@ -1,6 +1,6 @@
 # PySpark Implementation: Moving Averages and Rolling Windows
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of daily stock prices, calculate the **7-day moving average** and **3-day moving average** for each stock. Also compute a **rolling sum** and **rolling min/max** over a specified window. Moving averages are fundamental in time-series analysis and are frequently asked in data engineering interviews at finance, e-commerce, and analytics companies.
 

@@ -1,6 +1,6 @@
 # PySpark Implementation: Deduplicating Records
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of customer orders where some records are duplicated (either exact duplicates or partial duplicates based on certain key columns), remove the duplicates while keeping the most recent record. This is one of the most frequently asked PySpark interview questions, as deduplication is a fundamental data engineering operation.
 

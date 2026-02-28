@@ -1,6 +1,6 @@
 # PySpark Implementation: ROLLUP, CUBE, and GROUPING SETS
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of product sales across regions and categories, generate **multi-level aggregation summaries** using ROLLUP, CUBE, and GROUPING SETS. These are essential data warehousing operations for creating summary tables with subtotals and grand totals — frequently asked in data engineering interviews at companies with reporting and BI requirements.
 

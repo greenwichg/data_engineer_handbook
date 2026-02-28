@@ -1,6 +1,6 @@
 # PySpark Implementation: Cumulative Percentage and Distribution
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of product sales, calculate the **cumulative percentage of total sales** for each product when sorted by sales in descending order. This is used for **Pareto analysis** (80/20 rule) — identifying which products contribute to 80% of revenue. This question tests your knowledge of window functions, aggregation, and analytical thinking.
 

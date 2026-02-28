@@ -1,6 +1,6 @@
 # PySpark Implementation: Finding Consecutive Login Days (Islands and Gaps)
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of user login dates, find the **longest streak of consecutive login days** for each user. This is a classic "Islands and Gaps" problem that frequently appears in data engineering and SQL interviews. It tests your ability to work with window functions and date arithmetic.
 
