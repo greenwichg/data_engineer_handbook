@@ -1,6 +1,6 @@
 # PySpark Implementation: Explode Quantity into Individual Rows
 
-## Problem Statement
+## Problem Statement 
 
 Given an orders table where each row has a quantity value, **expand each row into N individual rows** (one per unit), each with quantity = 1. This is a classic `explode` + `array_repeat` problem that tests your understanding of array generation and row explosion.
 
