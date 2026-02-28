@@ -1,6 +1,6 @@
 # PySpark Implementation: Finding Missing Billing Dates
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of customer billing dates, identify the **gaps (missing dates)** in each customer's billing history. For each gap, report the start and end of the missing date range. This tests your ability to use `lag()` window functions and date arithmetic to detect discontinuities.
 
