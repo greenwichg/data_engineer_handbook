@@ -1,39 +1,43 @@
-# Finding Missing Billing Dates in PySpark
+# PySpark Implementation: Finding Missing Billing Dates
 
-## Sample Data
-The input DataFrame (`df`) is created from the following data:
+## Problem Statement
 
-```python
-data = [
-    ("C001", "2024-01-01"),
-    ("C001", "2024-01-02"),
-    ("C001", "2024-01-04"),
-    ("C001", "2024-01-06"),
-    ("C002", "2024-01-03"),
-    ("C002", "2024-01-06"),
-]
+Given a dataset of customer billing dates, identify the **gaps (missing dates)** in each customer's billing history. For each gap, report the start and end of the missing date range. This tests your ability to use `lag()` window functions and date arithmetic to detect discontinuities.
+
+### Sample Data
+
+```
+customer_id  billing_date
+C001         2024-01-01
+C001         2024-01-02
+C001         2024-01-04
+C001         2024-01-06
+C002         2024-01-03
+C002         2024-01-06
 ```
 
-Expected output (gaps as ranges):
+### Expected Output
 
 | customer_id | missing_from | missing_to |
 |-------------|--------------|------------|
-| C001       | 2024-01-03  | 2024-01-03 |
-| C001       | 2024-01-05  | 2024-01-05 |
-| C002       | 2024-01-04  | 2024-01-05 |
+| C001        | 2024-01-03   | 2024-01-03 |
+| C001        | 2024-01-05   | 2024-01-05 |
+| C002        | 2024-01-04   | 2024-01-05 |
+
+- C001 is missing Jan 3 (single day) and Jan 5 (single day)
+- C002 is missing Jan 4-5 (two-day range)
+
+---
 
 ## PySpark Code Solution
-The following PySpark code identifies the missing dates by using window functions to detect gaps.
 
 ```python
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lag, datediff, date_add, to_date
 from pyspark.sql.window import Window
 
-# Initialize Spark session (assuming it's not already created)
 spark = SparkSession.builder.appName("MissingBillingDates").getOrCreate()
 
-# Sample data (as provided)
 data = [
     ("C001", "2024-01-01"),
     ("C001", "2024-01-02"),
@@ -43,139 +47,104 @@ data = [
     ("C002", "2024-01-06"),
 ]
 df = spark.createDataFrame(data, ["customer_id", "billing_date"])
-
-# Convert billing_date to date type
 df = df.withColumn("billing_date", to_date(col("billing_date")))
 
-# Define window: partition by customer_id, order by billing_date
+# Step 1: Define window and add previous date using lag
 window = Window.partitionBy("customer_id").orderBy("billing_date")
-
-# Add previous date column using lag
 df_with_lag = df.withColumn("prev_date", lag("billing_date").over(window))
 
-# Filter for gaps (datediff > 1) and compute missing_from/missing_to
+# Step 2: Filter for gaps and compute missing ranges
 gaps = df_with_lag.filter(datediff(col("billing_date"), col("prev_date")) > 1) \
     .withColumn("missing_from", date_add(col("prev_date"), 1)) \
     .withColumn("missing_to", date_add(col("billing_date"), -1)) \
     .select("customer_id", "missing_from", "missing_to")
 
-# Show the results (matches the expected output format)
 gaps.show(truncate=False)
 ```
 
-### Verification
-The code produces the exact expected output, as simulated in previous responses.
+---
 
-## Step-by-Step DataFrame Updates
-This section shows how the DataFrame evolves after each major transformation. Tables are based on the sample data (simulated using equivalent logic).
+## Step-by-Step Explanation with Intermediate DataFrames
 
-- **Initial DataFrame** (after creating from sample data):
+### Step 1: Add Previous Date Using lag()
 
-  | customer_id | billing_date |
-  |-------------|--------------|
-  | C001       | 2024-01-01  |
-  | C001       | 2024-01-02  |
-  | C001       | 2024-01-04  |
-  | C001       | 2024-01-06  |
-  | C002       | 2024-01-03  |
-  | C002       | 2024-01-06  |
-
-- **After converting billing_date to datetime** (equivalent to `to_date` in Spark):
-
-  | customer_id | billing_date |
-  |-------------|--------------|
-  | C001       | 2024-01-01  |
-  | C001       | 2024-01-02  |
-  | C001       | 2024-01-04  |
-  | C001       | 2024-01-06  |
-  | C002       | 2024-01-03  |
-  | C002       | 2024-01-06  |
-
-- **After sorting by customer_id and billing_date** (implicit in Spark windows):
-
-  | customer_id | billing_date |
-  |-------------|--------------|
-  | C001       | 2024-01-01  |
-  | C001       | 2024-01-02  |
-  | C001       | 2024-01-04  |
-  | C001       | 2024-01-06  |
-  | C002       | 2024-01-03  |
-  | C002       | 2024-01-06  |
-
-- **After adding prev_date** (using lag over window; NaT/None for first row per group):
+- **What happens:** For each row, `lag("billing_date")` retrieves the previous billing date within the same customer partition. The first row per customer gets `null`.
+- **Output (df_with_lag):**
 
   | customer_id | billing_date | prev_date  |
   |-------------|--------------|------------|
-  | C001       | 2024-01-01  | None      |
-  | C001       | 2024-01-02  | 2024-01-01|
-  | C001       | 2024-01-04  | 2024-01-02|
-  | C001       | 2024-01-06  | 2024-01-04|
-  | C002       | 2024-01-03  | None      |
-  | C002       | 2024-01-06  | 2024-01-03|
+  | C001        | 2024-01-01   | null       |
+  | C001        | 2024-01-02   | 2024-01-01 |
+  | C001        | 2024-01-04   | 2024-01-02 |
+  | C001        | 2024-01-06   | 2024-01-04 |
+  | C002        | 2024-01-03   | null       |
+  | C002        | 2024-01-06   | 2024-01-03 |
 
-- **After filtering for gaps** (datediff > 1):
+### Step 2: Filter for Gaps (datediff > 1)
+
+- **What happens:** `datediff(billing_date, prev_date)` computes the number of days between consecutive billing dates. Rows where this is > 1 indicate a gap. Rows with `null` prev_date are automatically excluded (null comparisons return null, not true).
+- **Output (after filter):**
 
   | customer_id | billing_date | prev_date  |
   |-------------|--------------|------------|
-  | C001       | 2024-01-04  | 2024-01-02|
-  | C001       | 2024-01-06  | 2024-01-04|
-  | C002       | 2024-01-06  | 2024-01-03|
+  | C001        | 2024-01-04   | 2024-01-02 |
+  | C001        | 2024-01-06   | 2024-01-04 |
+  | C002        | 2024-01-06   | 2024-01-03 |
 
-- **After adding missing_from and missing_to**:
+### Step 3: Compute Missing Date Ranges
 
-  | customer_id | billing_date | prev_date  | missing_from | missing_to |
-  |-------------|--------------|------------|--------------|------------|
-  | C001       | 2024-01-04  | 2024-01-02| 2024-01-03  | 2024-01-03|
-  | C001       | 2024-01-06  | 2024-01-04| 2024-01-05  | 2024-01-05|
-  | C002       | 2024-01-06  | 2024-01-03| 2024-01-04  | 2024-01-05|
-
-- **Final result** (after select):
+- **What happens:** For each gap row:
+  - `missing_from = prev_date + 1` (day after last known billing date)
+  - `missing_to = billing_date - 1` (day before next known billing date)
+  - Single-day gaps have `missing_from == missing_to`
+- **Output (gaps):**
 
   | customer_id | missing_from | missing_to |
   |-------------|--------------|------------|
-  | C001       | 2024-01-03  | 2024-01-03 |
-  | C001       | 2024-01-05  | 2024-01-05 |
-  | C002       | 2024-01-04  | 2024-01-05 |
+  | C001        | 2024-01-03   | 2024-01-03 |
+  | C001        | 2024-01-05   | 2024-01-05 |
+  | C002        | 2024-01-04   | 2024-01-05 |
 
-**Note**: This logic focuses on internal gaps. To include gaps up to the current date (September 01, 2025), additional steps (e.g., using `current_date()`) would be needed.
+---
 
-## Detailed Breakdown of Key Code Line
-The following explains this specific line:
+## Alternative: Using explode() to List Every Missing Date
 
 ```python
-gaps = df_with_lag.filter(datediff(col("billing_date"), col("prev_date")) > 1) \
+from pyspark.sql.functions import explode, sequence, expr
+
+# Instead of showing ranges, list each individual missing date
+gaps_with_dates = df_with_lag.filter(datediff(col("billing_date"), col("prev_date")) > 1) \
     .withColumn("missing_from", date_add(col("prev_date"), 1)) \
     .withColumn("missing_to", date_add(col("billing_date"), -1)) \
-    .select("customer_id", "missing_from", "missing_to")
+    .withColumn("missing_date", explode(sequence(col("missing_from"), col("missing_to")))) \
+    .select("customer_id", "missing_date")
+
+gaps_with_dates.show(truncate=False)
 ```
 
-### Assumptions
-- Input: `df_with_lag` has `customer_id`, `billing_date` (DateType), and `prev_date`.
-- Example input content (as above).
+**Output:**
 
-### Step-by-Step Explanation
-1. **Filtering for Gaps: `df_with_lag.filter(datediff(col("billing_date"), col("prev_date")) > 1)`**  
-   Keeps rows where the date difference > 1 day (indicating a gap). Rows with null `prev_date` are excluded.  
-   **Why?** Identifies post-gap rows.  
-   **After this**: Filtered to rows with gaps (e.g., 3 rows from sample).
+| customer_id | missing_date |
+|-------------|--------------|
+| C001        | 2024-01-03   |
+| C001        | 2024-01-05   |
+| C002        | 2024-01-04   |
+| C002        | 2024-01-05   |
 
-2. **Adding `missing_from`: `.withColumn("missing_from", date_add(col("prev_date"), 1))`**  
-   Adds 1 day to `prev_date` for gap start.  
-   **Why?** Gap begins right after previous date.
+This approach uses `sequence()` to generate a date array for each gap, then `explode()` to create one row per missing date. Useful when you need to fill in data for every missing day.
 
-3. **Adding `missing_to`: `.withColumn("missing_to", date_add(col("billing_date"), -1))`**  
-   Subtracts 1 day from `billing_date` for gap end.  
-   **Why?** Gap ends right before current date; handles single-day gaps (from == to).
+---
 
-4. **Selecting Columns: `.select("customer_id", "missing_from", "missing_to")`**  
-   Drops extra columns for clean output.  
-   **Why?** Focuses on gap info.
+## Key Interview Talking Points
 
-### Overall Notes
-- **Chaining**: Methods are chained for concise code; each returns a new DataFrame.
-- **Handling Gaps**: Naturally supports multi-day ranges.
-- **Edge Cases**: No gaps → empty DF; single-day → from == to.
-- **Performance**: Efficient with distributed windows.
-- **Imports**: Requires `from pyspark.sql.functions import col, datediff, date_add`.
+1. **lag() vs lead():** This solution uses `lag()` to look backward. You could equivalently use `lead()` and check the next date — the filter logic would be on the current row looking forward instead of backward.
 
-If modifications are needed (e.g., including gaps to September 01, 2025), provide details!
+2. **Why datediff > 1?** A difference of exactly 1 means consecutive days (no gap). Greater than 1 means at least one day is missing. The `date_add` arithmetic then extracts the exact missing range.
+
+3. **Null handling:** `lag()` returns null for the first row in each partition. The `datediff > 1` filter naturally excludes these rows because `datediff(anything, null)` returns null, which is not > 1.
+
+4. **Edge cases:**
+   - **No gaps:** The filter returns an empty DataFrame.
+   - **Single-day gaps:** `missing_from == missing_to` (e.g., C001 missing Jan 3).
+   - **Multi-day gaps:** `missing_from < missing_to` (e.g., C002 missing Jan 4-5).
+   - **Gaps at boundaries:** This approach only detects internal gaps. To find gaps up to the current date, you'd add a synthetic "today" row per customer before applying the logic.
