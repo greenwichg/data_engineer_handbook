@@ -1,6 +1,6 @@
 # PySpark Implementation: Predicting Join Row Counts
 
-## Problem Statement
+## Problem Statement 
 
 Given two tables with known values (including NULLs and duplicates), **predict the number of rows returned** by each join type: Inner, Left, Right, and Full. This is a common conceptual interview question that tests your deep understanding of how joins handle NULLs and Cartesian products.
 
