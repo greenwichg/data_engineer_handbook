@@ -1,6 +1,6 @@
 # PySpark Implementation: Churn / Inactive User Detection
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of user activity events and a reference date (today), classify users as **active**, **at-risk**, or **churned** based on how long ago they were last active. Then compute churn rates by cohort, region, or any other dimension. This combines the `cumulative_distinct_count` first-seen trick with date arithmetic and conditional aggregation — a very common business intelligence question.
 
