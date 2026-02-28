@@ -1,6 +1,6 @@
 # PySpark Implementation: Cohort Retention Analysis
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of user activity events, build a **cohort retention matrix** — group users by the month they first appeared (their "cohort"), then for each subsequent month, calculate what percentage of that cohort was still active. This is the analytics version of the `conditional_aggregations` pattern — it uses `sum(when())` and `count(when())` combined with the `cumulative_distinct_count` first-seen trick.
 
