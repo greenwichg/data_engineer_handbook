@@ -1,6 +1,6 @@
 # PySpark Implementation: Expand Date Ranges into Individual Rows
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of user subscriptions with a **start_date** and **end_date**, expand each row into **one row per day** within that range. This is the date-range version of the `quantity_explode` pattern — instead of repeating a row N times based on a number, you generate all dates between two boundaries.
 

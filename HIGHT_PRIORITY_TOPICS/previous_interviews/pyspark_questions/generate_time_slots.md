@@ -1,6 +1,6 @@
 # PySpark Implementation: Generate Time Slots from Shifts
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of employee work shifts with a **start_time** and **end_time**, expand each shift into **one row per hour** to calculate hourly staffing levels, labor costs, or occupancy. This is the timestamp/hourly version of the `quantity_explode` and `expand_date_ranges` patterns.
 
