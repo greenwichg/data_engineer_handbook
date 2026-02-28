@@ -1,22 +1,19 @@
-# PySpark: Convert JSON to Table Columns - Complete Guide
+# PySpark Implementation: Convert JSON Column to Separate Columns
 
 ## Problem Statement
 
-Convert JSON strings stored in a DataFrame column into separate, structured columns for easier querying and analysis.
+Given a DataFrame where one column contains **JSON strings**, parse and extract the JSON fields into separate, properly typed columns. This tests your understanding of `from_json()`, schema definition, and struct column access.
 
-## Common Scenarios
+### Sample Data
 
-### Scenario 1: Simple JSON Objects (Flat Structure)
+```
+customer_id  user_data
+C001         {"name": "John", "age": 30, "city": "New York"}
+C002         {"name": "Alice", "age": 25, "city": "London"}
+C003         {"name": "Bob", "age": 35, "city": "Tokyo"}
+```
 
-#### Sample Input Data
-
-| customer_id | user_data                                                    |
-|-------------|--------------------------------------------------------------|
-| C001        | {"name": "John", "age": 30, "city": "New York"}             |
-| C002        | {"name": "Alice", "age": 25, "city": "London"}              |
-| C003        | {"name": "Bob", "age": 35, "city": "Tokyo"}                 |
-
-#### Expected Output
+### Expected Output
 
 | customer_id | name  | age | city     |
 |-------------|-------|-----|----------|
@@ -26,37 +23,34 @@ Convert JSON strings stored in a DataFrame column into separate, structured colu
 
 ---
 
-## Method 1: Using `from_json()` with Schema
-
-### Complete Code
+## PySpark Code Solution
 
 ```python
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
-# Initialize Spark session
 spark = SparkSession.builder.appName("JSONToColumns").getOrCreate()
 
-# Sample data with JSON strings
 data = [
     ("C001", '{"name": "John", "age": 30, "city": "New York"}'),
     ("C002", '{"name": "Alice", "age": 25, "city": "London"}'),
     ("C003", '{"name": "Bob", "age": 35, "city": "Tokyo"}')
 ]
 
-# Create DataFrame
 df = spark.createDataFrame(data, ["customer_id", "user_data"])
 
-# Define schema for JSON
+# Step 1: Define the JSON schema
 json_schema = StructType([
     StructField("name", StringType(), True),
     StructField("age", IntegerType(), True),
     StructField("city", StringType(), True)
 ])
 
-# Parse JSON and extract fields
+# Step 2: Parse JSON string into a struct column
 df_parsed = df.withColumn("parsed", from_json(col("user_data"), json_schema))
+
+# Step 3: Extract struct fields into individual columns
 df_result = df_parsed.select(
     "customer_id",
     col("parsed.name").alias("name"),
@@ -67,172 +61,48 @@ df_result = df_parsed.select(
 df_result.show()
 ```
 
-### Step-by-Step Explanation
+---
 
-#### Step 1: Initialize Spark and Import Functions
+## Step-by-Step Explanation with Intermediate DataFrames
 
-```python
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+### Step 1: Define JSON Schema
 
-spark = SparkSession.builder.appName("JSONToColumns").getOrCreate()
-```
+- **What happens:** Creates a `StructType` describing the expected JSON structure — field names, types, and nullability. This tells PySpark how to parse the JSON string.
+- **Why explicit schema?** Avoids expensive schema inference, ensures correct types (`age` as integer, not string), and fails fast on malformed data.
 
-**What happens**: 
-- Imports necessary functions: `from_json` to parse JSON, `col` to reference columns
-- Imports data types to define the JSON schema
-- Creates Spark session
+### Step 2: Parse JSON into Struct Column
 
-**Data state**: No data yet
+- **What happens:** `from_json(col("user_data"), json_schema)` parses each JSON string into a struct (nested object). The original column remains; a new `parsed` column is added.
+- **Output (df_parsed):**
+
+  | customer_id | user_data                                        | parsed                |
+  |-------------|--------------------------------------------------|-----------------------|
+  | C001        | {"name": "John", "age": 30, "city": "New York"} | {John, 30, New York}  |
+  | C002        | {"name": "Alice", "age": 25, "city": "London"}  | {Alice, 25, London}   |
+  | C003        | {"name": "Bob", "age": 35, "city": "Tokyo"}     | {Bob, 35, Tokyo}      |
+
+  The `parsed` column is a single struct, not separate columns yet.
+
+### Step 3: Extract Fields into Separate Columns
+
+- **What happens:** Dot notation `col("parsed.name")` accesses individual struct fields. `.alias()` renames them for clean output. `select()` picks only the columns we want.
+- **Output (df_result):**
+
+  | customer_id | name  | age | city     |
+  |-------------|-------|-----|----------|
+  | C001        | John  | 30  | New York |
+  | C002        | Alice | 25  | London   |
+  | C003        | Bob   | 35  | Tokyo    |
 
 ---
 
-#### Step 2: Create Sample Data
+## Handling Nested JSON and Arrays
 
-```python
-data = [
-    ("C001", '{"name": "John", "age": 30, "city": "New York"}'),
-    ("C002", '{"name": "Alice", "age": 25, "city": "London"}'),
-    ("C003", '{"name": "Bob", "age": 35, "city": "Tokyo"}')
-]
-
-df = spark.createDataFrame(data, ["customer_id", "user_data"])
-```
-
-**What happens**: 
-- Creates list of tuples with customer IDs and JSON strings
-- Converts to DataFrame
-
-**Output after `df.show()`**:
-
-| customer_id | user_data                                        |
-|-------------|--------------------------------------------------|
-| C001        | {"name": "John", "age": 30, "city": "New York"} |
-| C002        | {"name": "Alice", "age": 25, "city": "London"}  |
-| C003        | {"name": "Bob", "age": 35, "city": "Tokyo"}     |
-
----
-
-#### Step 3: Define JSON Schema
-
-```python
-json_schema = StructType([
-    StructField("name", StringType(), True),
-    StructField("age", IntegerType(), True),
-    StructField("city", StringType(), True)
-])
-```
-
-**What happens**: 
-- Defines the structure of the JSON data
-- Specifies field names and their data types
-- `True` means the field is nullable
-
-**Why this is important**: 
-- PySpark needs to know the schema to parse JSON correctly
-- Ensures proper data types (age as integer, not string)
-- Improves performance by avoiding schema inference
-
-**Data state**: No change to DataFrame yet
-
----
-
-#### Step 4: Parse JSON into Struct Column
-
-```python
-df_parsed = df.withColumn("parsed", from_json(col("user_data"), json_schema))
-```
-
-**What happens**: 
-- `from_json()` parses the JSON string using the defined schema
-- Creates a new column "parsed" containing a struct (nested object)
-- Original columns remain unchanged
-
-**Output after `df_parsed.show(truncate=False)`**:
-
-| customer_id | user_data                                        | parsed                           |
-|-------------|--------------------------------------------------|----------------------------------|
-| C001        | {"name": "John", "age": 30, "city": "New York"} | {John, 30, New York}            |
-| C002        | {"name": "Alice", "age": 25, "city": "London"}  | {Alice, 25, London}             |
-| C003        | {"name": "Bob", "age": 35, "city": "Tokyo"}     | {Bob, 35, Tokyo}                |
-
-**Note**: The "parsed" column is a struct containing the fields, not separate columns yet.
-
----
-
-#### Step 5: Extract Fields into Separate Columns
-
-```python
-df_result = df_parsed.select(
-    "customer_id",
-    col("parsed.name").alias("name"),
-    col("parsed.age").alias("age"),
-    col("parsed.city").alias("city")
-)
-```
-
-**What happens**: 
-- Uses dot notation `col("parsed.name")` to access struct fields
-- `.alias()` renames the columns (removes "parsed." prefix)
-- Selects only the columns we want in the final output
-
-**Final Output**:
-
-| customer_id | name  | age | city     |
-|-------------|-------|-----|----------|
-| C001        | John  | 30  | New York |
-| C002        | Alice | 25  | London   |
-| C003        | Bob   | 35  | Tokyo    |
-
----
-
-## Method 2: Using `select()` with Wildcard (Shortcut)
-
-If you want all fields from the struct without typing each one:
-
-```python
-# After parsing JSON
-df_result = df_parsed.select("customer_id", "parsed.*")
-```
-
-**What happens**: 
-- `"parsed.*"` expands all fields in the struct automatically
-- Equivalent to listing each field manually
-- Saves typing when there are many fields
-
-**Output**:
-
-| customer_id | name  | age | city     |
-|-------------|-------|-----|----------|
-| C001        | John  | 30  | New York |
-| C002        | Alice | 25  | London   |
-| C003        | Bob   | 35  | Tokyo    |
-
----
-
-## Scenario 2: Nested JSON Objects
-
-### Sample Input Data
-
-| order_id | order_details                                                                      |
-|----------|------------------------------------------------------------------------------------|
-| O001     | {"customer": {"name": "John", "email": "john@email.com"}, "amount": 100}          |
-| O002     | {"customer": {"name": "Alice", "email": "alice@email.com"}, "amount": 200}        |
-
-### Expected Output
-
-| order_id | customer_name | customer_email     | amount |
-|----------|---------------|--------------------|--------|
-| O001     | John          | john@email.com     | 100    |
-| O002     | Alice         | alice@email.com    | 200    |
-
-### Code for Nested JSON
+### Nested JSON
 
 ```python
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
-# Define nested schema
 nested_schema = StructType([
     StructField("customer", StructType([
         StructField("name", StringType(), True),
@@ -241,211 +111,60 @@ nested_schema = StructType([
     StructField("amount", IntegerType(), True)
 ])
 
-# Sample data
-data = [
-    ("O001", '{"customer": {"name": "John", "email": "john@email.com"}, "amount": 100}'),
-    ("O002", '{"customer": {"name": "Alice", "email": "alice@email.com"}, "amount": 200}')
-]
-
-df = spark.createDataFrame(data, ["order_id", "order_details"])
-
-# Parse and extract
-df_parsed = df.withColumn("parsed", from_json(col("order_details"), nested_schema))
-df_result = df_parsed.select(
+# Access nested fields with chained dot notation
+df_nested = df.withColumn("parsed", from_json(col("order_details"), nested_schema))
+df_result = df_nested.select(
     "order_id",
     col("parsed.customer.name").alias("customer_name"),
     col("parsed.customer.email").alias("customer_email"),
     col("parsed.amount").alias("amount")
 )
-
-df_result.show()
 ```
 
-**Output**:
-
-| order_id | customer_name | customer_email     | amount |
-|----------|---------------|--------------------|--------|
-| O001     | John          | john@email.com     | 100    |
-| O002     | Alice         | alice@email.com    | 200    |
-
----
-
-## Scenario 3: JSON Arrays
-
-### Sample Input Data
-
-| customer_id | orders                                              |
-|-------------|-----------------------------------------------------|
-| C001        | [{"item": "Laptop", "price": 1000}, {"item": "Mouse", "price": 20}] |
-| C002        | [{"item": "Book", "price": 15}]                     |
-
-### Expected Output (Exploded)
-
-| customer_id | item   | price |
-|-------------|--------|-------|
-| C001        | Laptop | 1000  |
-| C001        | Mouse  | 20    |
-| C002        | Book   | 15    |
-
-### Code for JSON Arrays
+### JSON Arrays (with explode)
 
 ```python
-from pyspark.sql.functions import from_json, explode, col
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType
+from pyspark.sql.functions import explode
+from pyspark.sql.types import ArrayType
 
-# Define schema for array of objects
 array_schema = ArrayType(StructType([
     StructField("item", StringType(), True),
     StructField("price", IntegerType(), True)
 ]))
 
-# Sample data
-data = [
-    ("C001", '[{"item": "Laptop", "price": 1000}, {"item": "Mouse", "price": 20}]'),
-    ("C002", '[{"item": "Book", "price": 15}]')
-]
-
-df = spark.createDataFrame(data, ["customer_id", "orders"])
-
-# Parse JSON array
 df_parsed = df.withColumn("orders_array", from_json(col("orders"), array_schema))
-
-# Explode array into rows
 df_exploded = df_parsed.withColumn("order", explode(col("orders_array")))
-
-# Extract fields
-df_result = df_exploded.select(
-    "customer_id",
-    col("order.item").alias("item"),
-    col("order.price").alias("price")
-)
-
-df_result.show()
+df_result = df_exploded.select("customer_id", col("order.item"), col("order.price"))
 ```
-
-**Step-by-Step Output**:
-
-**After parsing** (`df_parsed`):
-
-| customer_id | orders                                              | orders_array                    |
-|-------------|-----------------------------------------------------|---------------------------------|
-| C001        | [{"item": "Laptop", "price": 1000}, ...]           | [{Laptop, 1000}, {Mouse, 20}]  |
-| C002        | [{"item": "Book", "price": 15}]                    | [{Book, 15}]                   |
-
-**After exploding** (`df_exploded`):
-
-| customer_id | orders_array                    | order          |
-|-------------|---------------------------------|----------------|
-| C001        | [{Laptop, 1000}, {Mouse, 20}]  | {Laptop, 1000} |
-| C001        | [{Laptop, 1000}, {Mouse, 20}]  | {Mouse, 20}    |
-| C002        | [{Book, 15}]                   | {Book, 15}     |
-
-**Final output** (`df_result`):
-
-| customer_id | item   | price |
-|-------------|--------|-------|
-| C001        | Laptop | 1000  |
-| C001        | Mouse  | 20    |
-| C002        | Book   | 15    |
 
 ---
 
-## Method 3: Schema Inference (Automatic)
-
-If you don't know the schema in advance, you can let Spark infer it:
+## Alternative: Using Wildcard Expansion and Schema Inference
 
 ```python
-from pyspark.sql.functions import from_json, schema_of_json, col
+from pyspark.sql.functions import schema_of_json
 
-# Sample JSON string to infer schema from
+# Shortcut: expand all struct fields with wildcard
+df_result = df_parsed.select("customer_id", "parsed.*")
+
+# Or infer schema automatically from a sample JSON string
 sample_json = '{"name": "John", "age": 30, "city": "New York"}'
-
-# Get schema from sample
 inferred_schema = schema_of_json(sample_json)
-
-# Parse JSON using inferred schema
-df_parsed = df.withColumn("parsed", from_json(col("user_data"), inferred_schema))
-df_result = df_parsed.select("customer_id", "parsed.*")
+df_auto = df.withColumn("parsed", from_json(col("user_data"), inferred_schema))
+df_auto.select("customer_id", "parsed.*").show()
 ```
 
-**Pros**: 
-- No need to manually define schema
-- Quick for prototyping
-
-**Cons**: 
-- Less efficient (requires scanning data)
-- May infer incorrect types
-- Not recommended for production
+- `"parsed.*"` expands all struct fields automatically — no need to list each one
+- `schema_of_json()` infers schema from a sample string — useful for prototyping but less efficient and may infer wrong types in production
 
 ---
 
-## Handling Malformed JSON
+## Key Interview Talking Points
 
-### Sample Data with Errors
+1. **from_json() requires a schema:** Unlike `json.loads()` in Python, PySpark's `from_json()` needs an explicit schema (or inferred one via `schema_of_json()`). This is because Spark operates on distributed data and needs to know column types upfront for optimization.
 
-| customer_id | user_data                              |
-|-------------|----------------------------------------|
-| C001        | {"name": "John", "age": 30}           |
-| C002        | {invalid json}                         |
-| C003        | {"name": "Bob"}                        |
+2. **Struct vs separate columns:** `from_json()` produces a single struct column. You must explicitly extract fields using dot notation (`col("parsed.name")`) or wildcard (`"parsed.*"`). This two-step process (parse → extract) is the standard pattern.
 
-### Code with Error Handling
+3. **Malformed JSON handling:** Use the `mode` option: `PERMISSIVE` (default) sets malformed rows to null, `DROPMALFORMED` drops them, `FAILFAST` throws an exception. Example: `from_json(col, schema, {"mode": "PERMISSIVE"})`.
 
-```python
-from pyspark.sql.functions import from_json, col
-
-# Parse with mode option
-df_parsed = df.withColumn(
-    "parsed", 
-    from_json(col("user_data"), json_schema, {"mode": "PERMISSIVE"})
-)
-
-# PERMISSIVE mode (default): Sets malformed rows to null
-# DROPMALFORMED mode: Drops malformed rows
-# FAILFAST mode: Throws exception on malformed data
-
-df_result = df_parsed.select("customer_id", "parsed.*")
-df_result.show()
-```
-
-**Output with PERMISSIVE mode**:
-
-| customer_id | name | age  |
-|-------------|------|------|
-| C001        | John | 30   |
-| C002        | null | null |
-| C003        | Bob  | null |
-
----
-
-## Performance Tips
-
-1. **Define Schema Explicitly**: Always define schema for better performance
-2. **Use Appropriate Data Types**: Don't make everything StringType
-3. **Cache Parsed Data**: If reusing, call `.cache()` after parsing
-4. **Partition Large Datasets**: Use `.repartition()` before JSON parsing
-5. **Filter Early**: Apply filters before JSON parsing when possible
-
----
-
-## Common Use Cases
-
-1. **API Response Data**: Parse JSON responses stored in data lake
-2. **Log Analysis**: Extract structured data from JSON logs
-3. **Event Streaming**: Process JSON events from Kafka/Kinesis
-4. **Configuration Data**: Parse JSON configuration stored in tables
-5. **IoT Data**: Extract sensor readings from JSON payloads
-
----
-
-## Summary of Key Functions
-
-| Function | Purpose |
-|----------|---------|
-| `from_json()` | Parse JSON string into struct |
-| `schema_of_json()` | Infer schema from sample JSON |
-| `col("struct.field")` | Access nested struct fields |
-| `select("struct.*")` | Expand all struct fields |
-| `explode()` | Convert array into rows |
-| `StructType/StructField` | Define JSON schema |
-| `ArrayType` | Define array schema |
+4. **Performance:** Always define schemas explicitly in production — schema inference via `schema_of_json()` requires scanning the data. For JSON arrays, `explode()` after parsing follows the same pattern as any array-to-rows transformation.
