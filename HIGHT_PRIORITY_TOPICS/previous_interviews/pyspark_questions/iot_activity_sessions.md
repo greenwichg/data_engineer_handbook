@@ -1,6 +1,6 @@
 # PySpark Implementation: IoT Sensor Activity Sessions
 
-## Problem Statement
+## Problem Statement 
 
 Given a stream of IoT sensor readings with timestamps, **group readings into activity sessions**. A new session begins when the gap between consecutive readings from the same device exceeds a **5-minute inactivity threshold**. Then compute session-level metrics: duration, reading count, and average value. This is the IoT/manufacturing version of the `sessionize_clickstream` pattern — same `lag → flag → cumsum` technique, different business context.
 

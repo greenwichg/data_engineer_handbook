@@ -1,6 +1,6 @@
 # PySpark Implementation: Meeting Room Scheduling Conflicts & Resolution
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of meeting room booking requests, **detect all scheduling conflicts** (double-bookings) and **suggest resolutions** — either by finding an alternative room or an alternative time slot. This is the scheduling/resource-allocation version of the `overlapping_intervals` pattern — same overlap detection logic (self-join with `A.start < B.end AND A.end > B.start`), but extended with conflict resolution logic.
 

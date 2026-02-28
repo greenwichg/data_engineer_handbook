@@ -1,6 +1,6 @@
 # PySpark Implementation: Running Total (Cumulative Sum)
 
-## Problem Statement
+## Problem Statement 
 
 Given an orders dataset, compute a **running (cumulative) total** of amounts for a specific customer, where the running total for each row includes all amounts from orders on or before that row's date. Rows on the same date should share the same running total. This tests your ability to use window functions with `rowsBetween` frame specifications.
 

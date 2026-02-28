@@ -1,6 +1,6 @@
 # PySpark Implementation: Exchange Rate Lookup by Date
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of international transactions with amounts in foreign currencies and a separate table of **daily exchange rates**, look up the correct exchange rate for each transaction based on its date and convert amounts to USD. If no rate exists for the exact date (e.g., weekends), use the **most recent available rate**. This is the finance version of the `range_temporal_joins` pattern — a temporal lookup where each fact row needs to find the matching dimension row based on date proximity.
 

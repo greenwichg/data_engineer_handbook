@@ -1,6 +1,6 @@
 # PySpark Implementation: Work Hours Calculation (Excluding Breaks)
 
-## Problem Statement
+## Problem Statement 
 
 Given an employee attendance dataset with IN and OUT punch records, calculate the **total working hours per employee**, excluding break time. Each work session starts with an "IN" punch and ends with an "OUT" punch. Time between "OUT" and the next "IN" is a break and should not be counted.
 

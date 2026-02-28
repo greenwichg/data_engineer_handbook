@@ -1,6 +1,6 @@
 # PySpark Implementation: Generate Weekdays and Weekends Dynamically
 
-## Problem Statement
+## Problem Statement 
 
 Generate a complete list of all dates within a dynamic range (e.g., 30 days before and after today), classify each date as either **"Weekday"** or **"Weekend"**, and include the day name — **without hardcoding any dates**. This tests your ability to generate date sequences dynamically and apply conditional transformations.
 

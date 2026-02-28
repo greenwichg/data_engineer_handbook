@@ -1,6 +1,6 @@
 # PySpark Implementation: New vs Returning Customer Classification
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of e-commerce transactions, classify each transaction as coming from a **new customer** (first-ever purchase) or a **returning customer** (has purchased before). Then compute daily and monthly metrics: new customer count, returning customer count, and new customer revenue percentage. This is a direct application of the `cumulative_distinct_count` first-seen trick — the same technique of finding each user's first appearance date, then using that to classify all subsequent events.
 

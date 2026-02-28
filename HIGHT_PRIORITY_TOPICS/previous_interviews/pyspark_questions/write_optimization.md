@@ -1,6 +1,6 @@
 # PySpark Implementation: Write Optimization (Partitioning, Bucketing, Compaction)
 
-## Problem Statement
+## Problem Statement 
 
 You have a large DataFrame (1 billion rows) and need to write it efficiently to disk. Poorly written data leads to **too many small files** (thrashing the namenode), **skewed partition sizes** (slow reads), or **missing partition pruning** (full table scans). This guide covers the three key write optimization techniques: **partitioning**, **bucketing**, and **small file compaction**.
 

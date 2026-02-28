@@ -1,6 +1,6 @@
 # PySpark Implementation: Convert JSON Column to Separate Columns
 
-## Problem Statement
+## Problem Statement 
 
 Given a DataFrame where one column contains **JSON strings**, parse and extract the JSON fields into separate, properly typed columns. This tests your understanding of `from_json()`, schema definition, and struct column access.
 

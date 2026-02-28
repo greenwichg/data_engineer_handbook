@@ -1,6 +1,6 @@
 # PySpark Implementation: Finding Oldest and Latest Sales per Product
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of product sales with dates, find the **sales amount for both the oldest and latest sale** for each product. This tests your ability to use aggregations with joins or window functions to extract values associated with min/max dates.
 

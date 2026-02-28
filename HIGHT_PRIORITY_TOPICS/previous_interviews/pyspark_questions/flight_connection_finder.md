@@ -1,6 +1,6 @@
 # PySpark Implementation: Flight Connection Finder
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of flights with departure/arrival airports and times, find all valid **connecting flight pairs** where a passenger can depart from City A, arrive at City B, and then catch another flight from City B to City C — with a **minimum 1-hour and maximum 6-hour layover** at City B. This is a self-join problem where you join the flights table with itself to find pairs meeting time and location constraints.
 

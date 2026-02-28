@@ -1,6 +1,6 @@
 # PySpark Implementation: Data Reconciliation (Two-Source Comparison)
 
-## Problem Statement
+## Problem Statement 
 
 Given two versions of the same dataset — a **source** (upstream system extract) and a **target** (data warehouse table) — compare them to find all **additions, deletions, and modifications**. Then produce a reconciliation report showing the row counts, match rate, and detailed change log. This is an essential data engineering pattern for validating ETL pipelines, auditing data quality, and implementing change data capture (CDC).
 

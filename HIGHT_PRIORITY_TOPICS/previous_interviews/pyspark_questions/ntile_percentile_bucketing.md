@@ -1,6 +1,6 @@
 # PySpark Implementation: NTILE & Percentile Bucketing
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of customer purchases, **divide customers into equal-sized groups (quartiles, deciles, etc.)** based on their total spending. This is used for customer segmentation, ABC classification, and percentile-based reporting. The key function is `ntile(N)`, a window function that distributes rows into N approximately equal buckets.
 

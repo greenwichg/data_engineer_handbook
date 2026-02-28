@@ -1,6 +1,6 @@
 # PySpark Implementation: Split and Explode Comma-Separated Values
 
-## Problem Statement
+## Problem Statement 
 
 Given a table where each row contains a **comma-separated list of products**, transform it so that each product gets its own row while maintaining the customer relationship. This tests your understanding of `split()` and `explode()` — two of the most commonly asked PySpark functions in interviews.
 

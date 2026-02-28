@@ -1,6 +1,6 @@
 # PySpark Implementation: Merge Overlapping Subscription Periods
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of user subscription periods that may **overlap or be contiguous**, merge them into the smallest set of **non-overlapping consolidated periods**. For example, if a user has subscriptions from Jan 1-15 and Jan 10-25, merge into a single period Jan 1-25. This is the **merge intervals** variant of the gaps-and-islands pattern — instead of finding islands based on status changes, you're merging date ranges that touch or overlap.
 

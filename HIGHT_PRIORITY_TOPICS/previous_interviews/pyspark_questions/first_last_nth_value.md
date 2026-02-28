@@ -1,6 +1,6 @@
 # PySpark Implementation: first_value, last_value, and nth_value
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of customer orders, retrieve the **first purchase**, **last purchase**, and **Nth purchase** for each customer **without using groupBy or self-joins**. These window functions let you pull a specific row's value across the entire partition while keeping all rows in the result — something `min`/`max` can't do for non-aggregate columns like product names.
 

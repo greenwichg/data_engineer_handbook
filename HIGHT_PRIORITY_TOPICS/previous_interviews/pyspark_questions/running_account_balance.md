@@ -1,6 +1,6 @@
 # PySpark Implementation: Running Account Balance with Overdraft Detection
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of bank transactions (deposits and withdrawals) for multiple accounts, compute a **running balance** after each transaction and **flag any overdrafts** (balance going negative). This is the financial version of the `running_total` pattern — same cumulative sum window function, but with sign-aware amounts and business logic on top.
 
