@@ -1,6 +1,6 @@
 # PySpark Implementation: Weighted Row Replication
 
-## Problem Statement
+## Problem Statement 
 
 Given a dataset of survey responses where each respondent has a **weight** indicating how many people they represent in the population, **replicate each row** by its weight value so that weighted analysis can be done with simple counts. This is the same core pattern as `quantity_explode` (using `array_repeat` + `explode`) but framed as a sampling/statistics problem.
 
