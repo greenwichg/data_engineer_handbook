@@ -1,6 +1,6 @@
 # PySpark Interview Follow-up Variants Checklist
 
-## Why this file
+## Why this file 
 
 Most interview rounds do not stop at the base problem statement. After a candidate solves the initial question, interviewers usually ask **follow-up variants** to test production readiness, correctness under edge cases, and performance trade-offs.
 
