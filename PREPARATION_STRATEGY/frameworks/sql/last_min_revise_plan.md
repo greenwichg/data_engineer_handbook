@@ -6,7 +6,7 @@
 
 ## PySpark
 - [ajay_kadiyala](https://github.com/greenwichg/de_interview_prep/blob/main/LEARNING_MATERIALS/ajay_kadiyala/core_tech_stacks/big_data_and_streaming/pyspark_interview_kit.pdf)
-- [shubham_wadekar](https://github.com/greenwichg/de_interview_prep/tree/main/LEARNING_MATERIALS/shubham_wadekar/CORE%20TOPICS/PYSPARK/CODING%20Q%26A)
+- [shubham_wadekar](https://github.com/greenwichg/de_interview_prep/blob/main/LEARNING_MATERIALS/shubham_wadekar/CORE%20TOPICS/PYSPARK/CODING%20Q%26A/SCENARIO%20BASED%20Q%26A.pdf)
 - [pyspark_questions/claude_code](https://github.com/greenwichg/de_interview_prep/tree/main/HIGHT_PRIORITY_TOPICS/previous_interviews/pyspark_questions/claude_code)
 - [pyspark_questions/openai_codex](https://github.com/greenwichg/de_interview_prep/tree/main/HIGHT_PRIORITY_TOPICS/previous_interviews/pyspark_questions/openai_codex)
 - [cross_reference/sql_pyspark_equivalent.md](https://github.com/greenwichg/de_interview_prep/blob/main/PREPARATION_STRATEGY/frameworks/sql/cross_reference/sql_pyspark_equivalent.md)
