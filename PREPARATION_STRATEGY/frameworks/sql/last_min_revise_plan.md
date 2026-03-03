@@ -6,3 +6,4 @@
 ## PySpark
 - [PREPARATION_STRATEGY/frameworks/sql/cross_reference/sql_pyspark_equivalent.md](https://github.com/greenwichg/de_interview_prep/blob/main/PREPARATION_STRATEGY/frameworks/sql/cross_reference/sql_pyspark_equivalent.md)
 - [HIGHT_PRIORITY_TOPICS/previous_interviews/pyspark_questions/claude_code](https://github.com/greenwichg/de_interview_prep/tree/main/HIGHT_PRIORITY_TOPICS/previous_interviews/pyspark_questions/claude_code)
+- [HIGHT_PRIORITY_TOPICS/previous_interviews/pyspark_questions/openai_codex](https://github.com/greenwichg/de_interview_prep/tree/main/HIGHT_PRIORITY_TOPICS/previous_interviews/pyspark_questions/openai_codex)
