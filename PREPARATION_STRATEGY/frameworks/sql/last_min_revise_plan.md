@@ -1,7 +1,7 @@
 ## SQL
 - [sql/ajay_kadiyala](https://github.com/greenwichg/de_interview_prep/tree/main/LEARNING_MATERIALS/ajay_kadiyala/core_tech_stacks/core_programming)
-- [sql/shubham_wadekar](https://github.com/greenwichg/de_interview_prep/tree/main/LEARNING_MATERIALS/shubham_wadekar/CORE%20TOPICS/SQL/CODING%20Q%26A)
 - [sql/anand_narayanan](https://github.com/greenwichg/de_interview_prep/tree/main/PREPARATION_STRATEGY/sql_patterns/anand_narayanan/organized/top_interview_questions)
+- [sql/shubham_wadekar](https://github.com/greenwichg/de_interview_prep/tree/main/LEARNING_MATERIALS/shubham_wadekar/CORE%20TOPICS/SQL/CODING%20Q%26A)
   
 ## Python
 
