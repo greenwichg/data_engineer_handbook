@@ -1,219 +1,371 @@
-# PySpark Implementation: Handling Late Data with Watermarks
+# PySpark Implementation: Handling Late-Arriving Data with Watermarks
 
 ## Problem Statement
 
-In a **streaming** scenario, events may arrive late due to network delays, buffering, or out-of-order delivery. Demonstrate how to use **watermarks** in Structured Streaming to handle late-arriving data, define acceptable lateness thresholds, and understand how Spark manages state cleanup.
+In a **Structured Streaming** application, events may arrive after their expected processing time due to network delays, buffering, or system failures. Demonstrate how to use **watermarks** to handle late-arriving data, control state cleanup, and define acceptable lateness thresholds. This is a critical question for data engineering roles involving real-time pipelines.
 
-### Sample Event Stream
+### Scenario
 
+You are processing a stream of **e-commerce click events**. Each event has an `event_time` (when the click actually happened) and arrives at the system at `processing_time` (when Spark receives it). Some events arrive late — you need to count clicks per 10-minute window while tolerating up to 15 minutes of lateness.
+
+### Sample Data
+
+**Click events stream (simulated with static data for testing):**
 ```
-event_id  user_id  event_type  event_time            processing_time
-E001      U1       click       2024-01-01 10:00:00   2024-01-01 10:00:05
-E002      U2       click       2024-01-01 10:01:00   2024-01-01 10:01:03
-E003      U1       purchase    2024-01-01 10:02:00   2024-01-01 10:02:01
-E004      U3       click       2024-01-01 09:55:00   2024-01-01 10:03:00   ← 8 min late
-E005      U2       purchase    2024-01-01 09:50:00   2024-01-01 10:04:00   ← 14 min late
-E006      U1       click       2024-01-01 10:05:00   2024-01-01 10:05:02
+event_id  user_id  event_time            page
+E001      U001     2025-01-15 10:00:00   /home
+E002      U002     2025-01-15 10:02:00   /products
+E003      U001     2025-01-15 10:05:00   /cart
+E004      U003     2025-01-15 10:12:00   /home
+E005      U002     2025-01-15 10:18:00   /checkout
+E006      U001     2025-01-15 09:55:00   /home        <-- late by ~25 min (arrives at 10:20)
+E007      U003     2025-01-15 10:08:00   /products    <-- late by ~12 min (arrives at 10:20)
+E008      U002     2025-01-15 10:22:00   /confirmation
 ```
 
-### Expected Behavior (10-minute watermark)
+### Expected Behavior
 
-- E001–E003, E006: Processed normally
-- E004 (8 min late): **Included** — within 10-minute watermark
-- E005 (14 min late): **Dropped** — exceeds 10-minute watermark
+- Events within the watermark threshold (15 min late) are **included** in window aggregations.
+- Events beyond the watermark threshold are **dropped** (e.g., E006 with event_time 09:55 arriving when max event_time is 10:22 — it is 27 minutes late, exceeding 15-minute watermark).
+- State for completed windows is cleaned up after the watermark passes.
 
 ---
 
-## Method 1: Watermark with Window Aggregation
+## Method 1: Watermarked Window Aggregation (Batch Simulation)
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import (
+    col, window, count, to_timestamp, lit, current_timestamp
+)
+from pyspark.sql.types import (
+    StructType, StructField, StringType, TimestampType
+)
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("LateDataWatermarks").getOrCreate()
+
+# Simulate click events with event timestamps
+click_data = [
+    ("E001", "U001", "2025-01-15 10:00:00", "/home"),
+    ("E002", "U002", "2025-01-15 10:02:00", "/products"),
+    ("E003", "U001", "2025-01-15 10:05:00", "/cart"),
+    ("E004", "U003", "2025-01-15 10:12:00", "/home"),
+    ("E005", "U002", "2025-01-15 10:18:00", "/checkout"),
+    ("E006", "U001", "2025-01-15 09:55:00", "/home"),       # Late event
+    ("E007", "U003", "2025-01-15 10:08:00", "/products"),    # Late event (within threshold)
+    ("E008", "U002", "2025-01-15 10:22:00", "/confirmation"),
+]
+
+click_df = spark.createDataFrame(click_data, ["event_id", "user_id", "event_time", "page"])
+click_df = click_df.withColumn("event_time", to_timestamp("event_time"))
+
+# Step 1: Apply watermark on the event_time column
+# This tells Spark: "accept events up to 15 minutes late"
+watermarked_df = click_df.withWatermark("event_time", "15 minutes")
+
+# Step 2: Window aggregation — count clicks per 10-minute window
+windowed_counts = watermarked_df.groupBy(
+    window(col("event_time"), "10 minutes")
+).agg(
+    count("event_id").alias("click_count")
+)
+
+# Step 3: Display results
+windowed_counts.select(
+    col("window.start").alias("window_start"),
+    col("window.end").alias("window_end"),
+    "click_count"
+).orderBy("window_start").show(truncate=False)
+```
+
+### Step-by-Step Explanation
+
+#### Step 1: withWatermark("event_time", "15 minutes")
+
+- **What it does:** Declares that Spark should track the maximum observed `event_time` and use it to determine which late events to accept.
+- **Watermark formula:** `watermark = max(event_time) - threshold`
+- **Example:** If max event_time seen so far is `10:22`, then watermark = `10:22 - 15 min = 10:07`. Events with event_time before `10:07` are dropped.
+
+#### Step 2: Window aggregation
+
+- **10-minute tumbling windows:** `[10:00-10:10)`, `[10:10-10:20)`, `[10:20-10:30)`
+- Events are placed into windows based on their `event_time`, not arrival time.
+
+#### Step 3: Expected Output
+
+| window_start         | window_end           | click_count |
+|---------------------|---------------------|-------------|
+| 2025-01-15 09:50:00 | 2025-01-15 10:00:00 | 1           |
+| 2025-01-15 10:00:00 | 2025-01-15 10:10:00 | 4           |
+| 2025-01-15 10:10:00 | 2025-01-15 10:20:00 | 2           |
+| 2025-01-15 10:20:00 | 2025-01-15 10:30:00 | 1           |
+
+**Note:** In batch mode, all data is processed at once so the watermark may not drop events. The dropping behavior is enforced in streaming mode where data arrives incrementally.
+
+---
+
+## Method 2: Structured Streaming with Watermarks (Full Streaming Example)
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import (
+    col, window, count, from_json, to_timestamp
+)
+from pyspark.sql.types import (
+    StructType, StructField, StringType, TimestampType
+)
+
+spark = SparkSession.builder.appName("StreamingWatermark").getOrCreate()
+
+# Define schema for incoming JSON events
+event_schema = StructType([
+    StructField("event_id", StringType()),
+    StructField("user_id", StringType()),
+    StructField("event_time", StringType()),
+    StructField("page", StringType())
+])
+
+# Step 1: Read from a streaming source (e.g., Kafka)
+raw_stream = spark.readStream \
+    .format("kafka") \
+    .option("kafka.bootstrap.servers", "localhost:9092") \
+    .option("subscribe", "click_events") \
+    .load()
+
+# Step 2: Parse JSON and apply watermark
+parsed_stream = raw_stream.select(
+    from_json(col("value").cast("string"), event_schema).alias("data")
+).select("data.*") \
+    .withColumn("event_time", to_timestamp("event_time")) \
+    .withWatermark("event_time", "15 minutes")
+
+# Step 3: Windowed aggregation with page breakdown
+windowed_counts = parsed_stream.groupBy(
+    window(col("event_time"), "10 minutes"),
+    col("page")
+).agg(
+    count("event_id").alias("click_count")
+)
+
+# Step 4: Write to output sink
+query = windowed_counts.writeStream \
+    .outputMode("update") \
+    .format("console") \
+    .option("truncate", "false") \
+    .trigger(processingTime="30 seconds") \
+    .start()
+
+query.awaitTermination()
+```
+
+### Output Modes with Watermarks
+
+```
+outputMode("update"):
+  - Emits only rows that changed since last trigger
+  - Works with watermarks — most efficient for dashboards
+
+outputMode("append"):
+  - Emits rows ONLY after the watermark passes their window
+  - Guarantees no future updates — best for writing to storage
+  - Row appears only when Spark is certain no more late data can arrive
+
+outputMode("complete"):
+  - Emits entire result table every trigger
+  - Does NOT benefit from watermarks (keeps all state)
+  - Use only for small result sets
+```
+
+---
+
+## Method 3: Watermark with Streaming Deduplication
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, to_timestamp
+
+spark = SparkSession.builder.appName("StreamingDedup").getOrCreate()
+
+# Duplicate events are common in streaming (at-least-once delivery)
+events_with_dupes = [
+    ("E001", "U001", "2025-01-15 10:00:00", "/home"),
+    ("E001", "U001", "2025-01-15 10:00:00", "/home"),      # Duplicate
+    ("E002", "U002", "2025-01-15 10:02:00", "/products"),
+    ("E002", "U002", "2025-01-15 10:02:00", "/products"),   # Duplicate
+    ("E003", "U001", "2025-01-15 10:05:00", "/cart"),
+]
+
+events_df = spark.createDataFrame(
+    events_with_dupes, ["event_id", "user_id", "event_time", "page"]
+).withColumn("event_time", to_timestamp("event_time"))
+
+# Step 1: Watermark + dropDuplicates
+# Watermark limits how long Spark remembers event_ids for dedup
+deduped = events_df \
+    .withWatermark("event_time", "15 minutes") \
+    .dropDuplicates(["event_id", "event_time"])
+
+deduped.show(truncate=False)
+```
+
+### Output
+
+| event_id | user_id | event_time          | page      |
+|----------|---------|---------------------|-----------|
+| E001     | U001    | 2025-01-15 10:00:00 | /home     |
+| E002     | U002    | 2025-01-15 10:02:00 | /products |
+| E003     | U001    | 2025-01-15 10:05:00 | /cart     |
+
+**Key insight:** Without a watermark, `dropDuplicates` in streaming mode would keep state forever (unbounded memory). The watermark lets Spark drop dedup state for events older than the threshold.
+
+---
+
+## Method 4: Sliding Windows with Watermarks
 
 ```python
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, window, count, to_timestamp
 
-spark = SparkSession.builder.appName("WatermarkDemo").getOrCreate()
+spark = SparkSession.builder.appName("SlidingWindowWatermark").getOrCreate()
 
-# Simulate a streaming source using rate or file source
-# For demonstration, we create a static DataFrame and treat it as streaming
-data = [
-    ("E001", "U1", "click", "2024-01-01 10:00:00"),
-    ("E002", "U2", "click", "2024-01-01 10:01:00"),
-    ("E003", "U1", "purchase", "2024-01-01 10:02:00"),
-    ("E004", "U3", "click", "2024-01-01 09:55:00"),    # 8 min late
-    ("E005", "U2", "purchase", "2024-01-01 09:50:00"),  # 14 min late
-    ("E006", "U1", "click", "2024-01-01 10:05:00"),
+click_data = [
+    ("E001", "U001", "2025-01-15 10:00:00", "/home"),
+    ("E002", "U002", "2025-01-15 10:02:00", "/products"),
+    ("E003", "U001", "2025-01-15 10:05:00", "/cart"),
+    ("E004", "U003", "2025-01-15 10:08:00", "/home"),
+    ("E005", "U002", "2025-01-15 10:12:00", "/checkout"),
+    ("E006", "U001", "2025-01-15 10:15:00", "/confirmation"),
 ]
-df = spark.createDataFrame(data, ["event_id", "user_id", "event_type", "event_time"])
-df = df.withColumn("event_time", to_timestamp("event_time"))
 
-# In real streaming:
-# streaming_df = spark.readStream.format("kafka").option(...).load()
+click_df = spark.createDataFrame(click_data, ["event_id", "user_id", "event_time", "page"])
+click_df = click_df.withColumn("event_time", to_timestamp("event_time"))
 
-# Define watermark: accept events up to 10 minutes late
-windowed_counts = df \
-    .withWatermark("event_time", "10 minutes") \
+# Sliding window: 10-minute window, sliding every 5 minutes
+# With 15-minute watermark for late data
+result = click_df \
+    .withWatermark("event_time", "15 minutes") \
     .groupBy(
-        window(col("event_time"), "5 minutes"),  # 5-minute tumbling window
-        "event_type"
-    ) \
-    .agg(count("*").alias("event_count"))
+        window(col("event_time"), "10 minutes", "5 minutes")  # window size, slide interval
+    ).agg(
+        count("event_id").alias("click_count")
+    )
 
-windowed_counts.show(truncate=False)
+result.select(
+    col("window.start").alias("window_start"),
+    col("window.end").alias("window_end"),
+    "click_count"
+).orderBy("window_start").show(truncate=False)
 ```
 
 ### Output
 
-```
-+------------------------------------------+----------+-----------+
-|window                                    |event_type|event_count|
-+------------------------------------------+----------+-----------+
-|{2024-01-01 09:55:00, 2024-01-01 10:00:00}|click     |1          |  ← E004 included
-|{2024-01-01 10:00:00, 2024-01-01 10:05:00}|click     |2          |  ← E001, E002
-|{2024-01-01 10:00:00, 2024-01-01 10:05:00}|purchase  |1          |  ← E003
-|{2024-01-01 10:05:00, 2024-01-01 10:10:00}|click     |1          |  ← E006
-+------------------------------------------+----------+-----------+
-```
+| window_start         | window_end           | click_count |
+|---------------------|---------------------|-------------|
+| 2025-01-15 09:55:00 | 2025-01-15 10:05:00 | 2           |
+| 2025-01-15 10:00:00 | 2025-01-15 10:10:00 | 4           |
+| 2025-01-15 10:05:00 | 2025-01-15 10:15:00 | 3           |
+| 2025-01-15 10:10:00 | 2025-01-15 10:20:00 | 2           |
+| 2025-01-15 10:15:00 | 2025-01-15 10:25:00 | 1           |
 
-Note: E005 (14 min late) would be dropped in actual streaming with this watermark.
+**Sliding windows** create overlapping windows. Each event can belong to multiple windows. The watermark still controls late data acceptance and state cleanup.
 
 ---
 
-## How Watermarks Work
+## How Watermarks Work Internally
 
 ```
-Timeline:
-  09:50    09:55    10:00    10:05    10:10
-    |        |        |        |        |
-    E005     E004     E001     E006
-    (dropped) (kept)  E002
-                      E003
+Timeline of events arriving at Spark:
 
-Watermark = max_event_time - threshold
-When max_event_time = 10:05:
-  watermark = 10:05 - 10min = 09:55
+Trigger 1 (processing_time = 10:10):
+  Receives: E001(10:00), E002(10:02), E003(10:05)
+  Max event_time = 10:05
+  Watermark = 10:05 - 15 min = 09:50
+  → All events accepted (all >= 09:50)
 
-  E004 (09:55) >= watermark (09:55) → INCLUDED
-  E005 (09:50) <  watermark (09:55) → DROPPED
+Trigger 2 (processing_time = 10:20):
+  Receives: E004(10:12), E005(10:18), E006(09:55), E007(10:08)
+  Max event_time = 10:18
+  Watermark = 10:18 - 15 min = 10:03
+  → E004, E005, E007 accepted (>= 10:03)
+  → E006 (09:55) DROPPED (< 10:03 watermark)
 
-State cleanup:
-  Windows ending before 09:55 are finalized and cleaned from state
+Trigger 3 (processing_time = 10:30):
+  Receives: E008(10:22)
+  Max event_time = 10:22
+  Watermark = 10:22 - 15 min = 10:07
+  → State for windows ending before 10:07 is CLEANED UP
+  → Window [09:50-10:00) state is released from memory
 ```
 
 ---
 
-## Method 2: Watermark with Deduplication
+## Watermark Guarantees and Limitations
+
+| Aspect | Detail |
+|--------|--------|
+| **Guarantee** | Events arriving within the watermark threshold are NEVER dropped |
+| **Best-effort** | Events beyond the threshold MAY be dropped (not guaranteed to be dropped in all cases) |
+| **Monotonic** | The watermark only moves forward — it never goes back |
+| **Per-partition** | Spark tracks max event_time across all partitions globally |
+| **State cleanup** | Spark only cleans up state for windows that are fully past the watermark |
+
+---
+
+## Choosing the Right Watermark Threshold
+
+```
+Too short (e.g., "1 minute"):
+  ✗ Drops many legitimate late events
+  ✓ Low memory usage (fast state cleanup)
+  → Use when: Lateness is minimal, memory constrained
+
+Too long (e.g., "24 hours"):
+  ✓ Accepts almost all late events
+  ✗ High memory usage (state kept for 24 hours)
+  → Use when: Completeness is critical, resources available
+
+Just right (e.g., "15 minutes"):
+  ✓ Balances completeness vs resource usage
+  → Determine by analyzing your actual data lateness distribution
+```
+
+### How to Determine the Right Threshold
 
 ```python
-# Deduplicate late-arriving duplicate events within watermark
-deduplicated = df \
-    .withWatermark("event_time", "10 minutes") \
-    .dropDuplicates(["event_id", "event_time"])
+# Analyze lateness in historical data
+from pyspark.sql.functions import unix_timestamp
 
-deduplicated.show()
-```
-
-### How It Works
-- Spark keeps a state store of seen `(event_id, event_time)` combinations
-- Events outside the watermark are dropped
-- Events inside the watermark are checked against the state store
-- The watermark controls when old state entries are cleaned up
-
----
-
-## Method 3: Watermark with Stream-Stream Join
-
-```python
-# Two event streams that need to be joined within a time window
-clicks_data = [
-    ("U1", "click", "2024-01-01 10:00:00"),
-    ("U2", "click", "2024-01-01 10:01:00"),
-]
-purchases_data = [
-    ("U1", "purchase", "2024-01-01 10:02:00"),
-    ("U2", "purchase", "2024-01-01 10:15:00"),
-]
-
-clicks_df = spark.createDataFrame(clicks_data, ["user_id", "event", "event_time"]) \
-    .withColumn("event_time", to_timestamp("event_time"))
-purchases_df = spark.createDataFrame(purchases_data, ["user_id", "event", "event_time"]) \
-    .withColumn("event_time", to_timestamp("event_time"))
-
-# In streaming: both would have watermarks
-# Join clicks to purchases within 10 minutes
-joined = clicks_df.alias("c").join(
-    purchases_df.alias("p"),
-    (col("c.user_id") == col("p.user_id")) &
-    (col("p.event_time").between(
-        col("c.event_time"),
-        col("c.event_time") + expr("INTERVAL 10 MINUTES")
-    )),
-    "inner"
+# Compare event_time vs ingestion_time
+lateness_analysis = historical_df.withColumn(
+    "lateness_seconds",
+    unix_timestamp("ingestion_time") - unix_timestamp("event_time")
 )
 
-joined.select(
-    col("c.user_id"),
-    col("c.event_time").alias("click_time"),
-    col("p.event_time").alias("purchase_time")
+# Find P99 lateness — set watermark slightly above this
+lateness_analysis.selectExpr(
+    "percentile_approx(lateness_seconds, 0.99) as p99_lateness_sec",
+    "percentile_approx(lateness_seconds, 0.999) as p999_lateness_sec",
+    "max(lateness_seconds) as max_lateness_sec"
 ).show()
-```
-
-**Output:**
-```
-+-------+-------------------+-------------------+
-|user_id|         click_time|      purchase_time|
-+-------+-------------------+-------------------+
-|     U1|2024-01-01 10:00:00|2024-01-01 10:02:00|
-+-------+-------------------+-------------------+
-```
-
-U2's purchase (10:15) is 14 minutes after click (10:01) → outside the 10-minute window.
-
----
-
-## Method 4: Multiple Watermark Policies
-
-```python
-# Spark 3.x supports multiple watermarks with a global policy
-spark.conf.set(
-    "spark.sql.streaming.multipleWatermarkPolicy", "max"  # or "min"
-)
-
-# "min" policy: uses the slowest stream's watermark (more conservative, keeps more state)
-# "max" policy: uses the fastest stream's watermark (more aggressive, drops more late data)
-```
-
----
-
-## Output Modes and Watermarks
-
-| Output Mode | Behavior with Watermark |
-|------------|------------------------|
-| **Append** | Rows emitted only when window is finalized (past watermark). No updates to previous results. |
-| **Update** | Rows emitted as they change. Late data within watermark triggers updates. |
-| **Complete** | All results emitted every trigger. Watermark only controls state cleanup. |
-
-```python
-# Append mode — most common for watermarked aggregations
-# query = windowed_counts.writeStream \
-#     .outputMode("append") \
-#     .format("parquet") \
-#     .option("path", "/output/path") \
-#     .option("checkpointLocation", "/checkpoint/path") \
-#     .trigger(processingTime="1 minute") \
-#     .start()
 ```
 
 ---
 
 ## Key Interview Talking Points
 
-1. **What is a watermark?** "A threshold that tells Spark how long to wait for late data. Defined as `max_event_time_seen - threshold`. Events with event_time below the watermark are dropped."
+1. **What is a watermark?** "A watermark is a moving threshold based on the maximum observed event time minus a tolerance interval. It tells Spark how long to wait for late data before considering a time window complete and cleaning up its state."
 
-2. **Why needed?** Without watermarks, Spark would keep ALL state indefinitely for aggregations, eventually causing OOM. Watermarks allow Spark to clean up old state.
+2. **Why are watermarks necessary?** "Without watermarks, streaming aggregations would keep state forever — eventually causing OutOfMemoryError. Watermarks allow Spark to garbage-collect state for windows that can no longer receive late events."
 
-3. **Watermark is a hint, not a guarantee:** Spark guarantees it will NOT drop data that arrives within the watermark threshold. But it MAY still process some data beyond the watermark (implementation detail).
+3. **Watermark vs processing time:** "Watermarks are based on event time (when the event actually occurred), not processing time (when Spark receives it). This handles out-of-order delivery correctly."
 
-4. **Event time vs processing time:** Watermarks work on event time (when the event actually happened), not processing time (when Spark receives it). This handles real-world scenarios where events arrive out of order.
+4. **Output modes matter:** "In `append` mode, results are emitted only after the watermark passes the window boundary — guaranteeing finality. In `update` mode, partial results are emitted immediately and updated as late data arrives."
 
-5. **State store implications:** Watermarks control state store cleanup. A 24-hour watermark means Spark keeps 24 hours of state in memory/disk. Balance between completeness and resource usage.
+5. **State management trade-off:** "A larger watermark threshold keeps more state in memory but accepts more late events. A smaller threshold uses less memory but drops more late events. Analyze your P99 lateness to choose the right value."
 
-6. **Choosing watermark threshold:** Based on the maximum expected delay in your pipeline. Too small = lose late data. Too large = excessive state/memory usage. Analyze your data's lateness distribution to pick the right value.
+6. **Real-world patterns:**
+   - IoT sensor data: Sensors may buffer and send in batches — lateness of minutes to hours
+   - Mobile app events: Offline users sync later — lateness of hours to days
+   - Cross-datacenter replication: Network partitions cause variable lateness
+   - Kafka consumer lag: Consumer falling behind introduces processing delays
