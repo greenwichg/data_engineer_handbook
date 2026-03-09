@@ -1,6 +1,6 @@
 # PySpark Implementation: A/B Test Analysis
 
-## Problem Statement
+## Problem Statement 
 
 A/B testing is fundamental to data-driven decision making. Given experiment data with user assignments to control/treatment groups and their conversion outcomes, compute conversion rates, statistical significance, and lift. This is a common interview question for data engineering roles at companies like Netflix, Airbnb, and Meta, where experimentation platforms are critical infrastructure.
 
