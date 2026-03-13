@@ -1,0 +1,118 @@
+-- =============================================================================
+-- SECTION 7.48: SCALING OUT (Multi-Cluster Warehouses)
+-- =============================================================================
+--
+-- OBJECTIVE:
+--   Understand the difference between scaling UP (bigger warehouse) and
+--   scaling OUT (more clusters), and when to use each approach.
+--
+-- WHAT YOU WILL LEARN:
+--   1. Scaling UP vs Scaling OUT - when to use each
+--   2. Multi-cluster warehouse configuration
+--   3. Scaling policies: STANDARD vs ECONOMY
+--   4. How to generate load for testing concurrency
+--
+-- SCALING UP vs SCALING OUT (CRITICAL INTERVIEW CONCEPT):
+-- ┌──────────────────────┬──────────────────────────────────────────────────┐
+-- │ Scaling UP           │ Scaling OUT                                     │
+-- ├──────────────────────┼──────────────────────────────────────────────────┤
+-- │ Bigger warehouse     │ More clusters (same size each)                  │
+-- │ More compute per     │ More parallel query execution                   │
+-- │ query                │                                                 │
+-- │ Helps: slow single   │ Helps: many users queuing at the same time      │
+-- │ queries              │                                                 │
+-- │ Does NOT help:       │ Does NOT help: single slow query                │
+-- │ concurrency          │                                                 │
+-- │ ALTER WAREHOUSE SET  │ ALTER WAREHOUSE SET MAX_CLUSTER_COUNT = n       │
+-- │ WAREHOUSE_SIZE='L'   │                                                 │
+-- │ All editions         │ Enterprise Edition+ required                    │
+-- └──────────────────────┴──────────────────────────────────────────────────┘
+--
+-- MULTI-CLUSTER WAREHOUSE PARAMETERS:
+--   MIN_CLUSTER_COUNT  - Minimum clusters always running (cost floor)
+--   MAX_CLUSTER_COUNT  - Maximum clusters that can auto-scale to
+--   SCALING_POLICY     - How aggressively to add/remove clusters
+--
+-- SCALING POLICIES (CONCEPT GAP FILLED):
+-- ┌───────────────┬───────────────────────────────────────────────────────┐
+-- │ Policy        │ Behavior                                             │
+-- ├───────────────┼───────────────────────────────────────────────────────┤
+-- │ STANDARD      │ Adds clusters proactively when queries start queuing │
+-- │ (default)     │ Removes clusters conservatively (waits 2-3 checks)   │
+-- │               │ Best for: Performance-sensitive workloads             │
+-- ├───────────────┼───────────────────────────────────────────────────────┤
+-- │ ECONOMY       │ Waits longer before adding clusters                  │
+-- │               │ Removes clusters aggressively when load drops         │
+-- │               │ Best for: Cost-sensitive workloads, predictable load  │
+-- └───────────────┴───────────────────────────────────────────────────────┘
+--
+-- KEY INTERVIEW CONCEPTS:
+--   - Scaling OUT adds clusters for concurrency, not per-query speed
+--   - Multi-cluster warehouses are Enterprise Edition+ feature
+--   - STANDARD policy prioritizes performance; ECONOMY prioritizes cost
+--   - MIN_CLUSTER_COUNT = MAX_CLUSTER_COUNT disables auto-scaling
+-- =============================================================================
+
+
+-- =============================================
+-- DEMO: Simulating heavy workload for testing
+-- =============================================
+-- This CROSS JOIN generates a massive dataset to simulate load.
+-- It creates billions of rows from a relatively small source table.
+
+SELECT * FROM SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.WEB_SITE T1
+CROSS JOIN SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.WEB_SITE T2
+CROSS JOIN SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.WEB_SITE T3
+CROSS JOIN (SELECT TOP 57 * FROM SNOWFLAKE_SAMPLE_DATA.TPCDS_SF100TCL.WEB_SITE) T4;
+
+-- PURPOSE: Run this query from multiple sessions simultaneously to observe:
+--   1. With single cluster: queries queue up (slow response time)
+--   2. With multi-cluster: additional clusters spin up automatically
+--
+-- TO TEST MULTI-CLUSTER:
+--   ALTER WAREHOUSE COMPUTE_WH SET
+--       MIN_CLUSTER_COUNT = 1
+--       MAX_CLUSTER_COUNT = 3
+--       SCALING_POLICY = 'STANDARD';
+--
+--   -- Then run the above query from 3+ simultaneous sessions
+--   -- Watch the warehouse monitor to see clusters scale out
+
+
+-- =============================================================================
+-- CONCEPT GAP: MULTI-CLUSTER CONFIGURATION EXAMPLES
+-- =============================================================================
+-- 1. AUTO-SCALING (recommended for variable workloads):
+--    CREATE WAREHOUSE analytics_wh WITH
+--        WAREHOUSE_SIZE = 'MEDIUM'
+--        MIN_CLUSTER_COUNT = 1     -- Scale down to 1 when idle
+--        MAX_CLUSTER_COUNT = 5     -- Scale up to 5 under heavy load
+--        SCALING_POLICY = 'STANDARD';
+--
+-- 2. FIXED CAPACITY (for predictable workloads):
+--    CREATE WAREHOUSE etl_wh WITH
+--        WAREHOUSE_SIZE = 'LARGE'
+--        MIN_CLUSTER_COUNT = 2     -- Always 2 clusters
+--        MAX_CLUSTER_COUNT = 2     -- Never more than 2
+--        SCALING_POLICY = 'STANDARD';
+--
+-- 3. COST-OPTIMIZED AUTO-SCALING:
+--    CREATE WAREHOUSE reporting_wh WITH
+--        WAREHOUSE_SIZE = 'SMALL'
+--        MIN_CLUSTER_COUNT = 1
+--        MAX_CLUSTER_COUNT = 10
+--        SCALING_POLICY = 'ECONOMY';  -- Slower to add clusters, saves $
+--
+-- INTERVIEW TIP: The key question to ask is:
+--   "Is the problem a SLOW query or MANY queued queries?"
+--   Slow query -> Scale UP (bigger warehouse)
+--   Many queued queries -> Scale OUT (more clusters)
+--
+-- MONITORING MULTI-CLUSTER:
+--   SELECT * FROM TABLE(INFORMATION_SCHEMA.WAREHOUSE_LOAD_HISTORY(
+--       DATE_RANGE_START => DATEADD(hour, -4, CURRENT_TIMESTAMP()),
+--       WAREHOUSE_NAME => 'MY_WH'
+--   ));
+--   -- Shows: AVG_RUNNING, AVG_QUEUED_LOAD, AVG_QUEUED_PROVISIONING
+--   -- If AVG_QUEUED_LOAD > 0 frequently -> consider more clusters
+-- =============================================================================
