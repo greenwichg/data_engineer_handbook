@@ -394,4 +394,208 @@ In the next lesson, we'll implement Git Folders hands-on:
 
 ---
 
+## Git Folders Architecture Diagram
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                     GIT PROVIDER (e.g., GitHub)                       │
+│                                                                       │
+│  ┌──────────────────────────────────────────────────────────────┐    │
+│  │                    REMOTE REPOSITORY                          │    │
+│  │  main branch ──────────────────────────────────────────────   │    │
+│  │  feature/etl-pipeline ─────────────────────                   │    │
+│  │  feature/dashboard-v2 ──────────────                          │    │
+│  └──────────────────────────────────────────────────────────────┘    │
+│                                                                       │
+└──────────────────────────┬───────────────────────────────────────────┘
+                           │
+              clone / pull / push
+                           │
+┌──────────────────────────▼───────────────────────────────────────────┐
+│                  DATABRICKS WORKSPACE                                 │
+│                                                                       │
+│  ┌──────────────────────────────────────────────────────────────┐    │
+│  │                    GIT FOLDERS (Repos)                         │    │
+│  │                                                               │    │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │    │
+│  │  │  Developer 1  │  │  Developer 2  │  │  Developer 3  │       │    │
+│  │  │  Clone of repo│  │  Clone of repo│  │  Clone of repo│       │    │
+│  │  │              │  │              │  │              │       │    │
+│  │  │  Branch:      │  │  Branch:      │  │  Branch:      │       │    │
+│  │  │  feature/etl  │  │  feature/dash │  │  main         │       │    │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘       │    │
+│  └──────────────────────────────────────────────────────────────┘    │
+│                                                                       │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Git Workflow in Databricks
+
+```
+Developer A                    GitHub                    Developer B
+    │                            │                            │
+    │  1. Clone repo             │                            │
+    │◄───────────────────────────│                            │
+    │                            │                            │
+    │  2. Create feature branch  │                            │
+    │─────────────────────────►  │                            │
+    │                            │                            │
+    │  3. Make changes           │                            │
+    │  (edit notebooks)          │                            │
+    │                            │                            │
+    │  4. Commit + Push          │                            │
+    │─────────────────────────►  │                            │
+    │                            │                            │
+    │  5. Create Pull Request    │  6. Review + Approve       │
+    │─────────────────────────►  │◄───────────────────────────│
+    │                            │                            │
+    │  7. Merge to main          │                            │
+    │─────────────────────────►  │                            │
+    │                            │                            │
+    │                            │  8. Pull latest changes    │
+    │                            │───────────────────────────►│
+    │                            │                            │
+```
+
+---
+
+## CONCEPT GAP: Supported File Types in Git Folders
+
+Git Folders support more than just notebooks:
+
+| File Type | Support | Notes |
+|-----------|---------|-------|
+| **Databricks Notebooks** | Full | .py, .sql, .scala, .r with Databricks header |
+| **Python files** (.py) | Full | Can be imported as modules |
+| **SQL files** (.sql) | Full | Can be referenced in workflows |
+| **R files** (.r) | Full | Supported |
+| **Scala files** (.scala) | Full | Supported |
+| **YAML / JSON** | Full | Configuration files, pipeline definitions |
+| **requirements.txt** | Full | Python dependency management |
+| **Markdown** (.md) | Full | Documentation, README files |
+| **Data files** | Limited | Small files only (< 10 MB recommended) |
+| **JAR / wheel files** | Not recommended | Use artifact repositories instead |
+
+- Git Folders have a **size limit** per repo (typically around 10 GB).
+- **Large binary files** should not be stored in Git Folders; use cloud storage or artifact repositories instead.
+
+---
+
+## CONCEPT GAP: Git Folders vs. Workspace Files
+
+Databricks has two locations where files can exist:
+
+| Feature | Git Folders (Repos) | Workspace Files |
+|---------|-------------------|----------------|
+| **Location** | Under `/Repos/<user>/` | Under `/Users/<user>/` or `/Shared/` |
+| **Version control** | Full Git integration | Built-in version history only |
+| **Branching** | Yes | No |
+| **Collaboration** | Via Git PR workflow | Direct sharing |
+| **CI/CD integration** | Yes (via Git provider) | No |
+| **File types** | Notebooks + arbitrary files | Notebooks + limited file types |
+| **Best for** | Production code, team projects | Quick experiments, personal work |
+| **Sync method** | Git clone / pull / push | Manual import/export |
+
+---
+
+## CONCEPT GAP: Databricks Asset Bundles (DABs)
+
+For production CI/CD, Databricks Asset Bundles are the modern approach:
+
+- **DABs** allow you to define Databricks resources (jobs, pipelines, clusters) as code in YAML files alongside your notebooks and scripts in a Git repository.
+- A `databricks.yml` file defines the bundle configuration including targets (dev, staging, prod), resource definitions, and variable substitutions.
+- DABs integrate with CI/CD pipelines (GitHub Actions, Azure DevOps, GitLab CI) to deploy resources automatically.
+- This is the evolution beyond simple Git Folders -- Git Folders manage code, while DABs manage code AND infrastructure together.
+
+```
+my-project/
+├── databricks.yml          # Bundle configuration
+├── resources/
+│   ├── my_job.yml          # Job definition
+│   └── my_pipeline.yml     # DLT pipeline definition
+├── src/
+│   ├── etl_notebook.py     # Notebook source
+│   └── utils.py            # Python module
+└── tests/
+    └── test_etl.py         # Unit tests
+```
+
+---
+
+## CONCEPT GAP: Authentication Methods Comparison
+
+| Method | Security Level | Setup Complexity | Token Rotation | Best For |
+|--------|---------------|-----------------|---------------|----------|
+| **Databricks GitHub App** (OAuth) | High | Low | Automatic | Most use cases |
+| **Personal Access Token (PAT)** | Medium | Medium | Manual | Quick setup, personal use |
+| **Service Principal + OAuth** | High | High | Configurable | CI/CD pipelines |
+| **SSH Keys** | High | Medium | Manual | Developers comfortable with SSH |
+
+- For **production CI/CD**, use a Service Principal with OAuth tokens rather than personal credentials.
+- PATs have an expiration date and must be rotated manually; forgetting to rotate can break integrations.
+- The Databricks GitHub App uses OAuth which handles token management automatically.
+
+---
+
+## CONCEPT GAP: Branching Strategy for Databricks Projects
+
+A recommended branching strategy for data engineering teams:
+
+```
+main (production)
+  │
+  ├── develop (integration branch)
+  │     │
+  │     ├── feature/add-new-etl-pipeline
+  │     │
+  │     ├── feature/update-data-quality-checks
+  │     │
+  │     └── bugfix/fix-null-handling
+  │
+  └── release/v1.2
+```
+
+- **main**: Always deployable, represents production code.
+- **develop**: Integration branch where feature branches merge before going to main.
+- **feature/***: Short-lived branches for new features or changes.
+- **bugfix/***: Branches for bug fixes.
+- **release/***: Optional release branches for versioned deployments.
+
+Best practices:
+- Protect the `main` branch (require PR reviews before merging).
+- Keep feature branches short-lived (merge within days, not weeks).
+- Use meaningful branch names that reference ticket numbers (e.g., `feature/JIRA-123-add-customer-etl`).
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What are Databricks Git Folders and why are they needed?
+**A:** Git Folders (formerly Databricks Repos) is a visual Git client integrated into the Databricks workspace that enables collaborative development using standard Git workflows. They are needed because the built-in notebook version history has significant limitations: it only tracks individual notebooks (not project-wide changes), lacks branching and merging capabilities, does not support pull requests for code review, and cannot integrate with CI/CD pipelines. Git Folders solve all of these by connecting Databricks directly to Git providers like GitHub, Azure DevOps, GitLab, and Bitbucket.
+
+### Q2: What is the difference between the Databricks GitHub App and Personal Access Tokens for Git integration?
+**A:** The Databricks GitHub App uses OAuth-based authentication, providing stronger security, granular per-repository access control, automatic token management, and easier setup. Personal Access Tokens (PATs) use token-based authentication with broader access scope, require manual token creation and rotation, and are less secure since a leaked token grants access to all repositories the token has permissions for. Databricks recommends the GitHub App approach. For CI/CD pipelines, Service Principals with OAuth tokens are preferred over PATs.
+
+### Q3: What Git operations can you perform within Databricks Git Folders?
+**A:** You can perform standard Git operations including: clone a remote repository, create and switch branches, view file diffs (changes), stage and commit changes, push commits to the remote repository, pull latest changes from remote, and resolve merge conflicts. Pull requests and code reviews are performed in the Git provider's interface (e.g., GitHub), not within Databricks. Git Folders provide a visual UI for these operations, so you do not need to use command-line Git.
+
+### Q4: How does Git Folders differ from the built-in notebook version history?
+**A:** Built-in version history tracks changes to a single notebook only, has no branching or merging, does not support pull requests, and cannot integrate with CI/CD tools. Git Folders provide project-wide change tracking across all files (notebooks, scripts, configs), full branching and merging support, pull request workflows for code review, and integration with CI/CD pipelines for automated testing and deployment. Built-in version history is useful for quick personal undo/redo; Git Folders are essential for team-based production development.
+
+### Q5: What types of files can be stored in Databricks Git Folders?
+**A:** Git Folders support Databricks notebooks (.py, .sql, .scala, .r with Databricks headers), plain Python/SQL/R/Scala source files, YAML and JSON configuration files, requirements.txt for dependency management, Markdown files for documentation, and small data files. Large binary files and artifacts (JARs, wheels) should not be stored in Git Folders due to size limitations; use cloud storage or artifact repositories instead. There is typically a ~10 GB size limit per repository.
+
+### Q6: What is the recommended workflow for making changes using Git Folders?
+**A:** The recommended workflow is: (1) Pull latest changes from the main branch; (2) Create a new feature branch from main; (3) Make code changes in the feature branch; (4) Test changes by running notebooks on a development cluster; (5) Commit and push changes to the remote repository; (6) Create a pull request in the Git provider; (7) Team members review the code; (8) After approval, merge the feature branch to main; (9) Optionally trigger CI/CD pipelines for automated deployment. Never commit directly to the main branch.
+
+### Q7: Can multiple developers work on the same repository simultaneously in Databricks?
+**A:** Yes. Each developer clones the repository into their own Git Folder in the workspace (under `/Repos/<username>/`). Each developer works on their own branch, making independent changes without affecting others. Changes are coordinated through the Git provider using pull requests and code reviews. When a developer needs the latest changes from another developer's merged work, they pull from the remote main branch. Git's conflict resolution handles any overlapping changes.
+
+### Q8: What are Databricks Asset Bundles and how do they relate to Git Folders?
+**A:** Databricks Asset Bundles (DABs) are a framework for managing Databricks resources (jobs, DLT pipelines, clusters) as code alongside notebooks and scripts in a Git repository. While Git Folders manage the code versioning and collaboration aspects, DABs extend this by allowing you to define and deploy infrastructure-as-code using YAML configuration files (databricks.yml). DABs integrate with CI/CD pipelines to automatically deploy resources across environments (dev, staging, prod). They represent the evolution from "code in Git" to "everything as code" for Databricks projects.
+
+---
+
 *End of lesson*

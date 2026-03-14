@@ -507,4 +507,235 @@ This empowers you to discover and use utilities independently!
 
 ---
 
+## Databricks Utilities Overview Diagram
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                       dbutils                                         │
+│                                                                       │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │
+│  │  dbutils.fs  │  │dbutils.secrets│  │dbutils.widgets│  │dbutils.   │ │
+│  │              │  │              │  │              │  │ notebook  │ │
+│  │  File System │  │  Secrets     │  │  Parameters  │  │ Chaining  │ │
+│  │  Operations  │  │  Management  │  │  & Widgets   │  │ (Legacy)  │ │
+│  │              │  │              │  │              │  │           │ │
+│  │  - ls        │  │  - get       │  │  - text      │  │  - run    │ │
+│  │  - cp        │  │  - list      │  │  - dropdown  │  │  - exit   │ │
+│  │  - mv        │  │  - listScopes│  │  - combobox  │  │           │ │
+│  │  - rm        │  │              │  │  - multiselect│  │           │ │
+│  │  - mkdirs    │  │              │  │  - get       │  │           │ │
+│  │  - head      │  │              │  │  - remove    │  │           │ │
+│  │  - put       │  │              │  │  - removeAll │  │           │ │
+│  │  - mount     │  │              │  │              │  │           │ │
+│  │  - unmount   │  │              │  │              │  │           │ │
+│  │  - mounts    │  │              │  │              │  │           │ │
+│  └─────────────┘  └──────────────┘  └──────────────┘  └───────────┘ │
+│                                                                       │
+│  Status:  GA          GA              GA              Deprecated      │
+│                                                    (Use Workflows)    │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## dbutils.fs vs. %fs Decision Flow
+
+```
+┌───────────────────────────────┐
+│  Need to interact with DBFS?  │
+└──────────────┬────────────────┘
+               │
+       ┌───────┴────────┐
+       ▼                 ▼
+┌─────────────┐   ┌──────────────────┐
+│ Quick check │   │ Programmatic     │
+│ / browse?   │   │ processing?      │
+└──────┬──────┘   └────────┬─────────┘
+       │                    │
+       ▼                    ▼
+┌─────────────┐   ┌──────────────────┐
+│  Use %fs    │   │  Use dbutils.fs  │
+│             │   │                  │
+│  %fs ls /   │   │  items =         │
+│             │   │   dbutils.fs.ls  │
+│  Simple,    │   │   ("/path")      │
+│  formatted  │   │                  │
+│  output     │   │  Process with    │
+│             │   │  Python/Scala/R  │
+└─────────────┘   └──────────────────┘
+```
+
+---
+
+## CONCEPT GAP: dbutils.secrets Deep Dive
+
+Secret management is critical for production data engineering and frequently tested:
+
+### Secret Scopes
+
+Databricks supports two types of secret scopes:
+
+| Feature | Databricks-backed Scope | Azure Key Vault-backed Scope |
+|---------|------------------------|------------------------------|
+| **Storage** | Encrypted in Databricks | Stored in Azure Key Vault |
+| **Management** | Via Databricks CLI/API | Via Azure Key Vault portal |
+| **Access control** | Databricks ACLs | Azure RBAC + Databricks ACLs |
+| **Best for** | Simple use cases, non-Azure | Enterprise Azure deployments |
+| **Creation** | `databricks secrets create-scope` | Link to existing Key Vault |
+
+### Common dbutils.secrets Methods
+
+```python
+# List all available secret scopes
+dbutils.secrets.listScopes()
+
+# List secrets in a scope (shows names only, not values)
+dbutils.secrets.list("my-scope")
+
+# Get a secret value
+password = dbutils.secrets.get(scope="my-scope", key="db-password")
+
+# IMPORTANT: Secret values are REDACTED in notebook output
+# print(password) shows [REDACTED] in cell output
+```
+
+### Security Features
+
+- Secret values are automatically **redacted** in notebook output -- printing a secret shows `[REDACTED]`.
+- Secrets are only accessible to users with appropriate ACL permissions on the scope.
+- Secrets are encrypted at rest and in transit.
+- Never hardcode credentials in notebooks; always use `dbutils.secrets`.
+
+---
+
+## CONCEPT GAP: dbutils.widgets Deep Dive
+
+Widget utilities are essential for creating parameterized, reusable notebooks:
+
+### Widget Types
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    WIDGET TYPES                                 │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐                            │
+│  │  TEXT         │  │  DROPDOWN    │                            │
+│  │              │  │              │                            │
+│  │  Free-form   │  │  Select one  │                            │
+│  │  text input  │  │  from list   │                            │
+│  └──────────────┘  └──────────────┘                            │
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐                            │
+│  │  COMBOBOX    │  │  MULTISELECT │                            │
+│  │              │  │              │                            │
+│  │  Text input  │  │  Select many │                            │
+│  │  + dropdown  │  │  from list   │                            │
+│  └──────────────┘  └──────────────┘                            │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Widget Usage Patterns
+
+```python
+# Create widgets
+dbutils.widgets.text("start_date", "2024-01-01", "Start Date")
+dbutils.widgets.dropdown("env", "dev", ["dev", "staging", "prod"], "Environment")
+dbutils.widgets.combobox("table_name", "default", ["sales", "orders", "users"])
+dbutils.widgets.multiselect("regions", "US", ["US", "EU", "APAC"], "Regions")
+
+# Get values
+start_date = dbutils.widgets.get("start_date")
+env = dbutils.widgets.get("env")
+
+# Use in SQL cells
+# %sql
+# SELECT * FROM ${env}_catalog.schema.table
+# WHERE date >= '${start_date}'
+
+# Passing parameters via dbutils.notebook.run()
+result = dbutils.notebook.run("./child_notebook", 60, {"env": "prod", "start_date": "2024-06-01"})
+
+# Cleanup
+dbutils.widgets.removeAll()
+```
+
+---
+
+## CONCEPT GAP: dbutils.notebook vs. Databricks Workflows
+
+Understanding why `dbutils.notebook` is deprecated in favor of Workflows:
+
+| Feature | dbutils.notebook.run() | Databricks Workflows |
+|---------|----------------------|---------------------|
+| **Orchestration** | Code-based, in notebook | Visual DAG UI or YAML/JSON |
+| **Error handling** | Manual try/except | Built-in retry policies, alerts |
+| **Monitoring** | Manual logging | Full run history, UI dashboards |
+| **Scheduling** | Requires external trigger | Built-in cron scheduler |
+| **Parallelism** | Manual threading | Native parallel task support |
+| **Parameters** | Pass as dict argument | Job parameters, task values |
+| **Dependencies** | Manual management | Declarative task dependencies |
+| **Timeout** | Per-notebook timeout | Per-task and per-job timeout |
+| **Notifications** | Not built-in | Email, Slack, webhook alerts |
+
+```python
+# Legacy approach (dbutils.notebook) -- still works but NOT recommended
+result = dbutils.notebook.run("./etl_notebook", timeout_seconds=3600, arguments={"date": "2024-01-01"})
+
+# The child notebook returns a value using:
+dbutils.notebook.exit("success")
+```
+
+---
+
+## CONCEPT GAP: display() Function Details
+
+The `display()` function is unique to Databricks and deserves deeper coverage:
+
+- **Works with**: DataFrames (Spark and pandas), lists, dbutils output, MLflow objects.
+- **Features**: Renders tabular data with sortable columns, built-in charting (bar, line, scatter, pie, map, etc.), download to CSV, and pagination.
+- **Limitation**: `display()` is not available in SQL cells (SQL results auto-render).
+- **Performance**: `display()` on a Spark DataFrame triggers a `.collect()` behind the scenes, pulling data to the driver. By default, it renders up to 1,000 rows. Use `.limit(n)` before `display()` for large datasets.
+- **Alternative**: `displayHTML()` renders custom HTML content in a cell output.
+
+```python
+# Basic display
+display(df)
+
+# Display with profile (data profiling / summary statistics)
+display(df.summary())
+
+# Display HTML
+displayHTML("<h1>Custom HTML Output</h1>")
+```
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What is the difference between dbutils.fs and the %fs magic command?
+**A:** Both provide access to DBFS, but they serve different purposes. `%fs` is a magic command for quick, ad hoc file system operations -- it produces formatted output directly in the cell. `dbutils.fs` is a programmatic API that returns Python/Scala/R data structures (lists of FileInfo objects) that can be processed with code -- filtering, counting, looping, etc. Use `%fs` for quick exploration and `dbutils.fs` when you need to programmatically work with file system results. Behind the scenes, `%fs` is a shortcut for `dbutils.fs`.
+
+### Q2: How do Databricks Secrets work and why are they important?
+**A:** Databricks Secrets provide secure credential management through `dbutils.secrets`. Secrets are stored in **secret scopes** (either Databricks-backed with encrypted storage, or Azure Key Vault-backed for enterprise deployments). You retrieve secrets using `dbutils.secrets.get(scope, key)`. A critical security feature is that secret values are **automatically redacted** in notebook output -- even `print(secret_value)` shows `[REDACTED]`. This prevents accidental exposure of credentials in shared notebooks or logs. Secrets should always be used instead of hardcoding passwords, API keys, or connection strings.
+
+### Q3: What are the four types of widgets in dbutils.widgets?
+**A:** The four widget types are: (1) **text** -- free-form text input for arbitrary values; (2) **dropdown** -- single selection from a predefined list; (3) **combobox** -- combination of text input and dropdown, allowing either selection or custom input; (4) **multiselect** -- allows selecting multiple values from a list. All widget types take a name, default value, and label. Values are retrieved with `dbutils.widgets.get("name")`. Widgets appear as input controls at the top of the notebook and can be populated by external callers via `dbutils.notebook.run()` or Databricks Jobs.
+
+### Q4: Why is dbutils.notebook no longer recommended?
+**A:** Databricks recommends using **Databricks Workflows** instead of `dbutils.notebook.run()` for orchestrating multi-notebook pipelines. Workflows provide a visual DAG-based interface, built-in retry policies, scheduling, monitoring dashboards, alerting (email/Slack/webhook), native parallel task execution, and declarative task dependencies. `dbutils.notebook.run()` requires manual error handling, has no built-in scheduling, lacks a monitoring UI, and makes orchestration logic harder to maintain. While `dbutils.notebook.run()` still functions, Workflows are the modern, production-grade alternative.
+
+### Q5: How do you use the display() function and what are its limitations?
+**A:** `display()` is a Databricks-specific function that renders data in a formatted, interactive table with features like sortable columns, built-in charting (bar, line, scatter, pie, map), CSV download, and pagination. It works with Spark DataFrames, pandas DataFrames, lists, and dbutils output. Key limitations: (1) it is not available in SQL cells (SQL results auto-render); (2) it triggers a `.collect()` on Spark DataFrames, pulling data to the driver node; (3) it renders up to 1,000 rows by default; (4) for very large datasets, use `.limit(n)` first to avoid memory issues on the driver.
+
+### Q6: How can you find out what methods are available on dbutils.fs?
+**A:** Use the built-in help system with a three-level pattern: (1) `dbutils.help()` lists all available utility categories; (2) `dbutils.fs.help()` lists all methods within the file system utility; (3) `dbutils.fs.help("cp")` shows detailed help for a specific method including its signature, description, and example usage. This pattern works for all utility categories: `dbutils.secrets.help()`, `dbutils.widgets.help()`, etc. The help system eliminates the need to memorize all available methods and their parameters.
+
+### Q7: What are mount operations in dbutils.fs and are they still recommended?
+**A:** Mount operations (`dbutils.fs.mount`, `dbutils.fs.unmount`, `dbutils.fs.mounts`) allow you to map external cloud storage (ADLS Gen2, S3, GCS) to a DBFS path (e.g., `/mnt/data`). Once mounted, you can access external storage using DBFS paths instead of full cloud storage URLs. However, mounts are **legacy and no longer recommended** for Unity Catalog-enabled workspaces. The modern approach is to use **external locations** and **storage credentials** managed through Unity Catalog, which provides better security, auditing, and governance. Mounts bypass Unity Catalog's access controls.
+
+### Q8: In which notebook cell languages can you use dbutils?
+**A:** dbutils is available in **Python**, **Scala**, and **R** cells. It is **not available in SQL cells**. If you need to use dbutils functionality from a SQL context, you can create a Python cell to perform the dbutils operation and store results in a temporary view or variable, then access that from SQL. The syntax is identical across Python and Scala (`dbutils.fs.ls("/")`) but R uses a slightly different calling convention. Most data engineers use dbutils from Python cells since Python is the most common language in Databricks data engineering.
+
+---
+
 *End of lesson*
