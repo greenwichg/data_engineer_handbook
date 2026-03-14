@@ -1,0 +1,496 @@
+-- =============================================================================
+-- SECTION 03.1: SNOWFLAKE ARCHITECTURE
+-- =============================================================================
+--
+-- OBJECTIVE:
+--   Understand Snowflake's unique three-layer architecture, how it differs
+--   from traditional data warehouse architectures, and why it matters for
+--   performance, scalability, and cost optimization.
+--
+-- WHAT YOU WILL LEARN:
+--   1. Snowflake's three-layer architecture (Storage, Compute, Cloud Services)
+--   2. How each layer works independently and scales separately
+--   3. Micro-partitions and columnar storage
+--   4. Virtual warehouses and compute isolation
+--   5. Cloud Services layer responsibilities
+--   6. How Snowflake compares to traditional and other cloud architectures
+--
+--
+-- =============================================================================
+-- SNOWFLAKE'S THREE-LAYER ARCHITECTURE (MOST ASKED INTERVIEW TOPIC)
+-- =============================================================================
+--
+-- ┌─────────────────────────────────────────────────────────────────────────┐
+-- │                    CLOUD SERVICES LAYER                                │
+-- │  (Brain of Snowflake — always running, shared across all users)       │
+-- │                                                                        │
+-- │  ┌──────────┐ ┌──────────────┐ ┌──────────┐ ┌────────────────────┐   │
+-- │  │  Query    │ │ Metadata     │ │ Access   │ │ Infrastructure     │   │
+-- │  │  Parsing  │ │ Management   │ │ Control  │ │ Management         │   │
+-- │  │  & Opt.   │ │              │ │ (RBAC)   │ │                    │   │
+-- │  └──────────┘ └──────────────┘ └──────────┘ └────────────────────┘   │
+-- │  ┌──────────┐ ┌──────────────┐ ┌──────────┐ ┌────────────────────┐   │
+-- │  │ Trans-   │ │ Result       │ │ Security │ │ Transaction        │   │
+-- │  │ action   │ │ Caching      │ │ & Encrypt│ │ Management         │   │
+-- │  │ Control  │ │ (24 hrs)     │ │          │ │                    │   │
+-- │  └──────────┘ └──────────────┘ └──────────┘ └────────────────────┘   │
+-- ├─────────────────────────────────────────────────────────────────────────┤
+-- │                    COMPUTE LAYER (Virtual Warehouses)                  │
+-- │  (Muscle of Snowflake — scales independently, isolated per warehouse) │
+-- │                                                                        │
+-- │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                │
+-- │  │  Warehouse   │  │  Warehouse   │  │  Warehouse   │                │
+-- │  │  (ETL)       │  │  (Analytics) │  │  (Data Sci)  │                │
+-- │  │  X-Large     │  │  Medium      │  │  Small       │                │
+-- │  │              │  │              │  │              │                │
+-- │  │  ┌────────┐  │  │  ┌────────┐  │  │  ┌────────┐  │                │
+-- │  │  │Local   │  │  │  │Local   │  │  │  │Local   │  │                │
+-- │  │  │SSD     │  │  │  │SSD     │  │  │  │SSD     │  │                │
+-- │  │  │Cache   │  │  │  │Cache   │  │  │  │Cache   │  │                │
+-- │  │  └────────┘  │  │  └────────┘  │  │  └────────┘  │                │
+-- │  └──────────────┘  └──────────────┘  └──────────────┘                │
+-- │  (Each warehouse is independent — no resource contention!)            │
+-- ├─────────────────────────────────────────────────────────────────────────┤
+-- │                    STORAGE LAYER                                       │
+-- │  (Foundation of Snowflake — managed cloud object storage)             │
+-- │                                                                        │
+-- │  ┌──────────────────────────────────────────────────────────────────┐  │
+-- │  │                     Cloud Object Storage                         │  │
+-- │  │              (AWS S3 / Azure Blob / GCS)                        │  │
+-- │  │                                                                  │  │
+-- │  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │  │
+-- │  │  │ Micro-  │ │ Micro-  │ │ Micro-  │ │ Micro-  │ │ Micro-  │  │  │
+-- │  │  │Partition│ │Partition│ │Partition│ │Partition│ │Partition│  │  │
+-- │  │  │  1      │ │  2      │ │  3      │ │  4      │ │  ...    │  │  │
+-- │  │  │ (50-500 │ │ (50-500 │ │ (50-500 │ │ (50-500 │ │         │  │  │
+-- │  │  │  MB)    │ │  MB)    │ │  MB)    │ │  MB)    │ │         │  │  │
+-- │  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘  │  │
+-- │  │  Compressed, columnar, encrypted, immutable                      │  │
+-- │  └──────────────────────────────────────────────────────────────────┘  │
+-- └─────────────────────────────────────────────────────────────────────────┘
+--
+--
+-- =============================================================================
+-- LAYER 1: STORAGE LAYER (THE FOUNDATION)
+-- =============================================================================
+--
+-- HOW SNOWFLAKE STORES DATA:
+-- ┌──────────────────────┬──────────────────────────────────────────────────┐
+-- │ Feature              │ Description                                      │
+-- ├──────────────────────┼──────────────────────────────────────────────────┤
+-- │ Storage backend      │ Cloud object storage (S3, Azure Blob, GCS)     │
+-- │ Data format          │ Proprietary columnar format (NOT Parquet/ORC)   │
+-- │ Unit of storage      │ Micro-partitions (50-500 MB compressed)        │
+-- │ Compression          │ Automatic, columnar compression                │
+-- │ Encryption           │ AES-256, always encrypted at rest              │
+-- │ Mutability           │ Immutable (writes create new micro-partitions) │
+-- │ Organization         │ Columnar (not row-based)                       │
+-- │ Management           │ Fully managed by Snowflake (no tuning needed)  │
+-- │ Billing              │ Pay per TB/month of compressed data stored     │
+-- └──────────────────────┴──────────────────────────────────────────────────┘
+--
+-- MICRO-PARTITIONS (CRITICAL INTERVIEW TOPIC):
+-- ┌─────────────────────────────────────────────────────────────────────────┐
+-- │                                                                        │
+-- │  Original Table:                                                       │
+-- │  ┌─────┬──────────┬────────┬─────────┐                                │
+-- │  │ ID  │ NAME     │ CITY   │ AMOUNT  │                                │
+-- │  ├─────┼──────────┼────────┼─────────┤                                │
+-- │  │ 1   │ Alice    │ NYC    │ 100     │  ──┐                           │
+-- │  │ 2   │ Bob      │ LA     │ 200     │    ├─ Micro-Partition 1       │
+-- │  │ 3   │ Carol    │ NYC    │ 150     │  ──┘                           │
+-- │  │ 4   │ Dave     │ CHI    │ 300     │  ──┐                           │
+-- │  │ 5   │ Eve      │ LA     │ 250     │    ├─ Micro-Partition 2       │
+-- │  │ 6   │ Frank    │ CHI    │ 175     │  ──┘                           │
+-- │  └─────┴──────────┴────────┴─────────┘                                │
+-- │                                                                        │
+-- │  Each micro-partition stores data COLUMNAR:                            │
+-- │  ┌─────────────────────────────────────┐                              │
+-- │  │ Micro-Partition 1:                  │                              │
+-- │  │   Column ID:     [1, 2, 3]          │                              │
+-- │  │   Column NAME:   [Alice, Bob, Carol]│                              │
+-- │  │   Column CITY:   [NYC, LA, NYC]     │                              │
+-- │  │   Column AMOUNT: [100, 200, 150]    │                              │
+-- │  │                                     │                              │
+-- │  │   METADATA (stored in Cloud Svcs):  │                              │
+-- │  │     ID range:     1 - 3             │                              │
+-- │  │     CITY values:  {NYC, LA}         │                              │
+-- │  │     AMOUNT range: 100 - 200         │                              │
+-- │  └─────────────────────────────────────┘                              │
+-- │                                                                        │
+-- │  WHY COLUMNAR?                                                         │
+-- │  - Analytics queries usually read few columns from many rows          │
+-- │  - SELECT SUM(AMOUNT) only reads the AMOUNT column, skips others     │
+-- │  - Better compression (similar data types compress together)          │
+-- │  - Enables partition pruning via min/max metadata                     │
+-- └─────────────────────────────────────────────────────────────────────────┘
+--
+-- PARTITION PRUNING EXAMPLE:
+--   Query: SELECT * FROM table WHERE CITY = 'CHI';
+--   Snowflake checks metadata:
+--     Micro-Partition 1: CITY values = {NYC, LA}  → SKIP (no 'CHI')
+--     Micro-Partition 2: CITY values = {LA, CHI}  → SCAN (contains 'CHI')
+--   Result: Only 1 of 2 partitions is read — 50% less I/O!
+
+
+-- =============================================================================
+-- LAYER 2: COMPUTE LAYER (VIRTUAL WAREHOUSES)
+-- =============================================================================
+--
+-- VIRTUAL WAREHOUSE = A CLUSTER OF COMPUTE RESOURCES:
+-- ┌──────────────────────┬──────────────────────────────────────────────────┐
+-- │ Feature              │ Description                                      │
+-- ├──────────────────────┼──────────────────────────────────────────────────┤
+-- │ What it is           │ A named cluster of compute nodes (VMs)         │
+-- │ Independence         │ Each warehouse is fully isolated               │
+-- │ Scaling              │ Scale UP (size) or OUT (multi-cluster)         │
+-- │ Auto-suspend         │ Stops billing after idle timeout               │
+-- │ Auto-resume          │ Starts automatically when query arrives        │
+-- │ Local cache          │ SSD cache of recently accessed data            │
+-- │ Billing              │ Pay per second, minimum 60 seconds             │
+-- │ Concurrency          │ Each warehouse handles concurrent queries      │
+-- │ No shared resources  │ Warehouses do NOT compete for resources        │
+-- └──────────────────────┴──────────────────────────────────────────────────┘
+
+-- Explore available warehouse sizes
+SHOW WAREHOUSES;
+
+-- WAREHOUSE SIZING (CREDITS PER HOUR):
+-- ┌──────────────┬─────────────────┬─────────────────────────────────────┐
+-- │ Size         │ Credits/Hour    │ Nodes                               │
+-- ├──────────────┼─────────────────┼─────────────────────────────────────┤
+-- │ X-Small      │ 1               │ 1 node                             │
+-- │ Small        │ 2               │ 2 nodes                            │
+-- │ Medium       │ 4               │ 4 nodes                            │
+-- │ Large        │ 8               │ 8 nodes                            │
+-- │ X-Large      │ 16              │ 16 nodes                           │
+-- │ 2X-Large     │ 32              │ 32 nodes                           │
+-- │ 3X-Large     │ 64              │ 64 nodes                           │
+-- │ 4X-Large     │ 128             │ 128 nodes                          │
+-- └──────────────┴─────────────────┴─────────────────────────────────────┘
+-- NOTE: Each size doubles nodes AND cost. Doubling size ≈ halves query time.
+
+-- KEY CONCEPT: COMPUTE ISOLATION
+-- ┌─────────────────────────────────────────────────────────────────────────┐
+-- │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐               │
+-- │  │ ETL WH      │    │ BI WH       │    │ Data Sci WH │               │
+-- │  │ (X-Large)   │    │ (Medium)    │    │ (Small)     │               │
+-- │  │             │    │             │    │             │               │
+-- │  │ Heavy loads │    │ Dashboards  │    │ ML queries  │               │
+-- │  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘               │
+-- │         │                  │                   │                      │
+-- │         └──────────────────┼───────────────────┘                      │
+-- │                            ▼                                          │
+-- │              ┌──────────────────────────┐                            │
+-- │              │   SHARED STORAGE LAYER   │                            │
+-- │              │   (Same data, no copies) │                            │
+-- │              └──────────────────────────┘                            │
+-- │                                                                       │
+-- │  A heavy ETL job on the ETL warehouse does NOT slow down             │
+-- │  dashboard queries on the BI warehouse. Complete isolation!           │
+-- └─────────────────────────────────────────────────────────────────────────┘
+
+-- SCALING: SCALE UP vs SCALE OUT
+-- ┌──────────────────────┬──────────────────────┬──────────────────────────┐
+-- │ Aspect               │ Scale UP             │ Scale OUT                │
+-- │                      │ (bigger warehouse)   │ (multi-cluster WH)       │
+-- ├──────────────────────┼──────────────────────┼──────────────────────────┤
+-- │ What changes         │ Warehouse size       │ Number of clusters       │
+-- │ Helps with           │ Complex/large queries│ Many concurrent queries  │
+-- │ Example              │ Medium → X-Large     │ 1 cluster → 3 clusters  │
+-- │ Use case             │ Slow individual query│ Queue of waiting queries │
+-- │ Cost impact          │ Higher per-query cost│ Higher concurrency cost  │
+-- │ Edition required     │ All editions         │ Enterprise edition+      │
+-- └──────────────────────┴──────────────────────┴──────────────────────────┘
+
+
+-- =============================================================================
+-- LAYER 3: CLOUD SERVICES LAYER (THE BRAIN)
+-- =============================================================================
+--
+-- RESPONSIBILITIES OF THE CLOUD SERVICES LAYER:
+-- ┌──────────────────────────┬────────────────────────────────────────────┐
+-- │ Service                  │ What It Does                               │
+-- ├──────────────────────────┼────────────────────────────────────────────┤
+-- │ Query parsing/optimization│ Parses SQL, creates execution plan       │
+-- │ Metadata management      │ Stores micro-partition stats (min/max,   │
+-- │                          │ row count, null count per column)         │
+-- │ Access control (RBAC)    │ Enforces roles, privileges, masking      │
+-- │ Transaction management   │ ACID compliance, concurrency control     │
+-- │ Security & encryption    │ Key management, authentication, MFA      │
+-- │ Result caching           │ Caches query results for 24 hours        │
+-- │ Infrastructure mgmt      │ Provisions/deprovisions warehouses       │
+-- │ Data sharing             │ Manages shares between accounts          │
+-- └──────────────────────────┴────────────────────────────────────────────┘
+--
+-- IMPORTANT: The Cloud Services layer is ALWAYS running (unlike warehouses)
+-- It is shared across all users but isolated per account.
+-- Billing: First 10% of daily compute credits is free for cloud services.
+--          Only charges if cloud services exceed 10% of total compute.
+
+
+-- =============================================================================
+-- THREE LEVELS OF CACHING IN SNOWFLAKE (INTERVIEW FAVORITE)
+-- =============================================================================
+--
+-- ┌──────────────────────┬──────────────────┬─────────────────────────────┐
+-- │ Cache Level          │ Location         │ Details                      │
+-- ├──────────────────────┼──────────────────┼─────────────────────────────┤
+-- │ 1. Result Cache      │ Cloud Services   │ Exact query result cached   │
+-- │                      │ Layer            │ for 24 hours. FREE. No WH   │
+-- │                      │                  │ needed. Invalidated on DML. │
+-- ├──────────────────────┼──────────────────┼─────────────────────────────┤
+-- │ 2. Local Disk Cache  │ Compute Layer    │ Raw data cached on WH SSD. │
+-- │    (WH Cache)        │ (Warehouse SSD)  │ Persists while WH runs.    │
+-- │                      │                  │ Lost on suspend/resize.    │
+-- ├──────────────────────┼──────────────────┼─────────────────────────────┤
+-- │ 3. Remote Disk       │ Storage Layer    │ Cloud object storage.      │
+-- │    (Coldest)         │ (S3/Blob/GCS)    │ Always available but       │
+-- │                      │                  │ highest latency.           │
+-- └──────────────────────┴──────────────────┴─────────────────────────────┘
+--
+-- QUERY EXECUTION PATH:
+--   1. Check Result Cache → exact match? Return instantly (FREE!)
+--   2. Check Local SSD Cache → data on warehouse SSD? Read from SSD
+--   3. Fetch from Remote Storage → pull from cloud storage (slowest)
+
+-- Disable result cache to test true query performance:
+ALTER SESSION SET USE_CACHED_RESULT = FALSE;
+
+-- Re-enable result cache (default):
+ALTER SESSION SET USE_CACHED_RESULT = TRUE;
+
+-- View cache-related query profile info:
+-- Run a query, then check the Query Profile in the Snowflake UI
+-- Look for: "Percentage scanned from cache" in the statistics
+
+
+-- =============================================================================
+-- SNOWFLAKE vs TRADITIONAL ARCHITECTURES (CRITICAL INTERVIEW TOPIC)
+-- =============================================================================
+--
+-- ARCHITECTURE EVOLUTION:
+-- ┌───────────────────────────────────────────────────────────────────────────┐
+-- │                                                                          │
+-- │  1. SHARED-DISK (e.g., Oracle RAC)                                      │
+-- │     ┌──────┐ ┌──────┐ ┌──────┐                                         │
+-- │     │Node 1│ │Node 2│ │Node 3│  ← All share same storage               │
+-- │     └──┬───┘ └──┬───┘ └──┬───┘                                         │
+-- │        └────────┼────────┘                                              │
+-- │           ┌─────┴─────┐                                                 │
+-- │           │  Shared   │  ← Storage bottleneck, limited scalability     │
+-- │           │  Storage  │                                                 │
+-- │           └───────────┘                                                 │
+-- │                                                                          │
+-- │  2. SHARED-NOTHING (e.g., Hadoop, Redshift, Teradata)                   │
+-- │     ┌──────────┐ ┌──────────┐ ┌──────────┐                             │
+-- │     │Node 1    │ │Node 2    │ │Node 3    │  ← Each node has own storage│
+-- │     │CPU+Store │ │CPU+Store │ │CPU+Store │                             │
+-- │     └──────────┘ └──────────┘ └──────────┘                             │
+-- │     Compute & storage are coupled → resize requires data redistribution│
+-- │                                                                          │
+-- │  3. SNOWFLAKE: MULTI-CLUSTER SHARED DATA (hybrid / best of both)        │
+-- │     ┌──────┐ ┌──────┐ ┌──────┐                                         │
+-- │     │ WH 1 │ │ WH 2 │ │ WH 3 │  ← Independent compute clusters       │
+-- │     └──┬───┘ └──┬───┘ └──┬───┘                                         │
+-- │        └────────┼────────┘                                              │
+-- │           ┌─────┴─────┐                                                 │
+-- │           │  Shared   │  ← Infinitely scalable cloud object storage    │
+-- │           │ Cloud     │  ← No bottleneck (S3/Blob/GCS)                │
+-- │           │ Storage   │                                                 │
+-- │           └───────────┘                                                 │
+-- │     Compute scales independently from storage!                          │
+-- └───────────────────────────────────────────────────────────────────────────┘
+--
+-- ARCHITECTURE COMPARISON TABLE:
+-- ┌──────────────────────┬──────────────┬──────────────┬───────────────────┐
+-- │ Feature              │ Shared-Disk  │ Shared-Nothing│ Snowflake         │
+-- ├──────────────────────┼──────────────┼──────────────┼───────────────────┤
+-- │ Storage & compute    │ Coupled      │ Coupled      │ Decoupled         │
+-- │ Scale storage alone  │ Difficult    │ No           │ Yes (independent) │
+-- │ Scale compute alone  │ Difficult    │ No           │ Yes (independent) │
+-- │ Concurrency          │ Limited      │ Limited      │ Unlimited (add WH)│
+-- │ Data redistribution  │ Not needed   │ On resize    │ Never needed      │
+-- │ Hardware management  │ You manage   │ You manage   │ Snowflake manages │
+-- │ Workload isolation   │ No           │ No           │ Yes (per WH)      │
+-- └──────────────────────┴──────────────┴──────────────┴───────────────────┘
+
+
+-- =============================================================================
+-- SNOWFLAKE EDITIONS (INTERVIEW TOPIC)
+-- =============================================================================
+--
+-- ┌────────────────────┬──────────────────────────────────────────────────┐
+-- │ Edition            │ Key Features                                     │
+-- ├────────────────────┼──────────────────────────────────────────────────┤
+-- │ Standard           │ Full SQL, Time Travel (1 day), basic encryption,│
+-- │                    │ Fail-Safe, all standard features                │
+-- ├────────────────────┼──────────────────────────────────────────────────┤
+-- │ Enterprise         │ Standard + Multi-cluster WH, Time Travel (90   │
+-- │                    │ days), materialized views, dynamic data masking,│
+-- │                    │ column-level security, search optimization      │
+-- ├────────────────────┼──────────────────────────────────────────────────┤
+-- │ Business Critical  │ Enterprise + HIPAA/PCI/SOC compliance,         │
+-- │                    │ customer-managed encryption keys (Tri-Secret),  │
+-- │                    │ failover/failback, private connectivity         │
+-- ├────────────────────┼──────────────────────────────────────────────────┤
+-- │ Virtual Private    │ Business Critical + fully dedicated and        │
+-- │ Snowflake (VPS)    │ isolated Snowflake environment, highest        │
+-- │                    │ security level                                  │
+-- └────────────────────┴──────────────────────────────────────────────────┘
+--
+-- INTERVIEW TIP: Know which features require Enterprise edition:
+--   - Multi-cluster warehouses (scale out)
+--   - Time Travel up to 90 days (Standard = 1 day max)
+--   - Materialized views
+--   - Dynamic data masking
+--   - Column-level security
+--   - Row access policies
+--   - Search optimization service
+
+
+-- =============================================================================
+-- SNOWFLAKE CLOUD PLATFORM SUPPORT
+-- =============================================================================
+--
+-- ┌────────────────────┬──────────────────────────────────────────────────┐
+-- │ Cloud Provider     │ Details                                          │
+-- ├────────────────────┼──────────────────────────────────────────────────┤
+-- │ AWS                │ Runs on EC2 + S3. Most regions available.       │
+-- │ Azure              │ Runs on Azure VMs + Blob Storage.              │
+-- │ Google Cloud (GCP) │ Runs on GCE + Google Cloud Storage.            │
+-- └────────────────────┴──────────────────────────────────────────────────┘
+--
+-- KEY POINTS:
+--   - Snowflake is NOT multi-cloud per account (one account = one cloud)
+--   - Cross-cloud data sharing is supported (with replication)
+--   - The SQL syntax and features are IDENTICAL across all clouds
+--   - Your choice of cloud provider affects region availability and pricing
+--   - Data can be replicated across clouds for disaster recovery
+
+
+-- =============================================================================
+-- CONCEPT GAP: DATA LIFECYCLE IN SNOWFLAKE
+-- =============================================================================
+--
+-- ┌─────────────────────────────────────────────────────────────────────────┐
+-- │                                                                        │
+-- │  DATA ENTERS SNOWFLAKE:                                               │
+-- │  ┌─────────┐    ┌──────────────┐    ┌──────────────────────┐         │
+-- │  │ Raw     │──► │ COPY INTO    │──► │ Micro-partitions     │         │
+-- │  │ Files   │    │ or Snowpipe  │    │ (compressed, columnar│         │
+-- │  │ (CSV,   │    │              │    │  encrypted, immutable│         │
+-- │  │ JSON,   │    └──────────────┘    │  50-500 MB each)     │         │
+-- │  │ Parquet)│                         └──────────────────────┘         │
+-- │  └─────────┘                                                          │
+-- │                                                                        │
+-- │  DATA IS QUERIED:                                                      │
+-- │  ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐        │
+-- │  │ User sends   │──► │ Cloud Svcs   │──► │ Virtual WH       │        │
+-- │  │ SELECT query │    │ parses, opts, │    │ reads micro-     │        │
+-- │  │              │    │ checks cache │    │ partitions,      │        │
+-- │  └──────────────┘    └──────────────┘    │ returns results  │        │
+-- │                                           └──────────────────┘        │
+-- │                                                                        │
+-- │  DATA IS MODIFIED (DML):                                              │
+-- │  ┌──────────────┐    ┌──────────────────────────────────────┐        │
+-- │  │ UPDATE/DELETE │──► │ Snowflake does NOT modify in place!  │        │
+-- │  │ statement     │    │ Old micro-partitions → marked deleted│        │
+-- │  │               │    │ New micro-partitions → created with  │        │
+-- │  └──────────────┘    │ updated data (copy-on-write)         │        │
+-- │                       └──────────────────────────────────────┘        │
+-- │                                                                        │
+-- │  This immutability enables:                                            │
+-- │    - Time Travel (read old micro-partitions)                          │
+-- │    - Zero-copy cloning (share micro-partition pointers)               │
+-- │    - Fail-Safe (old partitions retained for 7 days)                   │
+-- └─────────────────────────────────────────────────────────────────────────┘
+
+
+-- =============================================================================
+-- CONCEPT GAP: METADATA MANAGEMENT AND PRUNING
+-- =============================================================================
+--
+-- For every micro-partition, Snowflake stores metadata:
+--   - Range of values for each column (MIN, MAX)
+--   - Number of distinct values
+--   - Number of NULL values
+--   - Total row count
+--
+-- This metadata enables PARTITION PRUNING:
+--   The query optimizer reads metadata INSTEAD of scanning data,
+--   skipping micro-partitions that cannot contain matching rows.
+--
+-- EXAMPLE:
+--   Table has 1,000 micro-partitions.
+--   Query: WHERE order_date = '2024-01-15'
+--   Metadata check: only 3 micro-partitions have dates including Jan 15
+--   Result: 997 partitions PRUNED → only 3 scanned → 99.7% reduction!
+--
+-- You can check pruning effectiveness in the Query Profile:
+--   "Partitions scanned" vs "Partitions total"
+--   A good ratio is < 10% scanned (high pruning efficiency)
+
+
+-- =============================================================================
+-- CONCEPT GAP: SNOWFLAKE vs OTHER CLOUD DATA WAREHOUSES
+-- =============================================================================
+--
+-- ┌──────────────────────┬─────────────┬──────────────┬──────────────────┐
+-- │ Feature              │ Snowflake   │ Redshift     │ BigQuery         │
+-- ├──────────────────────┼─────────────┼──────────────┼──────────────────┤
+-- │ Architecture         │ Multi-clust.│ Shared-      │ Serverless       │
+-- │                      │ shared data │ nothing      │                  │
+-- │ Storage/compute      │ Decoupled   │ Coupled*     │ Decoupled        │
+-- │ Scaling              │ Instant     │ Minutes      │ Automatic        │
+-- │ Concurrency          │ Multi-WH    │ Limited**    │ Slot-based       │
+-- │ Pricing model        │ Per-second  │ Per-hour     │ Per-query (bytes)│
+-- │ Semi-structured data │ VARIANT     │ SUPER        │ STRUCT/JSON      │
+-- │ Data sharing         │ Zero-copy   │ Via S3       │ Analytics Hub    │
+-- │ Time Travel          │ Up to 90d   │ Via snapshots│ 7 days (default) │
+-- │ Maintenance          │ Zero        │ VACUUM/SORT  │ Zero             │
+-- └──────────────────────┴─────────────┴──────────────┴──────────────────┘
+-- * Redshift Serverless decouples storage/compute (newer offering)
+-- ** Redshift concurrency scaling adds transient clusters (similar to multi-WH)
+
+
+-- =============================================================================
+-- KEY INTERVIEW QUESTIONS AND ANSWERS
+-- =============================================================================
+--
+-- Q1: "Explain Snowflake's architecture."
+-- A: Snowflake uses a multi-cluster shared data architecture with three layers:
+--    Storage (cloud object storage with micro-partitions), Compute (independent
+--    virtual warehouses), and Cloud Services (query optimization, metadata,
+--    security). Storage and compute scale independently.
+--
+-- Q2: "What are micro-partitions?"
+-- A: Immutable, compressed, columnar storage units of 50-500 MB. Snowflake
+--    automatically organizes data into micro-partitions. Each stores metadata
+--    (min/max values, null counts) for partition pruning.
+--
+-- Q3: "How does Snowflake handle concurrency?"
+-- A: By using multiple virtual warehouses. Each warehouse is an independent
+--    compute cluster that accesses the same shared storage. Heavy ETL on one
+--    warehouse does not impact analytics on another.
+--
+-- Q4: "What is the difference between scaling up and scaling out?"
+-- A: Scale UP = increase warehouse size (more nodes per cluster) for complex
+--    queries. Scale OUT = add more clusters (multi-cluster warehouse) for
+--    more concurrent queries. Scale OUT requires Enterprise edition.
+--
+-- Q5: "What is partition pruning?"
+-- A: Snowflake stores min/max metadata for each column in every micro-partition.
+--    When a query has a WHERE clause, Snowflake skips partitions whose value
+--    ranges don't overlap with the filter — reducing I/O dramatically.
+--
+-- Q6: "Why doesn't Snowflake require VACUUM or indexing?"
+-- A: Because micro-partitions are immutable. UPDATEs create new partitions
+--    instead of modifying existing ones. Snowflake automatically manages
+--    partition organization, so no manual maintenance is needed.
+--
+-- Q7: "What are the three levels of caching?"
+-- A: 1) Result cache (Cloud Services, 24h, free, exact query match),
+--    2) Local disk cache (Warehouse SSD, lost on suspend),
+--    3) Remote storage (S3/Blob/GCS, always available, highest latency).
+-- =============================================================================
