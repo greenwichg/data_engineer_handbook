@@ -1322,4 +1322,260 @@ Now that we have storage access configured:
 
 ---
 
+## CONCEPT GAP: ABFSS Protocol and Azure Storage URL Formats
+
+Understanding Azure storage URL formats is essential for certification exams and practical work. Different protocols serve different purposes.
+
+### Azure Storage URL Formats
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                  AZURE STORAGE URL FORMATS                       │
+│                                                                  │
+│  ABFSS (Azure Blob File System Secure) -- RECOMMENDED            │
+│  ══════════════════════════════════════════════════               │
+│  abfss://<container>@<account>.dfs.core.windows.net/<path>       │
+│                                                                  │
+│  Example:                                                        │
+│  abfss://demo@dcoursextdl.dfs.core.windows.net/catalogs/dev/    │
+│         ^^^^  ^^^^^^^^^^^                       ^^^^^^^^^^^^^    │
+│      container  storage account                 path             │
+│                                                                  │
+│  - Uses TLS encryption (the 's' = secure)                        │
+│  - Recommended for all Databricks workloads                      │
+│  - Works with ADLS Gen2 (hierarchical namespace)                 │
+│                                                                  │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ABFS (Azure Blob File System) -- WITHOUT TLS                    │
+│  ════════════════════════════════════════════                     │
+│  abfs://<container>@<account>.dfs.core.windows.net/<path>        │
+│                                                                  │
+│  - No TLS encryption                                             │
+│  - NOT recommended for production                                │
+│                                                                  │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  WASBS (Windows Azure Storage Blob Secure) -- LEGACY             │
+│  ═══════════════════════════════════════════════════              │
+│  wasbs://<container>@<account>.blob.core.windows.net/<path>      │
+│                                                                  │
+│  - Legacy protocol for Blob Storage (not ADLS Gen2)              │
+│  - Uses blob.core.windows.net (not dfs.core.windows.net)         │
+│  - Not recommended for new workloads                             │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Protocol Comparison
+
+| Protocol | Encryption | Storage Type | Endpoint | Recommended |
+|----------|-----------|-------------|----------|-------------|
+| **abfss** | TLS (secure) | ADLS Gen2 | dfs.core.windows.net | Yes |
+| **abfs** | None | ADLS Gen2 | dfs.core.windows.net | No |
+| **wasbs** | TLS (secure) | Blob Storage | blob.core.windows.net | No (legacy) |
+| **wasb** | None | Blob Storage | blob.core.windows.net | No (legacy) |
+
+---
+
+## CONCEPT GAP: Hierarchical Namespace -- Why It Matters
+
+The hierarchical namespace setting is a critical but often misunderstood concept tested on exams.
+
+### Blob Storage vs ADLS Gen2
+
+```
+WITHOUT Hierarchical Namespace (Blob Storage):
+══════════════════════════════════════════════
+  Flat namespace -- directories are simulated via path prefixes
+
+  Stored as:
+  /data/customers/part-00000.parquet  (single blob object)
+  /data/customers/part-00001.parquet  (single blob object)
+  /data/orders/part-00000.parquet     (single blob object)
+
+  "Rename /data/customers/" = copy ALL files + delete originals
+  Performance: SLOW for directory operations
+  ACLs: Only at container level
+
+
+WITH Hierarchical Namespace (ADLS Gen2):
+════════════════════════════════════════
+  True directory structure with real directory objects
+
+  /data/
+    ├── customers/          (real directory object)
+    │   ├── part-00000.parquet
+    │   └── part-00001.parquet
+    └── orders/             (real directory object)
+        └── part-00000.parquet
+
+  "Rename /data/customers/" = atomic metadata operation
+  Performance: FAST for directory operations
+  ACLs: At file and directory level (POSIX-like)
+```
+
+### Key Differences
+
+| Operation | Blob Storage (Flat) | ADLS Gen2 (Hierarchical) |
+|-----------|-------------------|------------------------|
+| **Rename directory** | Copy all files + delete (O(n)) | Atomic metadata update (O(1)) |
+| **Delete directory** | Delete each file individually | Single atomic operation |
+| **Directory ACLs** | Not supported | POSIX-compatible ACLs |
+| **File-level ACLs** | Not supported | Supported |
+| **Atomic operations** | Limited | Full support |
+| **Delta Lake performance** | Slower | Optimized |
+| **Unity Catalog support** | Not recommended | Required for best results |
+
+---
+
+## CONCEPT GAP: SQL Commands for Managing External Locations and Credentials
+
+These SQL commands are frequently tested and used in practice.
+
+```sql
+-- ═══════════════════════════════════════════════
+-- STORAGE CREDENTIAL MANAGEMENT
+-- ═══════════════════════════════════════════════
+
+-- Create storage credential (Managed Identity)
+CREATE STORAGE CREDENTIAL IF NOT EXISTS my_credential
+WITH (
+  AZURE_MANAGED_IDENTITY_ACCESS_CONNECTOR_ID = '/subscriptions/.../accessConnectors/my-connector'
+)
+COMMENT 'Storage credential for production data lake';
+
+-- List all storage credentials
+SHOW STORAGE CREDENTIALS;
+
+-- Describe a storage credential
+DESCRIBE STORAGE CREDENTIAL my_credential;
+
+-- Grant permission to use a storage credential
+GRANT USE STORAGE CREDENTIAL ON STORAGE CREDENTIAL my_credential
+TO `data-engineers@company.com`;
+
+-- Drop storage credential
+DROP STORAGE CREDENTIAL IF EXISTS my_credential;
+
+
+-- ═══════════════════════════════════════════════
+-- EXTERNAL LOCATION MANAGEMENT
+-- ═══════════════════════════════════════════════
+
+-- Create external location
+CREATE EXTERNAL LOCATION IF NOT EXISTS my_location
+URL 'abfss://container@account.dfs.core.windows.net/'
+WITH (STORAGE CREDENTIAL my_credential)
+COMMENT 'External location for production data';
+
+-- List all external locations
+SHOW EXTERNAL LOCATIONS;
+
+-- Describe an external location
+DESCRIBE EXTERNAL LOCATION my_location;
+
+-- Grant permissions on external location
+GRANT CREATE EXTERNAL TABLE ON EXTERNAL LOCATION my_location
+TO `data-engineers@company.com`;
+
+GRANT READ FILES ON EXTERNAL LOCATION my_location
+TO `data-analysts@company.com`;
+
+-- Drop external location
+DROP EXTERNAL LOCATION IF EXISTS my_location;
+
+
+-- ═══════════════════════════════════════════════
+-- TESTING AND VALIDATION
+-- ═══════════════════════════════════════════════
+
+-- Validate external location connectivity
+VALIDATE EXTERNAL LOCATION my_location;
+
+-- List files at an external location
+LIST 'abfss://container@account.dfs.core.windows.net/path/';
+```
+
+---
+
+## CONCEPT GAP: System-Assigned vs User-Assigned Managed Identity
+
+This distinction appears on exams when discussing Access Connector configuration.
+
+### Managed Identity Types
+
+```
+SYSTEM-ASSIGNED MANAGED IDENTITY:
+═════════════════════════════════
+  ┌─────────────────────────────────┐
+  │   Access Connector Resource     │
+  │   ┌─────────────────────────┐   │
+  │   │  Managed Identity       │   │
+  │   │  (auto-created)         │   │
+  │   │  (auto-deleted)         │   │
+  │   │  Lifecycle = resource   │   │
+  │   └─────────────────────────┘   │
+  └─────────────────────────────────┘
+  One identity per resource
+  Cannot be shared
+  Deleted when resource is deleted
+
+
+USER-ASSIGNED MANAGED IDENTITY:
+═══════════════════════════════
+  ┌─────────────────────────────────┐
+  │  Standalone Identity Resource   │
+  │  (created independently)        │
+  └───────────┬─────────────────────┘
+              │ assigned to
+     ┌────────┴────────┐
+     ▼                 ▼
+  ┌──────────┐   ┌──────────┐
+  │Resource A│   │Resource B│
+  └──────────┘   └──────────┘
+  Can be shared across resources
+  Independent lifecycle
+  Must be explicitly managed
+```
+
+| Aspect | System-Assigned | User-Assigned |
+|--------|----------------|---------------|
+| **Creation** | Automatic with resource | Manual, separate resource |
+| **Lifecycle** | Tied to resource | Independent |
+| **Sharing** | Cannot share | Can share across resources |
+| **Deletion** | Auto-deleted with resource | Must manually delete |
+| **Use case** | Simple, single-resource | Multi-resource, shared access |
+| **Our demo** | Used this (default) | Left blank |
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: Walk through the end-to-end process of configuring access to ADLS Gen2 from Databricks via Unity Catalog.
+**A:** The process has six steps across two phases. Azure phase: (1) Create an Access Connector for Azure Databricks with system-assigned managed identity, (2) Create an ADLS Gen2 storage account with hierarchical namespace enabled, (3) Assign the Storage Blob Data Contributor role on the storage account to the Access Connector's managed identity via IAM. Unity Catalog phase: (4) Create a Storage Credential in Databricks that wraps the Access Connector using its Resource ID, (5) Create a container in the storage account, then (6) Create an External Location combining the Storage Credential with the container's ABFSS URL. Users can then access data through the External Location with Unity Catalog managing permissions.
+
+### Q2: What makes an Azure Storage account an ADLS Gen2 account instead of regular Blob Storage?
+**A:** Enabling the hierarchical namespace during storage account creation is what makes it an ADLS Gen2 account. This setting enables true directory structures with real directory objects (not simulated via path prefixes), atomic directory operations (rename and delete are O(1) instead of O(n)), POSIX-compatible file and directory level ACLs, and optimized performance for big data workloads. This setting cannot be changed after the storage account is created, so it must be enabled at creation time. Without hierarchical namespace, the storage account is regular Blob Storage.
+
+### Q3: What is the ABFSS protocol and why is it used in Databricks?
+**A:** ABFSS stands for Azure Blob File System Secure. The URL format is `abfss://<container>@<account>.dfs.core.windows.net/<path>`. It is the recommended protocol for accessing ADLS Gen2 from Databricks because it uses TLS encryption for data in transit (the 's' indicates secure), uses the DFS endpoint (dfs.core.windows.net) optimized for Data Lake operations, and supports the hierarchical namespace features of ADLS Gen2. Older protocols like WASBS use the blob endpoint and are considered legacy for new workloads.
+
+### Q4: What is the purpose of the Access Connector for Azure Databricks and how does it relate to Storage Credentials?
+**A:** The Access Connector is an Azure first-party service that provides a managed identity specifically designed for Databricks. It wraps a managed identity and simplifies the integration between Databricks and Azure resources. The Storage Credential then wraps the Access Connector into a Unity Catalog object. So the hierarchy is: Managed Identity (Azure identity) is wrapped by Access Connector (Azure resource) which is wrapped by Storage Credential (Unity Catalog object). This layered approach lets Unity Catalog use Azure-native authentication without managing secrets directly.
+
+### Q5: Why do Azure Storage account names have such restrictive naming rules?
+**A:** Azure Storage account names must be globally unique across all of Azure, between 3-24 characters, and contain only lowercase letters and numbers (no hyphens, underscores, or uppercase). This is because the storage account name becomes part of the DNS name (e.g., `dcoursextdl.dfs.core.windows.net`), and DNS names have specific character restrictions. This is different from other Azure resources like Access Connectors which allow hyphens in their names.
+
+### Q6: How do you verify that an External Location is configured correctly?
+**A:** There are multiple verification methods: (1) Use `%fs ls abfss://container@account.dfs.core.windows.net/` to list container contents -- success means configuration works, (2) Run `DESCRIBE EXTERNAL LOCATION location_name;` to see the configuration details, (3) Check in Catalog Explorer under External Data > External Locations to see the location and its linked credential, (4) Use `VALIDATE EXTERNAL LOCATION location_name;` to run a connectivity test. Before creating the External Location, the `%fs ls` command should fail with an authentication error; after creation, it should succeed.
+
+### Q7: What is the difference between the "Storage Blob Data Contributor" and "Contributor" roles in Azure, and why does this matter for Unity Catalog?
+**A:** This is a critical distinction. "Contributor" is a management plane role that allows managing the Azure resource (create, delete, modify the storage account) but does NOT grant access to the actual blob data. "Storage Blob Data Contributor" is a data plane role that grants read, write, and delete permissions on the blob data itself but does not allow managing the storage account resource. For Unity Catalog, the Access Connector needs the "Storage Blob Data Contributor" role because it needs to read and write actual data files, not manage the storage account infrastructure.
+
+### Q8: What should you do if you get an "Invalid configuration value detected for account key" error when accessing storage from Databricks?
+**A:** This error indicates that there is no valid authentication path from Databricks to the storage account. The most common causes are: (1) No External Location has been created for that storage path -- create one using `CREATE EXTERNAL LOCATION`, (2) The Storage Credential is not properly configured or does not wrap the correct Access Connector, (3) The Access Connector does not have the Storage Blob Data Contributor role on the storage account, (4) The External Location URL does not match the path being accessed. Verify each layer of the authentication chain: External Location, Storage Credential, Access Connector, and IAM role assignment.
+
+---
+
 *End of lesson*

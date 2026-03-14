@@ -762,4 +762,228 @@ You now have a good understanding of:
 
 ---
 
+## CONCEPT GAP: Storage Credential Types -- Managed Identity vs Service Principal
+
+Certification exams often test the differences between these two authentication methods. Understanding when to use each is critical.
+
+### Managed Identity vs Service Principal Comparison
+
+```
+MANAGED IDENTITY:
+═════════════════
+  ┌──────────────────────────────┐
+  │   Azure Resource             │
+  │   (Access Connector)         │
+  │                              │
+  │   Identity: Auto-managed     │
+  │   Credentials: None to       │
+  │                manage!       │
+  │   Rotation: Automatic        │
+  │   Lifecycle: Tied to         │
+  │              resource        │
+  └──────────────────────────────┘
+  Best for: Azure-native workloads
+  Recommended by Databricks
+
+
+SERVICE PRINCIPAL:
+══════════════════
+  ┌──────────────────────────────┐
+  │   Azure AD Application       │
+  │                              │
+  │   Client ID: abc-123...      │
+  │   Client Secret: ***         │
+  │   Tenant ID: xyz-789...      │
+  │                              │
+  │   Credentials: Must manage   │
+  │   Rotation: Manual           │
+  │   Lifecycle: Independent     │
+  └──────────────────────────────┘
+  Best for: Cross-tenant, multi-cloud
+  More configuration required
+```
+
+### Detailed Comparison Table
+
+| Aspect | Managed Identity | Service Principal |
+|--------|-----------------|-------------------|
+| **Credential management** | Automatic (Azure manages) | Manual (you manage secrets) |
+| **Secret rotation** | Automatic, transparent | Manual, must track expiry |
+| **Setup complexity** | Simple (via Access Connector) | More steps (app registration) |
+| **Cross-tenant access** | Not supported | Supported |
+| **Multi-cloud support** | Azure only | Can work across clouds |
+| **Security risk** | Lower (no secrets to leak) | Higher (secrets can be exposed) |
+| **Databricks recommendation** | Preferred for Azure | Use when managed identity insufficient |
+| **Types** | System-assigned, User-assigned | N/A |
+
+---
+
+## CONCEPT GAP: External Location Scope and Overlap Rules
+
+Unity Catalog enforces strict rules about external location paths that are important for exams.
+
+### External Location Overlap Rules
+
+```
+RULE: External locations CANNOT overlap in path hierarchy
+
+VALID Configuration:
+  ┌────────────────────────────────────────────┐
+  │  External Location A:                      │
+  │  abfss://container1@account.dfs.../        │
+  └────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────┐
+  │  External Location B:                      │
+  │  abfss://container2@account.dfs.../        │
+  └────────────────────────────────────────────┘
+  Different containers = no overlap = VALID
+
+
+INVALID Configuration:
+  ┌────────────────────────────────────────────┐
+  │  External Location A:                      │
+  │  abfss://data@account.dfs.../catalogs/     │
+  └────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────┐
+  │  External Location B:                      │
+  │  abfss://data@account.dfs.../catalogs/dev/ │
+  └────────────────────────────────────────────┘
+  B is a subpath of A = overlap = INVALID
+
+
+VALID Alternative:
+  ┌────────────────────────────────────────────┐
+  │  External Location A:                      │
+  │  abfss://data@account.dfs.../catalogs/dev/ │
+  └────────────────────────────────────────────┘
+  ┌────────────────────────────────────────────┐
+  │  External Location B:                      │
+  │  abfss://data@account.dfs.../catalogs/prd/ │
+  └────────────────────────────────────────────┘
+  Sibling paths (no parent-child) = VALID
+```
+
+---
+
+## CONCEPT GAP: Azure RBAC Roles for Data Lake Access
+
+Understanding which Azure RBAC roles are relevant is important for both the implementation and exam questions.
+
+### Azure Storage RBAC Roles
+
+| Role | Read Blobs | Write Blobs | Delete Blobs | Manage Containers | Use Case |
+|------|-----------|-------------|-------------|-------------------|----------|
+| **Storage Blob Data Reader** | Yes | No | No | No | Read-only access |
+| **Storage Blob Data Contributor** | Yes | Yes | Yes | No | Read/write access (recommended) |
+| **Storage Blob Data Owner** | Yes | Yes | Yes | Yes | Full control including ACLs |
+| **Reader** | No (metadata only) | No | No | No | List accounts only |
+| **Contributor** | No (management only) | No | No | Yes | Manage accounts, not data |
+
+### Important Distinction
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  COMMON EXAM TRAP:                                           │
+│                                                              │
+│  "Contributor" role =/= "Storage Blob Data Contributor"      │
+│                                                              │
+│  Contributor:                                                │
+│    - Azure management plane role                             │
+│    - Can manage the storage ACCOUNT (create, delete, etc.)   │
+│    - CANNOT read or write blob DATA                          │
+│                                                              │
+│  Storage Blob Data Contributor:                              │
+│    - Azure data plane role                                   │
+│    - Can read, write, and delete blob DATA                   │
+│    - Cannot manage the storage account itself                │
+│                                                              │
+│  For Unity Catalog: Use "Storage Blob Data Contributor"      │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## CONCEPT GAP: Managed Tables Storage Location
+
+When you create managed tables in Unity Catalog, the storage location depends on how storage is configured at each level of the hierarchy.
+
+### Storage Resolution Order
+
+```
+When creating a managed table in catalog.schema.table:
+
+  1. Does the SCHEMA have a managed storage location?
+     ├── YES ──▶ Store data in schema's storage location
+     └── NO  ──▶ Continue to step 2
+
+  2. Does the CATALOG have a managed storage location?
+     ├── YES ──▶ Store data in catalog's storage location
+     └── NO  ──▶ Continue to step 3
+
+  3. Does the METASTORE have a default storage location?
+     ├── YES ──▶ Store data in metastore's default storage
+     └── NO  ──▶ ERROR: No storage location available
+                  (Cannot create managed tables)
+```
+
+### Practical Example
+
+```sql
+-- Create catalog with dedicated storage
+CREATE CATALOG dev_catalog
+MANAGED LOCATION 'abfss://dev@account.dfs.core.windows.net/';
+
+-- Create schema within catalog (inherits catalog storage)
+CREATE SCHEMA dev_catalog.bronze;
+-- Managed tables here stored at: abfss://dev@account.dfs.../bronze/
+
+-- Create schema with its own storage (overrides catalog)
+CREATE SCHEMA dev_catalog.sensitive
+MANAGED LOCATION 'abfss://sensitive@account.dfs.core.windows.net/';
+-- Managed tables here stored at: abfss://sensitive@account.dfs.../
+```
+
+---
+
+## CONCEPT GAP: The "External" Keyword Context Matrix
+
+This is a common source of confusion in exams. The word "external" is used in multiple contexts with different meanings.
+
+| Term | Meaning | Data Ownership | Drop Behavior |
+|------|---------|---------------|---------------|
+| **External Location** | A UC object pointing to storage outside default metastore storage | N/A (it is a pointer) | Removes pointer, storage unaffected |
+| **External Table** | A table whose data files are NOT managed by UC | Data owned outside UC | Metadata removed, data files persist |
+| **External Volume** | A volume referencing files NOT managed by UC | Files owned outside UC | Volume removed, files persist |
+| **External Data** | Menu in Catalog Explorer for managing credentials and locations | N/A (UI term) | N/A |
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What is the relationship between a Storage Credential and an External Location in Unity Catalog?
+**A:** A Storage Credential is an authentication/authorization mechanism that wraps Azure credentials (managed identity or service principal) to access cloud storage. An External Location combines a Storage Credential with a specific cloud storage path (container URL) to provide access to a particular location. You need both: the Storage Credential handles "how to authenticate" while the External Location defines "where to access." Multiple External Locations can share the same Storage Credential if they need to access different paths in the same storage account.
+
+### Q2: Why does Databricks recommend using an Access Connector with Managed Identity rather than a Service Principal?
+**A:** Access Connector with Managed Identity is recommended because: (1) credentials are automatically managed by Azure with no secrets to rotate or expire, (2) there is no risk of credential leakage since no client secrets exist, (3) setup is simpler with fewer configuration steps, (4) the Access Connector is a first-party Azure service specifically designed for Databricks integration, and (5) the identity lifecycle is tied to the Azure resource. Service Principals require manual secret management, have expiration dates, and introduce security risks if secrets are exposed. Use Service Principals only when cross-tenant access or multi-cloud scenarios are needed.
+
+### Q3: Explain the dual-level access control for cloud storage in Unity Catalog.
+**A:** Unity Catalog implements access control at two levels for cloud storage: (1) At the Storage Credential level, administrators control who can use the authentication mechanism, and (2) at the External Location level, administrators control who can access specific storage paths. When a user requests data access, Unity Catalog first checks if the user has permission on the External Location, then checks the Storage Credential permission. If either check fails, the request is denied without even attempting authentication to the cloud storage. This provides defense in depth and granular permission management.
+
+### Q4: What is the Azure "Storage Blob Data Contributor" role and why is it used for Unity Catalog?
+**A:** Storage Blob Data Contributor is an Azure RBAC data plane role that grants read, write, and delete permissions on blob data within Azure Storage. It is assigned to the Access Connector's managed identity on the ADLS Gen2 storage account so that Unity Catalog can read from and write to the data lake. It is important to distinguish this from the generic "Contributor" role, which is a management plane role that can manage the storage account resource itself but cannot read or write actual blob data. For Unity Catalog, the data plane role is what is needed.
+
+### Q5: Why should you create a separate storage account instead of using the one Databricks creates by default?
+**A:** The storage account created by Databricks by default is managed by Databricks for internal purposes (DBFS root storage). You do not have full control over its access management, and Databricks may change configurations. Creating a separate storage account gives you full ownership and control over permissions, the ability to configure it according to your organization's security policies, independence from Databricks-managed infrastructure, and better organization for production workloads. This aligns with the principle of separation of concerns and ensures that your data lake is not coupled to Databricks' internal storage management.
+
+### Q6: How does the storage resolution hierarchy work for managed tables in Unity Catalog?
+**A:** When a managed table is created, Unity Catalog resolves the storage location by checking three levels in order: (1) the schema's MANAGED LOCATION if one was specified, (2) the catalog's MANAGED LOCATION if set, (3) the metastore's default storage location. The first match is used. If none of these have a storage location configured, managed tables cannot be created and you must use external tables instead. This hierarchy allows flexible storage organization where different schemas or catalogs can have their own dedicated storage locations.
+
+### Q7: What does the term "external" mean in different Unity Catalog contexts?
+**A:** "External" has different meanings depending on context: (1) External Location refers to a storage path that is not the default metastore storage -- it can still be within your Azure subscription; (2) External Table means a table whose data files are not managed by Unity Catalog -- dropping the table keeps the data; (3) External Volume means a volume referencing files managed outside Databricks. The common thread is that "external" indicates something not fully lifecycle-managed by Unity Catalog, but it does NOT necessarily mean outside your organization or cloud environment.
+
+### Q8: Walk through the complete authentication flow when a user queries data via an External Location.
+**A:** The flow is: (1) User submits a query referencing a table at an External Location, (2) Unity Catalog checks if the user has permission on the External Location -- if not, access is denied immediately, (3) Unity Catalog identifies the associated Storage Credential and checks if the user has permission to use it -- if not, access is denied, (4) The Storage Credential uses its wrapped Access Connector and Managed Identity to authenticate to ADLS Gen2, (5) Azure checks that the Managed Identity has the Storage Blob Data Contributor role on the storage account via RBAC, (6) If all checks pass, data is retrieved and returned to the user. This multi-layer approach ensures both UC-level and Azure-level authorization.
+
+---
+
 *End of lesson*

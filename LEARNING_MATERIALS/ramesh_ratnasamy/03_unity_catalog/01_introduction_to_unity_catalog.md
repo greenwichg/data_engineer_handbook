@@ -20,9 +20,9 @@ So far we have been talking about the **Medallion Architecture** at a conceptual
 ### What We Haven't Covered Yet:
 
 We haven't discussed:
-- ❓ Where and how data in a Data Lakehouse is physically stored
-- ❓ How Databricks enables access to the data
-- ❓ What objects can be created from the data (tables, views, etc.)
+- Where and how data in a Data Lakehouse is physically stored
+- How Databricks enables access to the data
+- What objects can be created from the data (tables, views, etc.)
 
 ### What We Need to Learn:
 
@@ -71,12 +71,37 @@ Any data engineering project requires the ability to:
 Databricks has evolved its data access approach over time:
 
 ```
-Launch → 2022                          Late 2022 → Present
-┌─────────────────────┐               ┌──────────────────┐
-│   Legacy Solution   │    →          │  Unity Catalog   │
-│  - DBFS             │               │  (Recommended)   │
-│  - Hive Metastore   │               │                  │
-└─────────────────────┘               └──────────────────┘
++=============================+          +=============================+
+|   Launch ---> 2022          |          |   Late 2022 ---> Present    |
+|                             |          |                             |
+|    LEGACY SOLUTION          |  ------> |    UNITY CATALOG            |
+|    - DBFS                   |          |    (Recommended)            |
+|    - Hive Metastore         |          |    - Volumes                |
+|    - Workspace-level only   |          |    - Account-level govnce   |
++=============================+          +=============================+
+```
+
+### The Shift: Workspace-Level to Account-Level Governance
+
+```
+  LEGACY (Workspace-Level)                 UNITY CATALOG (Account-Level)
++---------------------------+          +----------------------------------+
+| Workspace A               |          |        Databricks Account        |
+|  +-------+  +-------+    |          |  +----------------------------+  |
+|  | Hive  |  | DBFS  |    |          |  |      Unity Catalog         |  |
+|  | Meta  |  |       |    |          |  |      Metastore             |  |
+|  +-------+  +-------+    |          |  +----------------------------+  |
++---------------------------+          |       /          |          \    |
+                                       |      /           |           \   |
+| Workspace B               |          | +------+    +------+    +------+|
+|  +-------+  +-------+    |          | | WS A |    | WS B |    | WS C ||
+|  | Hive  |  | DBFS  |    |          | +------+    +------+    +------+|
+|  | Meta  |  |       |    |          +----------------------------------+
+|  +-------+  +-------+    |
++---------------------------+          All workspaces share one metastore
+                                       per region = CENTRALIZED governance
+Each workspace has its OWN
+metastore = SILOED governance
 ```
 
 ### Legacy Solution (Original)
@@ -86,10 +111,10 @@ Launch → 2022                          Late 2022 → Present
 - Hive Metastore
 
 **Status:**
-- ✅ Widely adopted in industry
-- ✅ Still supported for backward compatibility
-- ⚠️ Considered legacy by Databricks
-- ⚠️ Challenges with data security and governance
+- Widely adopted in industry
+- Still supported for backward compatibility
+- Considered legacy by Databricks
+- Challenges with data security and governance
 
 ### Unity Catalog (Current Recommendation)
 
@@ -101,7 +126,7 @@ Launch → 2022                          Late 2022 → Present
 - Better data security
 
 **Databricks Recommendation:**
-⭐ Use **Unity Catalog for all new projects**
+Use **Unity Catalog for all new projects**
 
 ---
 
@@ -112,10 +137,10 @@ Launch → 2022                          Late 2022 → Present
 **Why Learn the Legacy Solution?**
 
 Despite being considered legacy:
-- ✅ Widely used in the industry
-- ✅ Fully supported by Databricks for backward compatibility
-- ✅ Most documentation still references it
-- ✅ May appear on exam (a few questions)
+- Widely used in the industry
+- Fully supported by Databricks for backward compatibility
+- Most documentation still references it
+- May appear on exam (a few questions)
 
 **Recommendation:** You should be aware of the legacy solution.
 
@@ -180,8 +205,8 @@ A **distributed file system** that's fully integrated within Databricks.
 | **%fs magic command** | Quick file operations |
 
 **From Databricks:**
-- ✅ Databricks cluster
-- ✅ Databricks job
+- Databricks cluster
+- Databricks job
 
 ### Best Use Case
 
@@ -252,9 +277,9 @@ If your files are structured or semi-structured, you may want to access them via
 ### Adoption and Usage
 
 **Industry Adoption:**
-- ✅ Widely adopted
-- ✅ Used by customers for **over 7 years**
-- ✅ Proven technology
+- Widely adopted
+- Used by customers for **over 7 years**
+- Proven technology
 
 ### Identified Limitations
 
@@ -263,9 +288,9 @@ Despite widespread use, the legacy solution has limitations:
 #### 1. Limited Access Control
 
 **Problem:**
-- ❌ Lack of fine-grained access control
-- ❌ No row-level access control
-- ❌ No column-level access control
+- Lack of fine-grained access control
+- No row-level access control
+- No column-level access control
 
 **Impact:**
 Cannot restrict access to specific rows or columns within a table.
@@ -273,8 +298,8 @@ Cannot restrict access to specific rows or columns within a table.
 #### 2. No Audit Logging
 
 **Problem:**
-- ❌ Limited audit capabilities
-- ❌ Difficult to track who accessed what data
+- Limited audit capabilities
+- Difficult to track who accessed what data
 
 **Impact:**
 Compliance and security concerns.
@@ -282,8 +307,8 @@ Compliance and security concerns.
 #### 3. No Data Lineage
 
 **Problem:**
-- ❌ No built-in data lineage tracking
-- ❌ Difficult to trace data flow
+- No built-in data lineage tracking
+- Difficult to trace data flow
 
 **Impact:**
 Cannot easily track data origins and transformations.
@@ -291,8 +316,8 @@ Cannot easily track data origins and transformations.
 #### 4. Multi-Cloud Limitations
 
 **Problem:**
-- ❌ Support challenges for multi-cloud environments
-- ❌ Not optimized for cross-cloud scenarios
+- Support challenges for multi-cloud environments
+- Not optimized for cross-cloud scenarios
 
 **Impact:**
 Complex setup for organizations using multiple cloud providers.
@@ -318,8 +343,8 @@ Unity Catalog provides comprehensive data access and governance.
 ### 1. Tables and Views
 
 **Similar to Hive Metastore:**
-- ✅ Create tables on structured data
-- ✅ Create views for summaries and filtered data
+- Create tables on structured data
+- Create views for summaries and filtered data
 
 ### 2. Functions
 
@@ -327,7 +352,7 @@ Unity Catalog provides comprehensive data access and governance.
 - Abstract transformation logic
 - Reusable data transformations
 
-### 3. Volumes (New!) ⭐
+### 3. Volumes (New!)
 
 **What is a Volume?**
 
@@ -349,8 +374,8 @@ An **abstraction layer** on top of files in cloud storage.
 ### Key Advantage
 
 Unity Catalog provides a **unified solution** for accessing:
-- ✅ Files (via Volumes)
-- ✅ Table objects (via Tables/Views)
+- Files (via Volumes)
+- Table objects (via Tables/Views)
 
 **Result:**
 Streamlines access control requirements - one governance model for all data types.
@@ -396,21 +421,23 @@ Beyond basic object access, Unity Catalog offers:
 |---------|----------------|---------------|
 | **File Access** | DBFS (mount points) | Volumes |
 | **Table Access** | Hive Metastore | Unity Catalog Metastore |
-| **Unified Access** | ❌ Separate systems | ✅ Single unified system |
-| **Fine-grained Access** | ❌ Limited | ✅ Row/column level |
-| **Audit Logging** | ❌ Limited | ✅ Comprehensive |
-| **Data Lineage** | ❌ Not built-in | ✅ Built-in |
-| **Multi-cloud** | ⚠️ Limited | ✅ Full support |
-| **Governance** | ⚠️ Basic | ✅ Advanced |
+| **Unified Access** | Separate systems | Single unified system |
+| **Fine-grained Access** | Limited | Row/column level |
+| **Audit Logging** | Limited | Comprehensive |
+| **Data Lineage** | Not built-in | Built-in |
+| **Multi-cloud** | Limited | Full support |
+| **Governance** | Basic | Advanced |
+| **Governance Scope** | Workspace-level | Account-level |
+| **Delta Sharing** | Not available | Built-in |
 
 ### Object Types Comparison
 
 | Object | Legacy (Hive Metastore) | Unity Catalog |
 |--------|------------------------|---------------|
-| **Tables** | ✅ Supported | ✅ Supported |
-| **Views** | ✅ Supported | ✅ Supported |
-| **Functions** | ✅ Supported | ✅ Supported |
-| **Volumes** | ❌ Not available | ✅ New feature |
+| **Tables** | Supported | Supported |
+| **Views** | Supported | Supported |
+| **Functions** | Supported | Supported |
+| **Volumes** | Not available | New feature |
 
 ---
 
@@ -447,47 +474,165 @@ Configure our Databricks workspace to use Unity Catalog now, so it will be easie
 ### Legacy Architecture
 
 ```
-┌─────────────────────────────────────┐
-│      Databricks Workspace          │
-│                                     │
-│  ┌──────────┐      ┌─────────────┐│
-│  │   DBFS   │      │    Hive     ││
-│  │ (Files)  │      │  Metastore  ││
-│  │          │      │  (Tables)   ││
-│  └────┬─────┘      └──────┬──────┘│
-│       │                   │        │
-└───────┼───────────────────┼────────┘
-        │                   │
-        ▼                   ▼
-┌─────────────────────────────────────┐
-│   Azure Data Lake Storage Gen2     │
-└─────────────────────────────────────┘
++-------------------------------------+
+|      Databricks Workspace           |
+|                                     |
+|  +-----------+    +---------------+ |
+|  |   DBFS    |    |     Hive      | |
+|  |  (Files)  |    |   Metastore   | |
+|  |           |    |   (Tables)    | |
+|  +-----+-----+    +-------+------+ |
+|        |                  |         |
++--------+------------------+---------+
+         |                  |
+         v                  v
++-------------------------------------+
+|   Azure Data Lake Storage Gen2      |
++-------------------------------------+
 ```
 
 ### Unity Catalog Architecture
 
 ```
-┌─────────────────────────────────────┐
-│      Databricks Workspace          │
-│                                     │
-│  ┌─────────────────────────────┐  │
-│  │     Unity Catalog           │  │
-│  │  ┌─────────┐  ┌──────────┐ │  │
-│  │  │ Volumes │  │  Tables  │ │  │
-│  │  │ (Files) │  │  Views   │ │  │
-│  │  │         │  │ Functions│ │  │
-│  │  └────┬────┘  └─────┬────┘ │  │
-│  │       └─────────────┘      │  │
-│  │      Unified Access         │  │
-│  └──────────────┬──────────────┘  │
-│                 │                  │
-└─────────────────┼──────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────┐
-│   Azure Data Lake Storage Gen2     │
-└─────────────────────────────────────┘
++-------------------------------------------+
+|        Databricks Account                 |
+|                                           |
+|  +-------------------------------------+ |
+|  |        Unity Catalog Metastore      | |
+|  |                                     | |
+|  |  +----------+  +-----------+        | |
+|  |  | Volumes  |  |  Tables   |        | |
+|  |  | (Files)  |  |  Views    |        | |
+|  |  |          |  | Functions |        | |
+|  |  +----+-----+  +-----+----+        | |
+|  |       +---------------+             | |
+|  |       Unified Access                | |
+|  +----------------+--------------------+ |
+|                   |                       |
+|   +--------+  +--------+  +--------+    |
+|   |  WS 1  |  |  WS 2  |  |  WS 3  |    |
+|   +--------+  +--------+  +--------+    |
++-------------------------------------------+
+                    |
+                    v
++-------------------------------------------+
+|   Azure Data Lake Storage Gen2            |
++-------------------------------------------+
 ```
+
+---
+
+## CONCEPT GAP: Unity Catalog vs Other Governance Tools
+
+### Comparison with Apache Atlas
+
+```
++---------------------------+---------------------------+
+|      Apache Atlas         |      Unity Catalog        |
++---------------------------+---------------------------+
+| Open-source               | Proprietary (Databricks)  |
+| Metadata management only  | Metadata + access control |
+| Requires separate setup   | Built into Databricks     |
+| Works with Hadoop eco     | Works with Lakehouse      |
+| Manual lineage config     | Automatic lineage         |
+| No built-in ACLs          | Fine-grained ACLs         |
+| Community support         | Enterprise support        |
++---------------------------+---------------------------+
+```
+
+### Comparison with AWS Glue Data Catalog
+
+```
++---------------------------+---------------------------+
+|   AWS Glue Data Catalog   |      Unity Catalog        |
++---------------------------+---------------------------+
+| AWS-only                  | Multi-cloud               |
+| Hive-compatible metastore | Extended 3-level namespace|
+| No row/column security    | Row + column level sec.   |
+| No built-in lineage       | Automatic lineage         |
+| Works with Athena, EMR    | Works with Databricks     |
+| IAM-based access          | UC grants + IAM           |
+| No data sharing built-in  | Delta Sharing built-in    |
+| Pay per request           | Included with Databricks  |
++---------------------------+---------------------------+
+```
+
+### Key Differentiator
+
+Unity Catalog is unique because it combines **metadata management**, **access control**, **audit logging**, **data lineage**, and **data sharing** into a single, unified platform. Competing tools typically address only one or two of these areas.
+
+---
+
+## CONCEPT GAP: Workspace-Level vs Account-Level Governance
+
+### The Fundamental Shift
+
+The move from Hive Metastore to Unity Catalog represents a fundamental architectural shift from **workspace-level** to **account-level** governance.
+
+```
+  WORKSPACE-LEVEL (Legacy)             ACCOUNT-LEVEL (Unity Catalog)
++---------------------------+       +----------------------------------+
+| Each workspace manages    |       | Single metastore per region      |
+| its own:                  |       | manages ALL:                     |
+|  - Metastore              |       |  - Metadata                      |
+|  - Access controls        |       |  - Access controls               |
+|  - Users/Groups           |       |  - Users/Groups                  |
+|  - Audit logs             |       |  - Audit logs                    |
+|                           |       |  - Lineage                       |
+| PROBLEM:                  |       |                                  |
+|  - Data silos             |       | BENEFIT:                         |
+|  - Inconsistent policies  |       |  - Centralized governance        |
+|  - No cross-WS sharing    |       |  - Consistent policies           |
+|  - Duplicate data         |       |  - Cross-WS data sharing         |
++---------------------------+       +----------------------------------+
+```
+
+### Why Account-Level Matters
+
+| Aspect | Workspace-Level | Account-Level |
+|--------|----------------|---------------|
+| **Policy consistency** | Each WS has own policies | Unified policies across all WS |
+| **User management** | Per-workspace users | Account-level identity |
+| **Data discovery** | Only within workspace | Across all workspaces |
+| **Audit trail** | Fragmented per WS | Centralized audit |
+| **Data sharing** | Complex, manual copies | Native Delta Sharing |
+
+---
+
+## CONCEPT GAP: Unity Catalog and Data Mesh Concepts
+
+### What is Data Mesh?
+
+Data Mesh is an organizational approach to data architecture that treats data as a product and decentralizes data ownership to domain teams.
+
+### How Unity Catalog Supports Data Mesh
+
+```
++-----------------------------------------------------------+
+|               Unity Catalog Metastore                     |
+|                                                           |
+|  +-------------+  +-------------+  +-------------+       |
+|  |  CATALOG:   |  |  CATALOG:   |  |  CATALOG:   |       |
+|  |  sales      |  |  marketing  |  |  finance    |       |
+|  |  (Domain 1) |  |  (Domain 2) |  |  (Domain 3) |       |
+|  |             |  |             |  |             |       |
+|  | Owned by    |  | Owned by    |  | Owned by    |       |
+|  | Sales Team  |  | Mktg Team   |  | Finance Team|       |
+|  +-------------+  +-------------+  +-------------+       |
+|                                                           |
+|  Cross-domain discovery + governed sharing via            |
+|  Delta Sharing, grants, and unified lineage               |
++-----------------------------------------------------------+
+```
+
+**Data Mesh Principles Mapped to Unity Catalog:**
+
+| Data Mesh Principle | Unity Catalog Feature |
+|--------------------|-----------------------|
+| Domain ownership | Catalogs per domain/team |
+| Data as a product | Schemas with documentation, tags |
+| Self-serve platform | Catalog Explorer, SQL interface |
+| Federated governance | Centralized metastore + domain-level grants |
 
 ---
 
@@ -508,6 +653,7 @@ Configure our Databricks workspace to use Unity Catalog now, so it will be easie
    - Enhanced security and governance
    - Better access control
    - Data lineage capabilities
+   - Account-level (not workspace-level) governance
 5. **This Section** will prepare you:
    - Understanding Unity Catalog Object Model
    - Configuring Unity Catalog Metastore
@@ -522,6 +668,45 @@ In the upcoming lessons, we'll:
 4. Prepare the foundation for future data engineering work
 
 **Let's get started!**
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What is Unity Catalog and why was it introduced?
+
+**A:** Unity Catalog is Databricks' unified governance solution launched in late 2022. It was introduced to address the limitations of the legacy Hive Metastore + DBFS approach, which lacked fine-grained access control (row/column level), audit logging, data lineage, and multi-cloud support. Unity Catalog provides a single platform for metadata management, access control, auditing, lineage, and data sharing.
+
+### Q2: What are the key differences between the legacy solution (DBFS + Hive Metastore) and Unity Catalog?
+
+**A:** Key differences include:
+- **Governance scope**: Legacy is workspace-level; Unity Catalog is account-level
+- **Access control**: Legacy has basic ACLs; Unity Catalog supports row-level and column-level security
+- **File access**: Legacy uses DBFS mounts; Unity Catalog uses Volumes
+- **Namespace**: Legacy uses 2-level (schema.object); Unity Catalog uses 3-level (catalog.schema.object)
+- **Lineage**: Legacy has none built-in; Unity Catalog tracks lineage automatically
+- **Audit**: Legacy has limited auditing; Unity Catalog has comprehensive audit logs
+- **Data sharing**: Legacy requires data copies; Unity Catalog has Delta Sharing
+
+### Q3: What is a Volume in Unity Catalog and how does it differ from DBFS?
+
+**A:** A Volume is a Unity Catalog object that provides an abstraction layer over files in cloud storage. Unlike DBFS, Volumes are governed by Unity Catalog's access control, audit logging, and lineage tracking. Volumes are the recommended replacement for DBFS mount points for accessing unstructured and semi-structured files. DBFS operates at the workspace level while Volumes are managed at the account level through Unity Catalog.
+
+### Q4: Can you still use Hive Metastore after enabling Unity Catalog?
+
+**A:** Yes. Databricks provides 100% backward compatibility via a pseudo catalog called `hive_metastore`. This catalog is automatically present in every workspace. However, objects created under `hive_metastore` do not benefit from Unity Catalog features like lineage, fine-grained access control, or audit logging. Databricks recommends avoiding Hive Metastore for new projects.
+
+### Q5: How does Unity Catalog support multi-cloud environments?
+
+**A:** Unity Catalog provides a consistent governance layer regardless of the underlying cloud provider (AWS, Azure, GCP). It abstracts cloud-specific storage access through Storage Credentials and External Locations, and supports Delta Sharing for cross-cloud and cross-organization data sharing without data copying.
+
+### Q6: How does Unity Catalog relate to Data Mesh architecture?
+
+**A:** Unity Catalog supports Data Mesh principles by allowing domain teams to own their data via separate catalogs (domain ownership), providing self-serve data discovery through Catalog Explorer, enabling governed data sharing via Delta Sharing, and maintaining federated governance through centralized metastore policies combined with domain-level grants.
+
+### Q7: What is the recommended approach for new Databricks projects -- legacy or Unity Catalog?
+
+**A:** Databricks strongly recommends Unity Catalog for all new projects. The legacy solution (DBFS + Hive Metastore) is maintained only for backward compatibility. The exam expects you to know both but emphasizes Unity Catalog as the modern standard.
 
 ---
 

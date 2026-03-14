@@ -689,4 +689,206 @@ This may feel overwhelming if you're new to Databricks.
 
 ---
 
+## CONCEPT GAP: Unity Catalog Permissions Model
+
+Understanding the Unity Catalog permissions model is critical for certification exams. Unity Catalog uses a **hierarchical, inherited permissions model** similar to file system permissions.
+
+### Securable Objects Hierarchy
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     METASTORE                           │
+│  Permissions: CREATE CATALOG, USE PROVIDER, SET SHARE   │
+│                                                         │
+│  ┌───────────────────────────────────────────────────┐  │
+│  │                   CATALOG                         │  │
+│  │  Permissions: USE CATALOG, CREATE SCHEMA          │  │
+│  │                                                   │  │
+│  │  ┌─────────────────────────────────────────────┐  │  │
+│  │  │                 SCHEMA                      │  │  │
+│  │  │  Permissions: USE SCHEMA, CREATE TABLE,     │  │  │
+│  │  │               CREATE VOLUME, CREATE FUNCTION│  │  │
+│  │  │                                             │  │  │
+│  │  │  ┌──────────┐ ┌──────┐ ┌────────┐         │  │  │
+│  │  │  │  TABLE   │ │ VIEW │ │FUNCTION│         │  │  │
+│  │  │  │ SELECT   │ │      │ │EXECUTE │         │  │  │
+│  │  │  │ MODIFY   │ │      │ │        │         │  │  │
+│  │  │  └──────────┘ └──────┘ └────────┘         │  │  │
+│  │  └─────────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Key Permission Inheritance Rules
+
+- **USE CATALOG** is required before any object inside the catalog can be accessed
+- **USE SCHEMA** is required before any object inside the schema can be accessed
+- Permissions do NOT automatically cascade downward; you must grant at each level
+- The owner of an object has ALL PRIVILEGES on that object
+
+---
+
+## CONCEPT GAP: Managed vs External Tables -- Data Lifecycle Deep Dive
+
+This is a frequently tested topic on certification exams. Understanding precisely what happens to data at each lifecycle event is essential.
+
+### Lifecycle Comparison
+
+```
+MANAGED TABLE LIFECYCLE:
+========================
+  CREATE TABLE t1 (id INT, name STRING);
+       │
+       ▼
+  ┌──────────────────────────────┐
+  │  Metastore Default Storage   │
+  │  or Catalog/Schema Storage   │
+  │  ┌────────────────────────┐  │
+  │  │  Delta files created   │  │
+  │  │  (data + metadata)     │  │
+  │  └────────────────────────┘  │
+  └──────────────────────────────┘
+       │
+  DROP TABLE t1;
+       │
+       ▼
+  ┌──────────────────────────────┐
+  │  Data files: DELETED         │
+  │  Metadata:   DELETED         │
+  │  History:    DELETED         │
+  └──────────────────────────────┘
+
+
+EXTERNAL TABLE LIFECYCLE:
+=========================
+  CREATE TABLE t2 (id INT, name STRING)
+  LOCATION 'abfss://container@account.dfs.core.windows.net/path';
+       │
+       ▼
+  ┌──────────────────────────────┐
+  │  User-specified location     │
+  │  ┌────────────────────────┐  │
+  │  │  Data files at LOCATION│  │
+  │  │  (any format)          │  │
+  │  └────────────────────────┘  │
+  └──────────────────────────────┘
+       │
+  DROP TABLE t2;
+       │
+       ▼
+  ┌──────────────────────────────┐
+  │  Data files: REMAIN INTACT   │
+  │  Metadata:   DELETED         │
+  │  Can re-register later       │
+  └──────────────────────────────┘
+```
+
+---
+
+## CONCEPT GAP: Unity Catalog vs Hive Metastore Feature Comparison
+
+### Governance Capabilities Comparison
+
+| Capability | Hive Metastore | Unity Catalog |
+|-----------|---------------|---------------|
+| **Table ACLs** | Basic (workspace-level) | Fine-grained (account-level) |
+| **Row-level security** | Not supported | Supported via row filters |
+| **Column masking** | Not supported | Supported via column masks |
+| **Data lineage** | Not available | Automatic, built-in |
+| **Audit logging** | Limited | Comprehensive system tables |
+| **Cross-workspace access** | Not possible | Supported via shared metastore |
+| **Delta Sharing** | Not available | Built-in |
+| **Tags and classification** | Not available | Supported |
+| **Identity federation** | Workspace-local | Account-level identity |
+| **Centralized governance** | Per-workspace only | Across all workspaces |
+
+### Data Access Patterns
+
+```
+HIVE METASTORE (Legacy):
+┌──────────────┐     ┌──────────────┐
+│ Workspace A  │     │ Workspace B  │
+│ ┌──────────┐ │     │ ┌──────────┐ │
+│ │  Hive    │ │     │ │  Hive    │ │
+│ │ Metastore│ │     │ │ Metastore│ │
+│ └──────────┘ │     │ └──────────┘ │
+│  (isolated)  │     │  (isolated)  │
+└──────────────┘     └──────────────┘
+     No data sharing between workspaces
+
+
+UNITY CATALOG:
+┌──────────────────────────────────┐
+│     Unity Catalog Metastore      │
+│   (Shared across workspaces)     │
+└──────────┬───────────┬───────────┘
+           │           │
+   ┌───────▼──┐  ┌─────▼────┐
+   │Workspace │  │Workspace │
+   │    A     │  │    B     │
+   └──────────┘  └──────────┘
+     Same data accessible from both
+```
+
+---
+
+## CONCEPT GAP: Delta Sharing Protocol
+
+Delta Sharing is an open protocol for secure data sharing that is tightly integrated with Unity Catalog. It is increasingly tested on certification exams.
+
+### How Delta Sharing Works
+
+```
+┌─────────────────────┐          ┌─────────────────────┐
+│    DATA PROVIDER     │          │    DATA RECIPIENT    │
+│                      │          │                      │
+│  Unity Catalog       │          │  Any platform:       │
+│  ┌────────────────┐  │  Share   │  - Databricks        │
+│  │  Share Object  │──┼─────────▶│  - Apache Spark      │
+│  │  (tables/views)│  │          │  - Pandas            │
+│  └────────────────┘  │          │  - Power BI          │
+│  ┌────────────────┐  │          │  - Custom apps       │
+│  │   Recipient    │  │          │                      │
+│  │   Object       │  │          │  No data copying!    │
+│  └────────────────┘  │          │  Read live data.     │
+└─────────────────────┘          └─────────────────────┘
+```
+
+### Key Facts for Exams
+- Delta Sharing is an **open-source protocol** (not proprietary)
+- Recipients do NOT need to use Databricks
+- Data is NOT copied; recipients read directly from provider storage
+- Shares can include tables, views, and notebooks
+- Providers control what data is shared and with whom
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What is the difference between a Unity Catalog Metastore and a Hive Metastore?
+**A:** The Unity Catalog Metastore is the top-level container in the Unity Catalog governance model, created at the Databricks account level with one per cloud region. It provides centralized governance, data lineage, fine-grained access control, and cross-workspace data sharing. The Hive Metastore is a legacy, workspace-level metadata store that lacks these governance features. They are completely separate systems; enabling Unity Catalog does not remove the Hive Metastore but makes it available as a pseudo-catalog called `hive_metastore` for backward compatibility.
+
+### Q2: What is the three-level namespace in Unity Catalog and why is it important?
+**A:** The three-level namespace follows the pattern `catalog.schema.object` (e.g., `prod_catalog.sales.customers`). It is required when Unity Catalog is enabled because multiple catalogs can exist, so you must specify which catalog contains the object. This replaces the legacy two-level namespace (`schema.object`) used with Hive Metastore. The three-level namespace enables better data organization, isolation, and governance across business units, environments, or projects.
+
+### Q3: What happens when you drop a managed table vs. an external table in Unity Catalog?
+**A:** When you drop a managed table, both the metadata and the underlying data files are deleted permanently. When you drop an external table, only the metadata (table definition) is removed from Unity Catalog; the underlying data files remain intact in cloud storage. This makes external tables suitable for scenarios where data is produced by external systems (ADF, Fivetran) and you do not want Databricks to own the data lifecycle.
+
+### Q4: Why can managed tables in Unity Catalog only be Delta format?
+**A:** Unity Catalog requires managed tables to be in Delta format because Delta Lake provides ACID transactions, schema enforcement, time travel, and audit history capabilities that are essential for Unity Catalog's governance features. These features enable Unity Catalog to reliably manage the full data lifecycle including lineage tracking, access control enforcement, and data versioning. External tables can use any format (Parquet, CSV, JSON, etc.) since Unity Catalog only manages their metadata.
+
+### Q5: Explain the role of the `hive_metastore` pseudo-catalog in Unity Catalog.
+**A:** The `hive_metastore` is a pseudo-catalog automatically created in every Databricks workspace to provide 100% backward compatibility with the legacy Hive Metastore. It allows existing workloads to continue functioning after Unity Catalog is enabled. Objects created under `hive_metastore` do not benefit from Unity Catalog governance features such as fine-grained access control, data lineage, or audit logging. Databricks recommends refraining from using it for new projects and migrating existing objects to proper Unity Catalog catalogs.
+
+### Q6: How does Unity Catalog handle cross-workspace data access?
+**A:** Unity Catalog enables cross-workspace data access by having multiple workspaces in the same cloud region attach to a single Metastore. Since the Metastore is an account-level resource (not workspace-level), all attached workspaces share the same catalogs, schemas, and tables. This eliminates the data silos that existed with Hive Metastore, where each workspace had its own isolated metadata store and data could not be easily shared.
+
+### Q7: What are Volumes in Unity Catalog and how do they differ from tables?
+**A:** Volumes are logical abstractions over cloud storage containers that provide governance for non-tabular data (files). Unlike tables which organize data into rows and columns, volumes manage raw files such as CSVs, images, ML model artifacts, or any unstructured data. Managed volumes have their lifecycle fully controlled by Unity Catalog (data deleted on drop), while external volumes reference existing data in cloud storage managed outside Databricks (data persists on drop). Volumes were a new concept introduced with Unity Catalog.
+
+### Q8: What is Delta Sharing and how does it relate to Unity Catalog?
+**A:** Delta Sharing is an open-source protocol for secure data sharing integrated into Unity Catalog. It uses three objects: Shares (define what data to share), Recipients (define who receives data), and Providers (manage the sharing relationship). Key benefits include sharing data across organizations without copying it, supporting recipients on any platform (not just Databricks), and providing live access to fresh data. Recipients read data directly from the provider's storage, and all sharing is governed through Unity Catalog's permission model.
+
+---
+
 *End of lesson*

@@ -546,4 +546,235 @@ Now that your cluster is properly configured for Unity Catalog:
 
 ---
 
+## CONCEPT GAP: Access Modes Deep Dive
+
+Understanding access modes is a frequently tested topic. Each mode has specific implications for security, language support, and Unity Catalog compatibility.
+
+### Access Mode Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    SINGLE USER MODE                             │
+│                                                                 │
+│  ┌───────────────────────────────────────┐                     │
+│  │           Cluster                      │                     │
+│  │  ┌─────────────────────────────────┐  │                     │
+│  │  │  Single User's Processes       │  │                     │
+│  │  │  - Python, Scala, R, SQL       │  │                     │
+│  │  │  - Full library support        │  │                     │
+│  │  │  - Init scripts allowed        │  │                     │
+│  │  │  - DBFS access (legacy)        │  │                     │
+│  │  └─────────────────────────────────┘  │                     │
+│  │  Unity Catalog: SUPPORTED             │                     │
+│  └───────────────────────────────────────┘                     │
+│  Only ONE user can use this cluster                             │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                      SHARED MODE                                │
+│                                                                 │
+│  ┌───────────────────────────────────────┐                     │
+│  │           Cluster                      │                     │
+│  │  ┌──────────┐  ┌──────────┐          │                     │
+│  │  │  User A  │  │  User B  │  ...     │                     │
+│  │  │(isolated)│  │(isolated)│          │                     │
+│  │  └──────────┘  └──────────┘          │                     │
+│  │  Process isolation enforced           │                     │
+│  │  Some library restrictions            │                     │
+│  │  Unity Catalog: SUPPORTED             │                     │
+│  └───────────────────────────────────────┘                     │
+│  Multiple users share; each is process-isolated                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                 NO ISOLATION SHARED MODE                         │
+│                                                                 │
+│  ┌───────────────────────────────────────┐                     │
+│  │           Cluster                      │                     │
+│  │  ┌──────────────────────────────────┐ │                     │
+│  │  │  All Users (NO isolation)        │ │                     │
+│  │  │  User A, User B, User C...      │ │                     │
+│  │  │  Shared process space            │ │                     │
+│  │  └──────────────────────────────────┘ │                     │
+│  │  Unity Catalog: NOT SUPPORTED         │                     │
+│  └───────────────────────────────────────┘                     │
+│  LEGACY mode -- avoid for new workloads                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Detailed Access Mode Feature Comparison
+
+| Feature | Single User | Shared | No Isolation Shared |
+|---------|------------|--------|---------------------|
+| **Unity Catalog** | Yes | Yes | No |
+| **Multi-user** | No | Yes | Yes |
+| **Process isolation** | N/A (single user) | Yes | No |
+| **Python** | Full | Restricted (no arbitrary JVM) | Full |
+| **Scala** | Full | Limited | Full |
+| **R** | Full | Supported | Full |
+| **SQL** | Full | Full | Full |
+| **Init scripts** | Yes | No | Yes |
+| **Cluster libraries** | Yes | Restricted | Yes |
+| **DBFS access** | Yes (legacy) | No (UC paths only) | Yes |
+| **Credential passthrough** | Possible (not with UC) | No | No |
+| **Best for** | Dev/test | Production multi-user | Legacy only |
+
+---
+
+## CONCEPT GAP: Databricks Runtime Versions and Unity Catalog Feature Evolution
+
+Not all Unity Catalog features are available in every runtime version. Understanding the progression helps with troubleshooting and exam questions.
+
+### Runtime Feature Matrix
+
+| Runtime Version | UC Tables | UC Views | UC Functions | Volumes | Row Filters | Column Masks |
+|----------------|-----------|----------|-------------|---------|-------------|-------------|
+| **< 11.3** | No | No | No | No | No | No |
+| **11.3 LTS** | Yes | Yes | Basic | No | No | No |
+| **12.2 LTS** | Yes | Yes | Yes | Preview | No | No |
+| **13.3 LTS** | Yes | Yes | Yes | Yes | Yes | Yes |
+| **14.3 LTS** | Yes | Yes | Yes | Yes | Yes | Yes |
+| **15.4 LTS** | Yes | Yes | Yes | Yes | Yes | Yes |
+
+### LTS vs Non-LTS Runtimes
+
+```
+┌────────────────────────────────────────────────────────────┐
+│                  LTS (Long Term Support)                   │
+│                                                            │
+│  - Supported for 2+ years                                  │
+│  - Receives security patches and bug fixes                 │
+│  - Recommended for production workloads                    │
+│  - Examples: 11.3 LTS, 12.2 LTS, 13.3 LTS, 14.3 LTS     │
+│                                                            │
+│  BEST PRACTICE: Always use the latest LTS for production   │
+└────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────┐
+│              Non-LTS (Standard Release)                    │
+│                                                            │
+│  - Shorter support window                                  │
+│  - May include experimental features                       │
+│  - Good for testing new features                           │
+│  - Not recommended for production                          │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## CONCEPT GAP: Serverless Compute and Unity Catalog
+
+Serverless SQL warehouses and serverless compute are increasingly important in the Databricks ecosystem and are always Unity Catalog-enabled.
+
+### Serverless vs Classic Compute
+
+```
+CLASSIC COMPUTE (Clusters):
+┌──────────────────────────────────────────┐
+│  You configure:                          │
+│  - Runtime version                       │
+│  - Access mode                           │
+│  - Node types and counts                 │
+│  - Credential passthrough setting        │
+│  Must verify "Supports Unity Catalog"    │
+└──────────────────────────────────────────┘
+
+SERVERLESS COMPUTE:
+┌──────────────────────────────────────────┐
+│  Databricks manages:                     │
+│  - Runtime version (always latest)       │
+│  - Infrastructure and scaling            │
+│  - Always Unity Catalog enabled          │
+│  - No configuration needed for UC        │
+│  - Instant startup                       │
+│  No cluster config decisions required!   │
+└──────────────────────────────────────────┘
+
+SQL WAREHOUSES:
+┌──────────────────────────────────────────┐
+│  - Serverless or Classic (Pro)           │
+│  - Always supports Unity Catalog         │
+│  - Designed for SQL/BI workloads         │
+│  - Auto-scaling and auto-suspend         │
+│  - Optimized for concurrent queries      │
+└──────────────────────────────────────────┘
+```
+
+| Feature | Classic Cluster | Serverless Compute | SQL Warehouse |
+|---------|----------------|-------------------|---------------|
+| **UC Support** | Requires config | Always enabled | Always enabled |
+| **Runtime** | User selects | Auto-managed | Auto-managed |
+| **Startup time** | Minutes | Seconds | Seconds (serverless) |
+| **Best for** | Custom ML/DE | General notebooks | SQL/BI queries |
+| **Cost model** | DBU + VM | DBU only | DBU only |
+
+---
+
+## CONCEPT GAP: Credential Passthrough vs Unity Catalog Access Control
+
+Understanding why credential passthrough is deprecated in favor of Unity Catalog access control is important for interviews and exams.
+
+### Comparison of Access Models
+
+```
+CREDENTIAL PASSTHROUGH (DEPRECATED):
+═════════════════════════════════════
+  User A ──credential──▶ Azure Storage
+  User B ──credential──▶ Azure Storage
+  User C ──credential──▶ Azure Storage
+
+  Problems:
+  - Each user needs direct Azure AD identity
+  - No centralized audit trail
+  - No fine-grained table/column/row security
+  - Incompatible with Unity Catalog
+  - Being phased out
+
+
+UNITY CATALOG ACCESS CONTROL (RECOMMENDED):
+════════════════════════════════════════════
+  User A ─┐
+  User B ─┼──▶ Unity Catalog ──▶ Storage Credential ──▶ Azure Storage
+  User C ─┘      (checks         (managed identity)
+                  permissions
+                  centrally)
+
+  Benefits:
+  - Centralized permission management
+  - Full audit trail via system tables
+  - Fine-grained access (table, column, row)
+  - Data lineage tracking
+  - Works with all UC features
+```
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What are the three critical cluster configurations required for Unity Catalog support?
+**A:** The three critical configurations are: (1) Databricks Runtime version must be 11.3 or higher (latest LTS recommended), (2) Access Mode must be either Single User or Shared (No Isolation Shared does not support Unity Catalog), and (3) Credential Passthrough must be disabled (unchecked). All three must be correctly configured, and you should verify by checking that the cluster summary displays "Supports Unity Catalog."
+
+### Q2: Why does "No Isolation Shared" access mode not support Unity Catalog?
+**A:** No Isolation Shared mode does not enforce process isolation between users sharing the cluster. Unity Catalog requires process isolation to enforce per-user access controls and ensure that one user cannot access data they are not authorized to see. Without isolation, a malicious user could potentially bypass Unity Catalog's security model by inspecting another user's processes or memory. Single User mode avoids this by allowing only one user, while Shared mode enforces strict process-level isolation.
+
+### Q3: Why is credential passthrough being deprecated, and what replaces it?
+**A:** Credential passthrough is deprecated because it passes individual user Azure AD credentials directly to cloud storage, bypassing centralized governance. This means there is no unified audit trail, no fine-grained table/column/row level security, and no data lineage tracking. Unity Catalog replaces this with a centralized access control model using storage credentials and managed identities. Unity Catalog provides a single point of authorization with comprehensive auditing, making credential passthrough both unnecessary and incompatible with the new governance model.
+
+### Q4: What should you do if a cluster does not show "Supports Unity Catalog" in its summary even though configurations appear correct?
+**A:** There are two possible causes: (1) The workspace itself has not been enabled with Unity Catalog -- verify by running `SELECT current_metastore();` and if it returns an error, the workspace needs to be attached to a Metastore via the Account Console. (2) The cluster was created before Unity Catalog was enabled on the workspace -- fix this by toggling the access mode (e.g., switch from Single User to Shared and back to Single User) to force the cluster to re-evaluate its configuration and recognize the newly available Unity Catalog.
+
+### Q5: What is the difference between Single User and Shared access modes, and when would you use each?
+**A:** Single User mode restricts the cluster to one user but provides full language support (Python, Scala, R, SQL), init scripts, and custom libraries with no restrictions. Shared mode allows multiple users with process isolation but restricts some features like init scripts, arbitrary JVM access from Python, and certain libraries. Use Single User for individual development, testing, or workloads requiring unrestricted language features. Use Shared mode for production multi-user environments, team collaboration, and when cost optimization through shared resources is important.
+
+### Q6: How do SQL Warehouses and Serverless Compute relate to Unity Catalog cluster configuration?
+**A:** SQL Warehouses (both Serverless and Pro) and Serverless Compute always support Unity Catalog without any manual configuration. They use auto-managed runtimes that are always current and always have Unity Catalog enabled. This eliminates the need to configure runtime versions, access modes, or credential passthrough settings. For new workloads, especially SQL/BI workloads, Databricks recommends SQL Warehouses. Serverless Compute is ideal for notebook-based workloads where instant startup and zero configuration are desired.
+
+### Q7: What runtime version should you use for production Unity Catalog workloads?
+**A:** For production workloads, always use the latest available LTS (Long Term Support) runtime version. LTS versions are supported for 2+ years with security patches and bug fixes, making them suitable for production stability. While the minimum requirement for Unity Catalog is 11.3, newer LTS versions (13.3+, 14.3+, 15.4+) include additional features like Volumes, row-level filters, and column masking. Avoid non-LTS versions in production as they have shorter support windows.
+
+### Q8: Can you change a cluster's access mode while it is running?
+**A:** No, changing the access mode requires the cluster to be restarted. When you modify the access mode in the cluster configuration, you must confirm the changes and the cluster will need to restart with the new settings. This is because the access mode fundamentally changes how the cluster handles user sessions, process isolation, and security enforcement. Always verify the summary shows "Supports Unity Catalog" after making changes and before running workloads.
+
+---
+
 *End of lesson*

@@ -471,4 +471,155 @@ You now have a comprehensive understanding of:
 
 ---
 
+## Cluster Lifecycle State Diagram
+
+```
+                    ┌──────────┐
+                    │  CREATE   │
+                    └─────┬────┘
+                          │
+                          ▼
+                    ┌──────────┐
+            ┌──────│ PENDING   │
+            │      └─────┬────┘
+            │            │ (VMs provisioned, runtime installed)
+            │            ▼
+            │      ┌──────────┐
+            │      │ RUNNING   │◄──────────────────────┐
+            │      └──┬───┬───┘                        │
+            │         │   │                            │
+            │         │   │  (auto-terminate           │
+            │         │   │   or manual terminate)     │
+            │         │   ▼                            │
+            │         │ ┌──────────────┐               │
+            │         │ │ TERMINATING   │               │
+            │         │ └──────┬───────┘               │
+            │         │        │                       │
+            │         │        ▼                       │
+            │         │ ┌──────────────┐    (restart)  │
+            │         │ │ TERMINATED    │───────────────┘
+            │         │ └──────┬───────┘
+            │         │        │
+            │         │        │ (delete)
+            │         │        ▼
+            │         │ ┌──────────────┐
+            │         │ │  DELETED      │
+            │         │ └──────────────┘
+            │         │
+            │         │ (restart / config change)
+            │         ▼
+            │   ┌──────────────┐
+            │   │ RESTARTING    │──────► RUNNING
+            │   └──────────────┘
+            │
+            │ (error during creation)
+            ▼
+      ┌──────────┐
+      │  ERROR    │
+      └──────────┘
+```
+
+---
+
+## CONCEPT GAP: Cluster Permissions Model
+
+Understanding who can do what with clusters is critical for data engineering teams:
+
+| Permission Level | Capabilities |
+|-----------------|-------------|
+| **No Permissions** | Cannot see or use the cluster |
+| **Can Attach To** | Attach notebooks, run workloads; cannot configure or manage |
+| **Can Restart** | Everything in "Can Attach To" + restart the cluster |
+| **Can Manage** | Full control: edit configuration, terminate, delete, change permissions |
+
+- By default, the cluster creator has **Can Manage** permission.
+- Workspace admins can manage all clusters regardless of permissions.
+- Cluster policies can be used to control which users/groups can create clusters and what configurations they can use.
+
+---
+
+## CONCEPT GAP: Init Scripts
+
+Init scripts deserve deeper coverage as they appear on certification exams:
+
+- **Init scripts** are shell scripts that run during cluster startup, before the Spark driver or workers are initialized.
+- **Types**:
+  - **Cluster-scoped**: Defined in the cluster configuration; run only on that specific cluster.
+  - **Global**: Run on every cluster in the workspace (configured by admins).
+- **Common use cases**:
+  - Install OS-level packages (e.g., `apt-get install`)
+  - Install Python libraries system-wide
+  - Configure custom logging or monitoring agents
+  - Set up JDBC/ODBC drivers
+  - Mount network file systems
+- **Storage locations**: Init scripts can be stored in:
+  - Workspace files
+  - Unity Catalog Volumes
+  - DBFS (legacy, being deprecated)
+  - Cloud storage (ADLS, S3, GCS)
+- **Execution order**: Global init scripts run first, then cluster-scoped init scripts.
+- **Debugging**: Logs for init scripts are written to `/databricks/init_scripts/<cluster-id>/` and can be inspected if a script fails.
+
+---
+
+## CONCEPT GAP: DBU Pricing Tiers
+
+Understanding DBU pricing is essential for cost optimization:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DBU PRICING TIERS                             │
+│                                                                  │
+│  ┌────────────────────────┐  ┌──────────────────────────────┐   │
+│  │   JOBS COMPUTE          │  │   ALL-PURPOSE COMPUTE         │   │
+│  │   (Automated workloads) │  │   (Interactive workloads)     │   │
+│  │                         │  │                               │   │
+│  │   LOWER DBU RATE        │  │   HIGHER DBU RATE             │   │
+│  │   ~40-60% cheaper       │  │   Full price                  │   │
+│  └────────────────────────┘  └──────────────────────────────┘   │
+│                                                                  │
+│  ┌────────────────────────┐  ┌──────────────────────────────┐   │
+│  │   PHOTON ENABLED        │  │   STANDARD (no Photon)        │   │
+│  │   Higher DBU rate       │  │   Lower DBU rate              │   │
+│  │   but faster execution  │  │   standard speed              │   │
+│  └────────────────────────┘  └──────────────────────────────┘   │
+│                                                                  │
+│  Total Cost = VM Cost (cloud provider) + DBU Cost (Databricks)  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+- **DBU (Databricks Unit)** is the unit of processing capability per hour, billed by Databricks on top of cloud infrastructure costs.
+- **Total cluster cost** = Cloud VM cost (paid to Azure/AWS/GCP) + DBU cost (paid to Databricks).
+- The DBU rate varies by: compute type (jobs vs. interactive vs. SQL), Photon enabled/disabled, and Databricks tier (Standard, Premium, Enterprise).
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What is the recommended auto-termination setting for production clusters?
+**A:** For production job clusters, auto-termination is less relevant because job clusters are automatically terminated when the job completes. For production all-purpose clusters used for interactive work, set auto-termination to a value that balances usability and cost -- typically 30-60 minutes. For development/training clusters, 10-30 minutes is appropriate. The minimum allowed value is 10 minutes, and the maximum is 43,200 minutes (30 days). Always ensure auto-termination is enabled to prevent runaway costs from idle clusters.
+
+### Q2: What happens to running notebooks when a cluster is terminated?
+**A:** When a cluster is terminated, all running notebooks attached to that cluster are interrupted and their execution state is lost. Variables, DataFrames, and temporary views stored in memory are cleared. However, the notebook code and any data written to persistent storage (Delta tables, cloud storage) are preserved. When the cluster is restarted, notebooks need to be re-executed to recreate the in-memory state. Cluster configurations are preserved across terminations.
+
+### Q3: What is the difference between terminating and deleting a cluster?
+**A:** **Terminating** a cluster stops all VMs and releases compute resources, but preserves the cluster configuration. You can restart a terminated cluster and it will spin up with the same settings. You are not charged for a terminated cluster. **Deleting** a cluster permanently removes the cluster configuration from the workspace. It cannot be recovered. Always terminate rather than delete if you plan to use the cluster again.
+
+### Q4: How does Databricks billing work with DBUs?
+**A:** Databricks billing has two components: (1) cloud infrastructure costs for VMs (paid to the cloud provider), and (2) DBU costs (paid to Databricks). DBU stands for Databricks Unit, a measure of processing capability per hour. The DBU rate varies by compute type -- Jobs Compute has a lower rate than All-Purpose Compute (approximately 40-60% cheaper). Photon-enabled clusters have a higher DBU rate but often lower total cost due to faster execution. Total cost = VM cost/hour x hours + DBU rate x DBUs/hour x hours.
+
+### Q5: What information can you find in the Event Log of a cluster?
+**A:** The Event Log records major lifecycle events for the cluster including: cluster creation, cluster start/restart, cluster termination (with reason), auto-scaling events (nodes added/removed), spot instance evictions, configuration changes, driver/worker node failures, and init script execution results. It is the primary tool for troubleshooting cluster issues such as failed starts, unexpected terminations, or performance problems. Events include timestamps and detailed messages.
+
+### Q6: What is the Spark UI tab used for?
+**A:** The Spark UI tab provides access to the Apache Spark web interface for the cluster. It shows: active and completed Spark jobs, stages and task-level execution details, DAG visualization for query plans, storage and memory usage, environment configurations, and executor metrics. It also provides access to driver logs and worker logs for debugging. This is essential for performance tuning and understanding query execution plans.
+
+### Q7: Why might a specific VM type be unavailable when creating a cluster?
+**A:** VM types may be unavailable for several reasons: (1) regional availability -- not all VM types are offered in every cloud region; (2) subscription quotas -- your cloud subscription may have core/VM quota limits for certain VM families; (3) capacity constraints -- the cloud provider may have temporarily exhausted capacity for that VM type in your region. If your preferred VM type is unavailable, select an alternative with similar specifications (matching core count and memory). Databricks shows a warning icon next to unavailable VM types.
+
+### Q8: What are the key tabs available on a cluster detail page and what is each used for?
+**A:** The key tabs are: **Configuration** (view/edit cluster settings), **Notebooks** (see all notebooks attached to the cluster), **Libraries** (install and manage external libraries and dependencies), **Event Log** (view lifecycle events for troubleshooting), **Spark UI** (access the Spark web interface, driver logs, and executor metrics), and **Metrics** (view detailed performance metrics for CPU, memory, disk, and network utilization of cluster resources).
+
+---
+
 *End of lesson*
