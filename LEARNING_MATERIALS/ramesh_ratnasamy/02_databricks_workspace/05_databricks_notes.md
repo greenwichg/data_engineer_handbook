@@ -493,4 +493,161 @@ Don't worry if you haven't understood everything yet. We're going to:
 
 ---
 
+## Notebook Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DATABRICKS NOTEBOOK                           │
+│                                                                  │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  Cell 1: %md   Documentation / Title                      │  │
+│  ├───────────────────────────────────────────────────────────┤  │
+│  │  Cell 2: %python   print("Hello")                         │  │
+│  │  [Output: Hello]                                          │  │
+│  ├───────────────────────────────────────────────────────────┤  │
+│  │  Cell 3: %sql   SELECT * FROM my_table                    │  │
+│  │  [Output: Table results]                                  │  │
+│  ├───────────────────────────────────────────────────────────┤  │
+│  │  Cell 4: %python   df.show()                              │  │
+│  │  [Output: DataFrame results]                              │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌──────────────┐                                               │
+│  │  ATTACHED TO  │──────► Databricks Cluster (compute)          │
+│  └──────────────┘                                               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Workspace Folder Structure
+
+```
+┌──────────────────────────────────────────┐
+│             WORKSPACE                     │
+│                                           │
+│  ├── Users/                               │
+│  │   ├── user1@company.com/               │
+│  │   │   ├── project-a/                   │
+│  │   │   │   ├── notebook1.py             │
+│  │   │   │   └── notebook2.sql            │
+│  │   │   └── project-b/                   │
+│  │   └── user2@company.com/               │
+│  │                                        │
+│  ├── Shared/                              │
+│  │   ├── team-notebooks/                  │
+│  │   └── common-utils/                    │
+│  │                                        │
+│  └── Repos (Git Folders)/                 │
+│      ├── user1@company.com/               │
+│      │   └── my-git-repo/                 │
+│      └── user2@company.com/               │
+└──────────────────────────────────────────┘
+```
+
+---
+
+## CONCEPT GAP: Notebook Export Formats
+
+Understanding notebook file formats is important for certification:
+
+| Format | Extension | Description | Use Case |
+|--------|-----------|-------------|----------|
+| **DBC** | `.dbc` | Databricks Archive (proprietary) | Full backup with metadata, results, dashboards |
+| **Source** | `.py`, `.sql`, `.scala`, `.r` | Language-specific source file | Version control, external editing |
+| **HTML** | `.html` | Rendered notebook with results | Sharing with non-Databricks users |
+| **IPython/Jupyter** | `.ipynb` | Jupyter Notebook format | Interoperability with Jupyter ecosystem |
+
+- **DBC format** preserves everything: code, results, visualizations, metadata, and dashboard configurations.
+- **Source format** exports only the code and magic commands; results and visualizations are not included.
+- When importing a source file, Databricks uses the first line magic command (e.g., `# Databricks notebook source`) to identify it as a Databricks notebook.
+
+---
+
+## CONCEPT GAP: Notebook Workflows vs. Databricks Workflows
+
+Understanding the difference is critical for exam prep:
+
+| Feature | Notebook Workflows (%run, dbutils.notebook.run) | Databricks Workflows (Jobs) |
+|---------|------------------------------------------------|----------------------------|
+| **Invocation** | From within a notebook | From the Jobs UI, API, or CLI |
+| **Orchestration** | Manual, code-based | Visual DAG, declarative |
+| **Error handling** | Custom try/except | Built-in retry policies |
+| **Monitoring** | Limited (manual logging) | Full UI with run history, alerts |
+| **Scheduling** | Not built-in (needs external trigger) | Built-in cron scheduling |
+| **Parameters** | Widgets or %run arguments | Job parameters, task values |
+| **Recommendation** | Simple, ad hoc chaining | Production pipelines |
+
+- `%run` executes the child notebook in the **same** execution context (shares variables, SparkSession).
+- `dbutils.notebook.run()` executes the child notebook in a **separate** execution context (isolated variables, returns a string result).
+
+---
+
+## CONCEPT GAP: Notebook Widgets for Parameterization
+
+Widgets allow notebooks to accept parameters at runtime:
+
+```python
+# Create a text widget
+dbutils.widgets.text("environment", "dev", "Environment")
+
+# Create a dropdown widget
+dbutils.widgets.dropdown("region", "us-east-1", ["us-east-1", "us-west-2", "eu-west-1"])
+
+# Get widget value
+env = dbutils.widgets.get("environment")
+
+# Remove a widget
+dbutils.widgets.remove("environment")
+
+# Remove all widgets
+dbutils.widgets.removeAll()
+```
+
+- Widgets appear as input controls at the top of the notebook.
+- Values can be passed externally via `dbutils.notebook.run()` or Databricks Jobs.
+- Four widget types: **text**, **dropdown**, **combobox**, **multiselect**.
+
+---
+
+## CONCEPT GAP: Notebook Execution Context and State
+
+Key concepts for understanding notebook behavior:
+
+- **Execution context**: When a notebook is attached to a cluster, it gets an execution context (essentially a REPL session) that holds the SparkSession, variables, and imported libraries.
+- **State persistence**: Variables and objects persist in memory between cell executions within the same session. They are lost when the cluster is terminated, the notebook is detached, or "Clear State" is used.
+- **Cell execution order**: Cells can be executed in any order. This can lead to issues if cells depend on each other. Best practice is to write notebooks that can be run top-to-bottom.
+- **Detach and re-attach**: Detaching a notebook from a cluster destroys the execution context. Re-attaching starts a fresh context.
+- **Concurrent execution**: Multiple notebooks can share the same cluster (subject to access mode). Each notebook gets its own isolated execution context.
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: What is the difference between a Databricks notebook and a standard Jupyter notebook?
+**A:** Databricks notebooks share the cell-based execution model with Jupyter but offer several additional features: (1) native multi-language support via magic commands (%python, %sql, %scala, %r) in a single notebook; (2) built-in collaboration with real-time co-editing, comments, and sharing; (3) automatic version history without needing Git; (4) native integration with Databricks clusters for distributed computing; (5) built-in visualization capabilities and the display() function; (6) integration with Unity Catalog for data governance; and (7) support for Databricks Workflows for production scheduling.
+
+### Q2: How does the %run magic command differ from dbutils.notebook.run()?
+**A:** `%run` executes the child notebook in the **same execution context** as the calling notebook, meaning all variables, functions, and imports from the child notebook become available in the parent. It is synchronous and blocks until completion. `dbutils.notebook.run()` executes the child notebook in a **new, isolated execution context** on the same cluster. It can accept parameters, returns a string result, and supports a timeout parameter. The key difference is variable sharing: %run shares state, dbutils.notebook.run() does not.
+
+### Q3: What export formats are available for Databricks notebooks and when would you use each?
+**A:** Four export formats are available: (1) **DBC** (Databricks Archive) -- preserves everything including code, results, visualizations, and metadata; best for full backups. (2) **Source file** (.py, .sql, etc.) -- exports only code; best for version control in Git. (3) **HTML** -- rendered notebook with results; best for sharing with non-Databricks users. (4) **IPython/Jupyter** (.ipynb) -- standard Jupyter format; best for interoperability with the Jupyter ecosystem. For production Git workflows, source format is most common.
+
+### Q4: How does version history work in Databricks notebooks?
+**A:** Databricks automatically tracks version history for every notebook without requiring manual action. Each time a cell is executed or the notebook is saved, a new version is created with a timestamp. Users can view the complete version history, compare versions to see differences, and restore any previous version. However, this built-in version history has limitations: it only tracks individual notebooks (not project-wide changes), does not support branching or merging, and does not integrate with CI/CD pipelines. For professional version control, use Databricks Git Folders.
+
+### Q5: What are the different ways to execute code in a Databricks notebook?
+**A:** There are several execution methods: (1) Click the **Play button** on a cell; (2) **Shift + Enter** to run a cell and move to the next; (3) **Ctrl + Enter** to run a cell and stay on it; (4) **Run All** button to execute all cells sequentially; (5) **Run menu** options for selective execution; (6) **Ctrl + Shift + Enter** to run only selected/highlighted text within a cell. Additionally, notebooks can be executed programmatically via `dbutils.notebook.run()`, the Databricks Jobs API, or the Databricks CLI.
+
+### Q6: What happens when you attach a notebook to a cluster with a different access mode?
+**A:** The access mode determines what languages and features are available. In **Single User** mode, all four languages (Python, SQL, Scala, R) are available but only the designated user can use the cluster. In **Shared** mode, Python and SQL are supported (Scala from DBR 13.3+ with Unity Catalog), and multiple users share the cluster with process isolation. In **No Isolation Shared** mode, all four languages are available but there is no process isolation. If a notebook uses a language not supported by the cluster's access mode (e.g., Scala on a Shared mode cluster), those cells will fail to execute.
+
+### Q7: How can multiple users collaborate on the same notebook?
+**A:** Databricks supports real-time collaboration on notebooks. Users can share a notebook by clicking the Share button and adding users with appropriate permission levels (Can Read, Can Run, Can Edit, Can Manage). Multiple users can edit the same notebook simultaneously with real-time updates visible to all collaborators. The Comments feature allows users to add contextual notes to specific cells. Version history tracks who made which changes and when. For team-based development with code review workflows, Git Folders (Repos) provide a more structured collaboration model.
+
+### Q8: What is the purpose of the Table of Contents feature in notebooks?
+**A:** The Table of Contents is automatically generated from Markdown headings (H1, H2, H3, etc.) in the notebook's documentation cells (%md). It appears in the left sidebar and provides clickable navigation links to jump to any section. This is essential for large notebooks with many sections, as it enables quick navigation without scrolling. Best practice is to structure notebooks with clear Markdown headings and documentation cells to make the Table of Contents useful for both the author and anyone reviewing the notebook.
+
+---
+
 *End of lesson*

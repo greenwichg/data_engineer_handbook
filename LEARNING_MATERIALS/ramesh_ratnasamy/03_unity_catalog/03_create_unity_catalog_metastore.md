@@ -816,4 +816,222 @@ You've successfully:
 
 ---
 
+## CONCEPT GAP: Metastore Architecture Across Cloud Providers
+
+Understanding how metastore setup differs across cloud providers is important for certification exams, especially when questions reference multi-cloud scenarios.
+
+### Metastore Setup Comparison by Cloud Provider
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AZURE DATABRICKS                                 │
+│                                                                     │
+│  Account Console: https://accounts.azure.databricks.net             │
+│  Identity Provider: Microsoft Entra ID (formerly Azure AD)          │
+│  Admin Requirement: Global Administrator in Entra ID                │
+│  Auto-creation: Since November 2023 for new subscriptions           │
+│  Default Storage: ADLS Gen2 (optional, not recommended)             │
+│  Access Connector: Azure-native first-party service                 │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                     AWS DATABRICKS                                  │
+│                                                                     │
+│  Account Console: https://accounts.cloud.databricks.com             │
+│  Identity Provider: Databricks-native or SCIM from IdP              │
+│  Admin Requirement: Account admin in Databricks                     │
+│  Auto-creation: Since November 2023 for new accounts                │
+│  Default Storage: S3 bucket (optional, not recommended)             │
+│  Access: IAM roles for cross-account access                         │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│                     GCP DATABRICKS                                  │
+│                                                                     │
+│  Account Console: https://accounts.gcp.databricks.com               │
+│  Identity Provider: Google Identity or SCIM                         │
+│  Admin Requirement: Account admin in Databricks                     │
+│  Auto-creation: Since November 2023 for new accounts                │
+│  Default Storage: GCS bucket (optional, not recommended)            │
+│  Access: Service accounts for storage access                        │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Key Rule: One Metastore Per Region
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              Databricks Account                         │
+│                                                         │
+│  Region: US East          Region: UK South              │
+│  ┌───────────────────┐   ┌───────────────────┐         │
+│  │   Metastore       │   │   Metastore       │         │
+│  │   (us-east)       │   │   (uk-south)      │         │
+│  │                   │   │                   │         │
+│  │  ┌─────────────┐  │   │  ┌─────────────┐  │         │
+│  │  │ Workspace A │  │   │  │ Workspace C │  │         │
+│  │  └─────────────┘  │   │  └─────────────┘  │         │
+│  │  ┌─────────────┐  │   │  ┌─────────────┐  │         │
+│  │  │ Workspace B │  │   │  │ Workspace D │  │         │
+│  │  └─────────────┘  │   │  └─────────────┘  │         │
+│  └───────────────────┘   └───────────────────┘         │
+│                                                         │
+│  Rule: Workspace and Metastore MUST be in same region   │
+│  Rule: Multiple workspaces can share one Metastore      │
+│  Rule: A workspace can attach to only ONE Metastore     │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## CONCEPT GAP: Metastore Admin vs Account Admin vs Workspace Admin
+
+A common source of confusion on exams is the distinction between admin roles. Each has a different scope of control.
+
+### Admin Role Comparison
+
+| Role | Scope | Key Responsibilities | Where Managed |
+|------|-------|---------------------|---------------|
+| **Account Admin** | Entire Databricks account | Create workspaces, manage users at account level, manage billing | Account Console |
+| **Metastore Admin** | One Unity Catalog Metastore | Manage catalogs, storage credentials, external locations, grants | Account Console or Workspace |
+| **Workspace Admin** | One Databricks workspace | Manage workspace users, clusters, notebooks, workspace settings | Workspace Admin Console |
+
+### Permission Flow
+
+```
+┌──────────────────────────────────────────────────┐
+│               ACCOUNT ADMIN                      │
+│  - Creates metastores                            │
+│  - Assigns metastore admins                      │
+│  - Manages account-level identity                │
+│  - Can do everything below                       │
+└──────────────────┬───────────────────────────────┘
+                   │ delegates to
+                   ▼
+┌──────────────────────────────────────────────────┐
+│              METASTORE ADMIN                     │
+│  - Creates catalogs and storage credentials      │
+│  - Manages data governance policies              │
+│  - Grants privileges on metastore objects        │
+│  - Manages external locations                    │
+└──────────────────┬───────────────────────────────┘
+                   │ delegates to
+                   ▼
+┌──────────────────────────────────────────────────┐
+│             WORKSPACE ADMIN                      │
+│  - Manages compute resources                     │
+│  - Manages workspace-level users                 │
+│  - Cannot override metastore-level governance    │
+└──────────────────────────────────────────────────┘
+```
+
+---
+
+## CONCEPT GAP: Default Metastore Storage -- Why Databricks Recommends Leaving It Blank
+
+This is a best-practice question frequently asked in interviews and on exams.
+
+### Default Storage Problems vs Dedicated Storage
+
+```
+ANTI-PATTERN: Default Metastore Storage
+════════════════════════════════════════
+
+  ┌───────────────────────────────────────────────┐
+  │         Single ADLS Gen2 Container            │
+  │                                               │
+  │  /dev_catalog/schema1/table1/                 │
+  │  /dev_catalog/schema2/table2/                 │
+  │  /prod_catalog/schema1/table3/   <- MIXED!    │
+  │  /test_catalog/schema1/table4/   <- MESSY!    │
+  │                                               │
+  │  Problems:                                    │
+  │  - Cannot set different retention policies    │
+  │  - Cannot isolate billing per catalog         │
+  │  - Difficult to apply catalog-level ACLs      │
+  │  - Single point of failure                    │
+  └───────────────────────────────────────────────┘
+
+
+BEST PRACTICE: Dedicated Storage Per Catalog
+═════════════════════════════════════════════
+
+  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+  │  Dev Container   │  │  Test Container  │  │  Prod Container  │
+  │                  │  │                  │  │                  │
+  │  /schema1/       │  │  /schema1/       │  │  /schema1/       │
+  │  /schema2/       │  │  /schema2/       │  │  /schema2/       │
+  │                  │  │                  │  │                  │
+  │  Own ACLs        │  │  Own ACLs        │  │  Own ACLs        │
+  │  Own retention   │  │  Own retention   │  │  Own retention   │
+  │  Own billing     │  │  Own billing     │  │  Own billing     │
+  └──────────────────┘  └──────────────────┘  └──────────────────┘
+```
+
+---
+
+## CONCEPT GAP: Useful SQL Commands for Metastore Management
+
+These commands are important for both practical work and exam scenarios.
+
+```sql
+-- Check current metastore
+SELECT current_metastore();
+
+-- Check current catalog
+SELECT current_catalog();
+
+-- Check current schema
+SELECT current_schema();
+
+-- List all catalogs in the metastore
+SHOW CATALOGS;
+
+-- List all schemas in a catalog
+SHOW SCHEMAS IN my_catalog;
+
+-- List all grants on a securable object
+SHOW GRANTS ON CATALOG my_catalog;
+SHOW GRANTS ON SCHEMA my_catalog.my_schema;
+
+-- Grant permissions
+GRANT USE CATALOG ON CATALOG my_catalog TO `user@example.com`;
+GRANT USE SCHEMA ON SCHEMA my_catalog.my_schema TO `user@example.com`;
+GRANT SELECT ON TABLE my_catalog.my_schema.my_table TO `user@example.com`;
+
+-- Set default catalog and schema for a session
+USE CATALOG my_catalog;
+USE SCHEMA my_schema;
+```
+
+---
+
+## KEY INTERVIEW QUESTIONS AND ANSWERS
+
+### Q1: Where do you create a Unity Catalog Metastore, and why can it not be created from a workspace?
+**A:** A Unity Catalog Metastore must be created from the Databricks Account Console (https://accounts.azure.databricks.net for Azure). It cannot be created from a workspace because the Metastore is an account-level resource that exists above the workspace level. A single Metastore can serve multiple workspaces in the same region, so it must be managed at the account level. You need Global Administrator privileges in Microsoft Entra ID (Azure) or Account Admin privileges to create one.
+
+### Q2: What is the rule regarding Metastores and cloud regions?
+**A:** There can be only one Unity Catalog Metastore per cloud region within a Databricks account. A workspace must be in the same region as the Metastore it attaches to. Multiple workspaces in the same region can attach to the same Metastore, enabling cross-workspace data sharing. A workspace can attach to only one Metastore at a time. Since November 2023, Databricks automatically creates a Metastore for new subscriptions.
+
+### Q3: Why does Databricks recommend NOT setting a default storage location when creating a Metastore?
+**A:** Databricks recommends leaving the default ADLS Gen2 path blank because a single default storage location becomes a "dumping ground" where all catalogs write data to the same container. This leads to poor data organization, makes capacity planning difficult, prevents per-catalog access control, and creates a data swamp. The recommended approach is to assign dedicated storage containers to individual catalogs or schemas, enabling proper separation, independent access control, and efficient capacity planning.
+
+### Q4: What happens when a workspace is assigned to a Unity Catalog Metastore?
+**A:** When a workspace is assigned to a Metastore, Unity Catalog is enabled for that workspace. This means: (1) a three-level namespace (catalog.schema.object) becomes required for referencing data objects, (2) the hive_metastore pseudo-catalog is automatically created for backward compatibility, (3) governance features like data lineage and audit logging become available, and (4) access control is managed at the account level rather than workspace level. Existing workloads using the Hive Metastore continue to work through the pseudo-catalog.
+
+### Q5: What is the difference between an Account Admin, a Metastore Admin, and a Workspace Admin?
+**A:** The Account Admin manages the entire Databricks account including creating workspaces, managing account-level users, and billing. The Metastore Admin manages a specific Unity Catalog Metastore including creating catalogs, storage credentials, external locations, and managing data governance policies. The Workspace Admin manages a single workspace including compute resources, workspace users, and workspace settings but cannot override metastore-level governance policies. In production, these should be separate roles following least-privilege principles.
+
+### Q6: How do you verify that a workspace is properly connected to a Unity Catalog Metastore?
+**A:** Run the SQL command `SELECT current_metastore();` in a notebook. If the workspace is properly attached, it returns the Metastore name (e.g., `metastore-azure-uksouth`). If not attached, it returns an error: "Operation current_metastore requires Unity Catalog enabled." You can also verify through the Account Console by navigating to Catalog, selecting the Metastore, and checking the Workspaces tab to see which workspaces are attached.
+
+### Q7: What was the significance of November 2023 for Unity Catalog Metastore creation?
+**A:** Starting November 2023, Databricks began automatically creating a Unity Catalog Metastore for all new Azure subscriptions (and new accounts on other clouds). This means workspaces created after this date are automatically attached to a Metastore and have Unity Catalog enabled by default. For subscriptions created before November 2023, the Metastore must be manually created and the workspace must be manually attached. This change reflects Databricks' push toward universal adoption of Unity Catalog for data governance.
+
+### Q8: In a production environment, what are the best practices for Metastore admin configuration?
+**A:** In production: (1) Assign a specific user or a small group as Metastore admin rather than "all account users," (2) Create a dedicated admin user in Microsoft Entra ID specifically for Databricks administration, (3) Follow the principle of least privilege so only authorized personnel can manage catalogs and storage credentials, (4) Use naming conventions that include the cloud provider and region (e.g., `metastore-azure-uksouth`), (5) Do not set default Metastore storage; instead assign dedicated storage per catalog, and (6) Document the Metastore configuration and admin assignments.
+
+---
+
 *End of lesson*
