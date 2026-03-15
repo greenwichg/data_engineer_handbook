@@ -719,12 +719,12 @@ Understanding why credential passthrough is deprecated in favor of Unity Catalog
 ```
 CREDENTIAL PASSTHROUGH (DEPRECATED):
 ═════════════════════════════════════
-  User A ──credential──▶ Azure Storage
-  User B ──credential──▶ Azure Storage
-  User C ──credential──▶ Azure Storage
+  User A ──credential──▶ S3 Storage
+  User B ──credential──▶ S3 Storage
+  User C ──credential──▶ S3 Storage
 
   Problems:
-  - Each user needs direct Azure AD identity
+  - Each user needs direct IAM identity
   - No centralized audit trail
   - No fine-grained table/column/row security
   - Incompatible with Unity Catalog
@@ -734,8 +734,8 @@ CREDENTIAL PASSTHROUGH (DEPRECATED):
 UNITY CATALOG ACCESS CONTROL (RECOMMENDED):
 ════════════════════════════════════════════
   User A ─┐
-  User B ─┼──▶ Unity Catalog ──▶ Storage Credential ──▶ Azure Storage
-  User C ─┘      (checks         (managed identity)
+  User B ─┼──▶ Unity Catalog ──▶ Storage Credential ──▶ S3 Storage
+  User C ─┘      (checks         (IAM role)
                   permissions
                   centrally)
 

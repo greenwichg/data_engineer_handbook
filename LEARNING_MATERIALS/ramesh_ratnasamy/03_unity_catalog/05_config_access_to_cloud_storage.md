@@ -69,35 +69,35 @@ To achieve this, we need to create **Unity Catalog objects**:
 
 #### What is a Storage Credential?
 
-An **authentication and authorization mechanism** for accessing data stored in Azure storage on behalf of users.
+An **authentication and authorization mechanism** for accessing data stored in cloud storage (S3) on behalf of users.
 
 #### Key Characteristics:
 
 **Purpose:**
-- Securely authenticate to Azure storage
+- Securely authenticate to S3
 - Authorize access to data
 - On behalf of Databricks users
 
 **Creation Methods:**
 
 Can be created with:
-1. **Managed Identity**
-2. **Service Principal**
+1. **IAM Role**
+2. **IAM User with Access Keys**
 
-#### Understanding Azure Identity Concepts
+#### Understanding AWS Identity Concepts
 
-**For those new to Azure:**
+**For those new to AWS:**
 
 | Concept | Description |
 |---------|-------------|
-| **Managed Identity** | Azure-managed identity for resources |
-| **Service Principal** | Application identity in Azure AD |
+| **IAM Role** | AWS-managed identity for resources |
+| **IAM User with Access Keys** | Application identity in AWS IAM |
 
 **What they do:**
-- Mechanisms for authenticating Azure resources
+- Mechanisms for authenticating AWS resources
 - Authorize access securely
-- **No manual credential management required**
-- Credentials handled automatically by Azure
+- **No manual credential management required** (with IAM roles)
+- Credentials handled automatically by AWS (with IAM roles)
 
 ---
 
@@ -116,7 +116,7 @@ Storage Credential + Cloud Storage Container = External Location
 
 **Components:**
 1. **Storage Credential** - Authentication mechanism
-2. **Container Path** - Specific ADLS Gen2 container
+2. **Container Path** - Specific Amazon S3 bucket/path
 3. **External Location** - Combined access object
 
 #### Flexibility and Organization
@@ -135,7 +135,7 @@ Within a container that an external location refers to:
 
 **Example Structure:**
 ```
-ADLS Gen2 Container: data-lake
+S3 Bucket: data-lake
   └── catalogs/
       ├── dev/
       │   ├── bronze/
@@ -170,29 +170,29 @@ Let's look at how to implement access to cloud storage using Unity Catalog objec
 
 ---
 
-## Azure Access Connector for Databricks
+## IAM Cross-Account Role for Databricks
 
-### What is Access Connector?
+### What is an IAM Cross-Account Role?
 
-**Azure First-Party Service:**
+**AWS IAM-Based Integration:**
 - Specifically designed for Databricks
-- Simplifies managed identity integration
-- Connects managed identity to Databricks account
+- Simplifies IAM role integration
+- Connects IAM role to Databricks account
 
-### Why Use Access Connector?
+### Why Use an IAM Cross-Account Role?
 
 **Advantages:**
 
 | Feature | Benefit |
 |---------|---------|
-| **First-party service** | Native Azure integration |
+| **IAM-based integration** | Native AWS integration |
 | **Simplified setup** | Easier than manual configuration |
-| **Managed identity** | No credential management |
-| **Secure** | Azure-managed authentication |
-| **Recommended** | Best practice for Azure |
+| **IAM role** | No credential management |
+| **Secure** | AWS-managed authentication |
+| **Recommended** | Best practice for AWS |
 
 **⭐ Decision:**
-We'll use Access Connector for this course because it's very simple to implement.
+We'll use an IAM cross-account role for this course because it's very simple to implement.
 
 ---
 
@@ -202,11 +202,11 @@ We'll use Access Connector for this course because it's very simple to implement
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Azure Subscription                       │
+│                      AWS Account                            │
 │                                                             │
 │  ┌──────────────────────┐      ┌──────────────────────┐   │
-│  │ Access Connector     │      │ ADLS Gen2 Storage    │   │
-│  │ (Managed Identity)   │─────▶│ (Data Lake)          │   │
+│  │ IAM Cross-Account    │      │ Amazon S3 Storage    │   │
+│  │ Role                 │─────▶│ (Data Lake)          │   │
 │  └──────────────────────┘      └──────────────────────┘   │
 │           │                              ▲                  │
 │           │ (Uses)                       │ (Accesses)       │
@@ -238,13 +238,13 @@ We'll use Access Connector for this course because it's very simple to implement
 
 ## Detailed Implementation Steps
 
-### Step 1: Create Access Connector
+### Step 1: Create IAM Cross-Account Role
 
 **What to Do:**
-Create an Azure Access Connector for Databricks.
+Create an IAM cross-account role for Databricks.
 
 **Important Note:**
-You may already have one in your subscription created by Databricks by default.
+You may already have one in your AWS account created by Databricks by default.
 
 **Options:**
 
@@ -264,27 +264,27 @@ Create a **new one** just for this part of the course to keep it separate.
 
 ---
 
-### Step 2: Create Azure Data Lake Storage Account
+### Step 2: Create Amazon S3 Bucket
 
 **What to Do:**
-Create a new ADLS Gen2 storage account.
+Create a new Amazon S3 bucket.
 
 **Why Not Use Existing?**
 
-**You may already have a data lake in your subscription:**
+**You may already have a data lake in your AWS account:**
 - Created by Databricks by default
 - But Databricks manages access to that storage
 - We won't have full control
 
 **⚠️ Problem:**
-- Databricks-managed storage account
+- Databricks-managed S3 bucket
 - We don't have full access
 - Limited control over permissions
 
 **✅ Solution:**
-Create a **new storage account** for which we'll have **full access**.
+Create a **new S3 bucket** for which we'll have **full access**.
 
-**Benefits of New Storage Account:**
+**Benefits of New S3 Bucket:**
 
 | Benefit | Description |
 |---------|-------------|
@@ -295,47 +295,47 @@ Create a **new storage account** for which we'll have **full access**.
 
 ---
 
-### Step 3: Assign Role to Access Connector
+### Step 3: Attach IAM Policy to Cross-Account Role
 
 **What to Do:**
-Assign the **Storage Blob Data Contributor** role on the data lake to the access connector.
+Attach an **IAM policy with s3:GetObject, s3:PutObject, s3:DeleteObject** permissions on the data lake to the cross-account role.
 
-**Role Assignment:**
+**Policy Assignment:**
 ```
-Access Connector → Storage Blob Data Contributor → ADLS Gen2
+IAM Cross-Account Role → IAM Policy (s3:GetObject, s3:PutObject, s3:DeleteObject) → S3 Bucket
 ```
 
 **What This Achieves:**
-- ✅ Access Connector can access the data lake
+- ✅ IAM cross-account role can access the data lake
 - ✅ Read and write permissions
 - ✅ Proper authorization established
 
-**Role Details:**
+**Policy Details:**
 
-| Role | Permissions |
-|------|-------------|
-| **Storage Blob Data Contributor** | Read, write, delete blobs |
-| **Scope** | ADLS Gen2 storage account |
-| **Assigned To** | Access Connector |
+| Policy | Permissions |
+|--------|-------------|
+| **S3 bucket policy permissions** | s3:GetObject, s3:PutObject, s3:DeleteObject |
+| **Scope** | Amazon S3 bucket |
+| **Assigned To** | IAM cross-account role |
 
 ---
 
 ### Step 4: Create Storage Credential
 
 **What to Do:**
-Create the storage credential using the access connector information.
+Create the storage credential using the IAM cross-account role information.
 
 **How It Works:**
 ```
-Storage Credential ─uses→ Access Connector ─accesses→ Data Lake
+Storage Credential ─uses→ IAM Cross-Account Role ─accesses→ Data Lake
 ```
 
 **Result:**
-✅ Storage credential can now access the data lake via the access connector.
+✅ Storage credential can now access the data lake via the IAM cross-account role.
 
 **What We've Accomplished:**
 - Storage credential created
-- Linked to Access Connector
+- Linked to IAM cross-account role
 - Access to data lake established
 - ✅ **Storage Credential setup complete**
 
@@ -351,7 +351,7 @@ Create the external location object in Unity Catalog.
 | Component | Details |
 |-----------|---------|
 | **Storage Credential** | Created in Step 4 |
-| **ADLS Container** | Specific container path |
+| **S3 Bucket Path** | Specific bucket/prefix path |
 | **External Location** | Combined object |
 
 **Formula:**
@@ -362,7 +362,7 @@ External Location = Storage Credential + Container Path
 **Example:**
 ```
 Storage Credential: my_storage_credential
-Container Path: abfss://data@mystorageaccount.dfs.core.windows.net/catalogs/dev
+Bucket Path: s3://data-lake/catalogs/dev
 External Location: dev_external_location
 ```
 
@@ -378,7 +378,7 @@ When a user references the external location:
 2. **Unity Catalog checks:**
    - Which storage credential to use
    - User permissions on external location
-3. **Storage Credential authenticates via Access Connector**
+3. **Storage Credential authenticates via IAM cross-account role**
 4. **If successful:** Access granted
 5. **If failed:** Request denied
 
@@ -392,9 +392,9 @@ Unity Catalog checks permissions
     ↓
 Storage Credential
     ↓
-Access Connector
+IAM Cross-Account Role
     ↓
-ADLS Gen2
+Amazon S3
     ↓
 Data Access (if authorized)
 ```
@@ -469,7 +469,7 @@ The keyword **"external"** has **slightly different meanings** in different plac
 **NOT "External" as in:**
 - ❌ Outside Databricks ecosystem
 - ❌ Third-party storage
-- ❌ Non-Azure storage
+- ❌ Non-AWS storage
 
 **IS "External" as in:**
 - ✅ Not the default Metastore storage
@@ -500,29 +500,29 @@ Context matters—"external" has nuanced meanings depending on where it's used.
 
 Here's everything we need to carry out:
 
-#### Phase 1: Azure Resources (Steps 1-3)
+#### Phase 1: AWS Resources (Steps 1-3)
 
-**Step 1: Create Access Connector**
+**Step 1: Create IAM Cross-Account Role**
 ```
-Action: Create (or use existing) Access Connector
-Tool: Azure Portal
-Result: Managed Identity for Databricks
+Action: Create (or use existing) IAM cross-account role
+Tool: AWS Console
+Result: IAM role for Databricks
 ```
 
-**Step 2: Create ADLS Gen2 Storage Account**
+**Step 2: Create Amazon S3 Bucket**
 ```
-Action: Create new storage account
-Tool: Azure Portal
+Action: Create new S3 bucket
+Tool: AWS Console
 Result: Dedicated data lake with full access
 ```
 
-**Step 3: Assign Role**
+**Step 3: Attach IAM Policy**
 ```
-Action: Assign "Storage Blob Data Contributor"
-From: Access Connector
-To: ADLS Gen2 Storage Account
-Tool: Azure Portal (IAM)
-Result: Access Connector can access data lake
+Action: Attach IAM policy with s3:GetObject, s3:PutObject, s3:DeleteObject
+From: IAM cross-account role
+To: Amazon S3 Bucket
+Tool: AWS Console (IAM)
+Result: IAM cross-account role can access data lake
 ```
 
 #### Phase 2: Unity Catalog Objects (Steps 4-5)
@@ -530,7 +530,7 @@ Result: Access Connector can access data lake
 **Step 4: Create Storage Credential**
 ```
 Action: Create storage credential
-Using: Access Connector information
+Using: IAM cross-account role information
 Tool: Databricks Account Console / Workspace
 Result: Credential can authenticate to storage
 ```
@@ -557,15 +557,15 @@ Result: Controlled, granular data access
 ### Visual Process Flow
 
 ```
-1. Create Access Connector
+1. Create IAM Cross-Account Role
    ↓
-2. Create ADLS Gen2 Account
+2. Create Amazon S3 Bucket
    ↓
-3. Assign Role (Storage Blob Data Contributor)
-   Access Connector → ADLS Gen2
+3. Attach IAM Policy (s3:GetObject, s3:PutObject, s3:DeleteObject)
+   IAM Cross-Account Role → S3 Bucket
    ↓
 4. Create Storage Credential
-   Uses: Access Connector
+   Uses: IAM Cross-Account Role
    ↓
 5. Create External Location
    Combines: Credential + Container
@@ -593,8 +593,8 @@ Since we're creating these resources ourselves:
 
 | Resource | Access Level |
 |----------|--------------|
-| **Access Connector** | Owner/Creator |
-| **Storage Account** | Owner/Creator |
+| **IAM Cross-Account Role** | Owner/Creator |
+| **S3 Bucket** | Owner/Creator |
 | **Storage Credential** | Creator |
 | **External Location** | Creator |
 
@@ -630,11 +630,11 @@ If you want to grant access to the rest of the team, you can do that as well.
 ### Storage Credential
 
 **Definition:**
-Authentication/authorization mechanism for accessing Azure storage on behalf of users.
+Authentication/authorization mechanism for accessing S3 on behalf of users.
 
 **Created With:**
-- Managed Identity (via Access Connector)
-- Or Service Principal
+- IAM Role (via IAM cross-account role)
+- Or IAM User with Access Keys
 
 **Purpose:**
 - Authenticate to cloud storage
@@ -655,18 +655,18 @@ Combination of storage credential and cloud storage container.
 - Enable organized storage
 - Support granular access control
 
-### Access Connector
+### IAM Cross-Account Role
 
 **Definition:**
-Azure first-party service for connecting managed identity to Databricks.
+AWS IAM-based integration for connecting an IAM role to Databricks.
 
 **Purpose:**
-- Simplify managed identity setup
+- Simplify IAM role setup
 - Secure authentication
 - No manual credential management
 
 **Best Practice:**
-✅ Use Access Connector for Azure deployments
+✅ Use IAM cross-account role for AWS deployments
 
 ---
 
@@ -682,7 +682,7 @@ Azure first-party service for connecting managed identity to Databricks.
 | **Maintainability** | Easy to manage separate containers |
 | **Flexibility** | Create as many locations as needed |
 | **Best Practice** | Follows Databricks recommendations |
-| **Simplicity** | Access Connector simplifies setup |
+| **Simplicity** | IAM cross-account role simplifies setup |
 
 ### Comparison: Default vs. Dedicated Storage
 
@@ -703,16 +703,16 @@ Azure first-party service for connecting managed identity to Databricks.
 
 In the next lesson, we'll **put this into practice**:
 
-1. **Create Access Connector** in Azure Portal
-2. **Create ADLS Gen2 Storage Account** in Azure Portal
-3. **Assign IAM Role** to Access Connector
+1. **Create IAM Cross-Account Role** in AWS Console
+2. **Create Amazon S3 Bucket** in AWS Console
+3. **Attach IAM Policy** to cross-account role
 4. **Create Storage Credential** in Databricks
 5. **Create External Location** in Databricks
 6. **Test Data Access** through Unity Catalog
 
 ### You'll Learn:
 
-- ✅ Hands-on Azure Portal navigation
+- ✅ Hands-on AWS Console navigation
 - ✅ Step-by-step resource creation
 - ✅ Unity Catalog object configuration
 - ✅ Verification and testing procedures
@@ -730,7 +730,7 @@ In the next lesson, we'll **put this into practice**:
    - Storage Credential (authentication)
    - External Location (credential + container)
 
-3. **Use Access Connector** - simplifies managed identity integration
+3. **Use IAM cross-account role** - simplifies IAM role integration
 
 4. **Create dedicated storage accounts** - for full control and organization
 
@@ -738,14 +738,14 @@ In the next lesson, we'll **put this into practice**:
 
 6. **"External" context matters** - different meanings in different contexts
 
-7. **Six-step implementation process** - from Access Connector to data access
+7. **Six-step implementation process** - from IAM cross-account role to data access
 
 ### What We've Covered:
 
 - ✅ Problem with default storage
 - ✅ Storage Credential concept
 - ✅ External Location concept
-- ✅ Access Connector benefits
+- ✅ IAM cross-account role benefits
 - ✅ Implementation architecture
 - ✅ Step-by-step process
 - ✅ Access control mechanisms
@@ -758,22 +758,22 @@ You now have a good understanding of:
 - The role of each component in the architecture
 - The steps needed to implement secure storage access
 
-**Next:** Hands-on implementation in Azure!
+**Next:** Hands-on implementation in AWS!
 
 ---
 
-## CONCEPT GAP: Storage Credential Types -- Managed Identity vs Service Principal
+## CONCEPT GAP: Storage Credential Types -- IAM Role vs IAM User with Access Keys
 
 Certification exams often test the differences between these two authentication methods. Understanding when to use each is critical.
 
-### Managed Identity vs Service Principal Comparison
+### IAM Role vs IAM User with Access Keys Comparison
 
 ```
-MANAGED IDENTITY:
-═════════════════
+IAM ROLE:
+═════════
   ┌──────────────────────────────┐
-  │   Azure Resource             │
-  │   (Access Connector)         │
+  │   AWS Resource               │
+  │   (Cross-Account Role)       │
   │                              │
   │   Identity: Auto-managed     │
   │   Credentials: None to       │
@@ -782,39 +782,39 @@ MANAGED IDENTITY:
   │   Lifecycle: Tied to         │
   │              resource        │
   └──────────────────────────────┘
-  Best for: Azure-native workloads
+  Best for: AWS-native workloads
   Recommended by Databricks
 
 
-SERVICE PRINCIPAL:
-══════════════════
+IAM USER WITH ACCESS KEYS:
+══════════════════════════
   ┌──────────────────────────────┐
-  │   Azure AD Application       │
+  │   AWS IAM User               │
   │                              │
-  │   Client ID: abc-123...      │
-  │   Client Secret: ***         │
-  │   Tenant ID: xyz-789...      │
+  │   Access Key ID: AKIA...     │
+  │   Secret Access Key: ***     │
+  │   Account ID: 123456789...   │
   │                              │
   │   Credentials: Must manage   │
   │   Rotation: Manual           │
   │   Lifecycle: Independent     │
   └──────────────────────────────┘
-  Best for: Cross-tenant, multi-cloud
+  Best for: Cross-account, multi-cloud
   More configuration required
 ```
 
 ### Detailed Comparison Table
 
-| Aspect | Managed Identity | Service Principal |
-|--------|-----------------|-------------------|
-| **Credential management** | Automatic (Azure manages) | Manual (you manage secrets) |
+| Aspect | IAM Role | IAM User with Access Keys |
+|--------|----------|---------------------------|
+| **Credential management** | Automatic (AWS manages) | Manual (you manage access keys) |
 | **Secret rotation** | Automatic, transparent | Manual, must track expiry |
-| **Setup complexity** | Simple (via Access Connector) | More steps (app registration) |
-| **Cross-tenant access** | Not supported | Supported |
-| **Multi-cloud support** | Azure only | Can work across clouds |
-| **Security risk** | Lower (no secrets to leak) | Higher (secrets can be exposed) |
-| **Databricks recommendation** | Preferred for Azure | Use when managed identity insufficient |
-| **Types** | System-assigned, User-assigned | N/A |
+| **Setup complexity** | Simple (via cross-account role) | More steps (user creation, key generation) |
+| **Cross-account access** | Supported (via trust policies) | Supported |
+| **Multi-cloud support** | AWS only | Can work across clouds |
+| **Security risk** | Lower (no secrets to leak) | Higher (access keys can be exposed) |
+| **Databricks recommendation** | Preferred for AWS | Use when IAM role insufficient |
+| **Types** | Service role, Cross-account role | N/A |
 
 ---
 
@@ -830,23 +830,23 @@ RULE: External locations CANNOT overlap in path hierarchy
 VALID Configuration:
   ┌────────────────────────────────────────────┐
   │  External Location A:                      │
-  │  abfss://container1@account.dfs.../        │
+  │  s3://bucket-1/                            │
   └────────────────────────────────────────────┘
   ┌────────────────────────────────────────────┐
   │  External Location B:                      │
-  │  abfss://container2@account.dfs.../        │
+  │  s3://bucket-2/                            │
   └────────────────────────────────────────────┘
-  Different containers = no overlap = VALID
+  Different buckets = no overlap = VALID
 
 
 INVALID Configuration:
   ┌────────────────────────────────────────────┐
   │  External Location A:                      │
-  │  abfss://data@account.dfs.../catalogs/     │
+  │  s3://data-lake/catalogs/                  │
   └────────────────────────────────────────────┘
   ┌────────────────────────────────────────────┐
   │  External Location B:                      │
-  │  abfss://data@account.dfs.../catalogs/dev/ │
+  │  s3://data-lake/catalogs/dev/              │
   └────────────────────────────────────────────┘
   B is a subpath of A = overlap = INVALID
 
@@ -854,30 +854,30 @@ INVALID Configuration:
 VALID Alternative:
   ┌────────────────────────────────────────────┐
   │  External Location A:                      │
-  │  abfss://data@account.dfs.../catalogs/dev/ │
+  │  s3://data-lake/catalogs/dev/              │
   └────────────────────────────────────────────┘
   ┌────────────────────────────────────────────┐
   │  External Location B:                      │
-  │  abfss://data@account.dfs.../catalogs/prd/ │
+  │  s3://data-lake/catalogs/prd/              │
   └────────────────────────────────────────────┘
   Sibling paths (no parent-child) = VALID
 ```
 
 ---
 
-## CONCEPT GAP: Azure RBAC Roles for Data Lake Access
+## CONCEPT GAP: AWS IAM Policies for Data Lake Access
 
-Understanding which Azure RBAC roles are relevant is important for both the implementation and exam questions.
+Understanding which AWS IAM policies are relevant is important for both the implementation and exam questions.
 
-### Azure Storage RBAC Roles
+### AWS IAM Policy Actions for S3
 
-| Role | Read Blobs | Write Blobs | Delete Blobs | Manage Containers | Use Case |
-|------|-----------|-------------|-------------|-------------------|----------|
-| **Storage Blob Data Reader** | Yes | No | No | No | Read-only access |
-| **Storage Blob Data Contributor** | Yes | Yes | Yes | No | Read/write access (recommended) |
-| **Storage Blob Data Owner** | Yes | Yes | Yes | Yes | Full control including ACLs |
-| **Reader** | No (metadata only) | No | No | No | List accounts only |
-| **Contributor** | No (management only) | No | No | Yes | Manage accounts, not data |
+| Policy / Actions | s3:GetObject | s3:PutObject | s3:DeleteObject | s3:CreateBucket / s3:DeleteBucket | Use Case |
+|------------------|-------------|-------------|----------------|----------------------------------|----------|
+| **Read-only policy** | Yes | No | No | No | Read-only access |
+| **Read/write policy (recommended)** | Yes | Yes | Yes | No | Read/write access (recommended) |
+| **Full control policy** | Yes | Yes | Yes | Yes | Full control including bucket management |
+| **s3:ListBucket only** | No (listing only) | No | No | No | List buckets only |
+| **Administrative policy** | No (management only) | No | No | Yes | Manage buckets, not data |
 
 ### Important Distinction
 
@@ -885,19 +885,20 @@ Understanding which Azure RBAC roles are relevant is important for both the impl
 ┌──────────────────────────────────────────────────────────────┐
 │  COMMON EXAM TRAP:                                           │
 │                                                              │
-│  "Contributor" role =/= "Storage Blob Data Contributor"      │
+│  Administrative IAM policy =/= Data access IAM policy        │
 │                                                              │
-│  Contributor:                                                │
-│    - Azure management plane role                             │
-│    - Can manage the storage ACCOUNT (create, delete, etc.)   │
-│    - CANNOT read or write blob DATA                          │
+│  Administrative policy:                                      │
+│    - AWS management plane policy                             │
+│    - Can manage the S3 BUCKET (create, delete, etc.)         │
+│    - CANNOT read or write object DATA                        │
 │                                                              │
-│  Storage Blob Data Contributor:                              │
-│    - Azure data plane role                                   │
-│    - Can read, write, and delete blob DATA                   │
-│    - Cannot manage the storage account itself                │
+│  Data access policy (s3:GetObject, s3:PutObject, etc.):     │
+│    - AWS data plane policy                                   │
+│    - Can read, write, and delete object DATA                 │
+│    - Cannot manage the S3 bucket itself                      │
 │                                                              │
-│  For Unity Catalog: Use "Storage Blob Data Contributor"      │
+│  For Unity Catalog: Use data access IAM policy               │
+│  (s3:GetObject, s3:PutObject, s3:DeleteObject)               │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -931,16 +932,16 @@ When creating a managed table in catalog.schema.table:
 ```sql
 -- Create catalog with dedicated storage
 CREATE CATALOG dev_catalog
-MANAGED LOCATION 'abfss://dev@account.dfs.core.windows.net/';
+MANAGED LOCATION 's3://dev-bucket/';
 
 -- Create schema within catalog (inherits catalog storage)
 CREATE SCHEMA dev_catalog.bronze;
--- Managed tables here stored at: abfss://dev@account.dfs.../bronze/
+-- Managed tables here stored at: s3://dev-bucket/bronze/
 
 -- Create schema with its own storage (overrides catalog)
 CREATE SCHEMA dev_catalog.sensitive
-MANAGED LOCATION 'abfss://sensitive@account.dfs.core.windows.net/';
--- Managed tables here stored at: abfss://sensitive@account.dfs.../
+MANAGED LOCATION 's3://sensitive-bucket/';
+-- Managed tables here stored at: s3://sensitive-bucket/
 ```
 
 ---
@@ -961,28 +962,28 @@ This is a common source of confusion in exams. The word "external" is used in mu
 ## KEY INTERVIEW QUESTIONS AND ANSWERS
 
 ### Q1: What is the relationship between a Storage Credential and an External Location in Unity Catalog?
-**A:** A Storage Credential is an authentication/authorization mechanism that wraps Azure credentials (managed identity or service principal) to access cloud storage. An External Location combines a Storage Credential with a specific cloud storage path (container URL) to provide access to a particular location. You need both: the Storage Credential handles "how to authenticate" while the External Location defines "where to access." Multiple External Locations can share the same Storage Credential if they need to access different paths in the same storage account.
+**A:** A Storage Credential is an authentication/authorization mechanism that wraps AWS credentials (IAM role or IAM user with access keys) to access cloud storage. An External Location combines a Storage Credential with a specific cloud storage path (S3 bucket URL) to provide access to a particular location. You need both: the Storage Credential handles "how to authenticate" while the External Location defines "where to access." Multiple External Locations can share the same Storage Credential if they need to access different paths in the same S3 bucket.
 
-### Q2: Why does Databricks recommend using an Access Connector with Managed Identity rather than a Service Principal?
-**A:** Access Connector with Managed Identity is recommended because: (1) credentials are automatically managed by Azure with no secrets to rotate or expire, (2) there is no risk of credential leakage since no client secrets exist, (3) setup is simpler with fewer configuration steps, (4) the Access Connector is a first-party Azure service specifically designed for Databricks integration, and (5) the identity lifecycle is tied to the Azure resource. Service Principals require manual secret management, have expiration dates, and introduce security risks if secrets are exposed. Use Service Principals only when cross-tenant access or multi-cloud scenarios are needed.
+### Q2: Why does Databricks recommend using an IAM cross-account role rather than an IAM user with access keys?
+**A:** An IAM cross-account role is recommended because: (1) credentials are automatically managed by AWS with no secrets to rotate or expire, (2) there is no risk of credential leakage since no access keys exist, (3) setup is simpler with fewer configuration steps, (4) the IAM cross-account role is an AWS IAM-based integration specifically designed for Databricks integration, and (5) the identity lifecycle is tied to the AWS resource. IAM users with access keys require manual key management, have expiration dates, and introduce security risks if keys are exposed. Use IAM users with access keys only when cross-account access or multi-cloud scenarios are needed.
 
 ### Q3: Explain the dual-level access control for cloud storage in Unity Catalog.
 **A:** Unity Catalog implements access control at two levels for cloud storage: (1) At the Storage Credential level, administrators control who can use the authentication mechanism, and (2) at the External Location level, administrators control who can access specific storage paths. When a user requests data access, Unity Catalog first checks if the user has permission on the External Location, then checks the Storage Credential permission. If either check fails, the request is denied without even attempting authentication to the cloud storage. This provides defense in depth and granular permission management.
 
-### Q4: What is the Azure "Storage Blob Data Contributor" role and why is it used for Unity Catalog?
-**A:** Storage Blob Data Contributor is an Azure RBAC data plane role that grants read, write, and delete permissions on blob data within Azure Storage. It is assigned to the Access Connector's managed identity on the ADLS Gen2 storage account so that Unity Catalog can read from and write to the data lake. It is important to distinguish this from the generic "Contributor" role, which is a management plane role that can manage the storage account resource itself but cannot read or write actual blob data. For Unity Catalog, the data plane role is what is needed.
+### Q4: What IAM policy permissions are needed for Unity Catalog to access S3, and why?
+**A:** An IAM policy with s3:GetObject, s3:PutObject, and s3:DeleteObject is the data plane policy that grants read, write, and delete permissions on objects within Amazon S3. It is attached to the IAM cross-account role on the S3 bucket so that Unity Catalog can read from and write to the data lake. It is important to distinguish this from administrative IAM policies, which are management plane policies that can manage the S3 bucket resource itself but cannot read or write actual object data. For Unity Catalog, the data plane policy is what is needed.
 
-### Q5: Why should you create a separate storage account instead of using the one Databricks creates by default?
-**A:** The storage account created by Databricks by default is managed by Databricks for internal purposes (DBFS root storage). You do not have full control over its access management, and Databricks may change configurations. Creating a separate storage account gives you full ownership and control over permissions, the ability to configure it according to your organization's security policies, independence from Databricks-managed infrastructure, and better organization for production workloads. This aligns with the principle of separation of concerns and ensures that your data lake is not coupled to Databricks' internal storage management.
+### Q5: Why should you create a separate S3 bucket instead of using the one Databricks creates by default?
+**A:** The S3 bucket created by Databricks by default is managed by Databricks for internal purposes (DBFS root storage). You do not have full control over its access management, and Databricks may change configurations. Creating a separate S3 bucket gives you full ownership and control over permissions, the ability to configure it according to your organization's security policies, independence from Databricks-managed infrastructure, and better organization for production workloads. This aligns with the principle of separation of concerns and ensures that your data lake is not coupled to Databricks' internal storage management.
 
 ### Q6: How does the storage resolution hierarchy work for managed tables in Unity Catalog?
 **A:** When a managed table is created, Unity Catalog resolves the storage location by checking three levels in order: (1) the schema's MANAGED LOCATION if one was specified, (2) the catalog's MANAGED LOCATION if set, (3) the metastore's default storage location. The first match is used. If none of these have a storage location configured, managed tables cannot be created and you must use external tables instead. This hierarchy allows flexible storage organization where different schemas or catalogs can have their own dedicated storage locations.
 
 ### Q7: What does the term "external" mean in different Unity Catalog contexts?
-**A:** "External" has different meanings depending on context: (1) External Location refers to a storage path that is not the default metastore storage -- it can still be within your Azure subscription; (2) External Table means a table whose data files are not managed by Unity Catalog -- dropping the table keeps the data; (3) External Volume means a volume referencing files managed outside Databricks. The common thread is that "external" indicates something not fully lifecycle-managed by Unity Catalog, but it does NOT necessarily mean outside your organization or cloud environment.
+**A:** "External" has different meanings depending on context: (1) External Location refers to a storage path that is not the default metastore storage -- it can still be within your AWS account; (2) External Table means a table whose data files are not managed by Unity Catalog -- dropping the table keeps the data; (3) External Volume means a volume referencing files managed outside Databricks. The common thread is that "external" indicates something not fully lifecycle-managed by Unity Catalog, but it does NOT necessarily mean outside your organization or cloud environment.
 
 ### Q8: Walk through the complete authentication flow when a user queries data via an External Location.
-**A:** The flow is: (1) User submits a query referencing a table at an External Location, (2) Unity Catalog checks if the user has permission on the External Location -- if not, access is denied immediately, (3) Unity Catalog identifies the associated Storage Credential and checks if the user has permission to use it -- if not, access is denied, (4) The Storage Credential uses its wrapped Access Connector and Managed Identity to authenticate to ADLS Gen2, (5) Azure checks that the Managed Identity has the Storage Blob Data Contributor role on the storage account via RBAC, (6) If all checks pass, data is retrieved and returned to the user. This multi-layer approach ensures both UC-level and Azure-level authorization.
+**A:** The flow is: (1) User submits a query referencing a table at an External Location, (2) Unity Catalog checks if the user has permission on the External Location -- if not, access is denied immediately, (3) Unity Catalog identifies the associated Storage Credential and checks if the user has permission to use it -- if not, access is denied, (4) The Storage Credential uses its wrapped IAM cross-account role to authenticate to Amazon S3, (5) AWS checks that the IAM role has the required IAM policy (s3:GetObject, s3:PutObject, s3:DeleteObject) on the S3 bucket, (6) If all checks pass, data is retrieved and returned to the user. This multi-layer approach ensures both UC-level and AWS-level authorization.
 
 ---
 

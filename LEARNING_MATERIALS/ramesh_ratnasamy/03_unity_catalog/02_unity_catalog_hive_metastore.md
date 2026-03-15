@@ -259,7 +259,7 @@ Only **metadata** is managed by Databricks Unity Catalog.
 
 Perfect for scenarios where:
 - Another solution produces the data:
-  - Azure Data Factory (ADF)
+  - AWS Glue
   - Fivetran
   - Other ETL tools
 - Databricks only consumes the data
@@ -267,10 +267,10 @@ Perfect for scenarios where:
 
 **Example Workflow:**
 ```
-1. ADF/Fivetran produces data → ADLS Gen2
+1. AWS Glue/Fivetran produces data → S3
 2. Create external table in Databricks
 3. Query and analyze data in Databricks
-4. Drop table → Data remains in ADLS Gen2
+4. Drop table → Data remains in S3
 ```
 
 **Additional Flexibility:**
@@ -332,7 +332,7 @@ Objects that hold credentials for accessing external cloud services.
 - Manage permissions centrally
 
 **Example Use Case:**
-Hold credentials for an AWS service when working in Azure.
+Hold credentials for accessing an Amazon S3 bucket or other AWS services.
 
 ---
 
@@ -762,7 +762,7 @@ MANAGED TABLE LIFECYCLE:
 EXTERNAL TABLE LIFECYCLE:
 =========================
   CREATE TABLE t2 (id INT, name STRING)
-  LOCATION 'abfss://container@account.dfs.core.windows.net/path';
+  LOCATION 's3://bucket-name/path';
        │
        ▼
   ┌──────────────────────────────┐
@@ -872,7 +872,7 @@ Delta Sharing is an open protocol for secure data sharing that is tightly integr
 **A:** The three-level namespace follows the pattern `catalog.schema.object` (e.g., `prod_catalog.sales.customers`). It is required when Unity Catalog is enabled because multiple catalogs can exist, so you must specify which catalog contains the object. This replaces the legacy two-level namespace (`schema.object`) used with Hive Metastore. The three-level namespace enables better data organization, isolation, and governance across business units, environments, or projects.
 
 ### Q3: What happens when you drop a managed table vs. an external table in Unity Catalog?
-**A:** When you drop a managed table, both the metadata and the underlying data files are deleted permanently. When you drop an external table, only the metadata (table definition) is removed from Unity Catalog; the underlying data files remain intact in cloud storage. This makes external tables suitable for scenarios where data is produced by external systems (ADF, Fivetran) and you do not want Databricks to own the data lifecycle.
+**A:** When you drop a managed table, both the metadata and the underlying data files are deleted permanently. When you drop an external table, only the metadata (table definition) is removed from Unity Catalog; the underlying data files remain intact in cloud storage. This makes external tables suitable for scenarios where data is produced by external systems (AWS Glue, Fivetran) and you do not want Databricks to own the data lifecycle.
 
 ### Q4: Why can managed tables in Unity Catalog only be Delta format?
 **A:** Unity Catalog requires managed tables to be in Delta format because Delta Lake provides ACID transactions, schema enforcement, time travel, and audit history capabilities that are essential for Unity Catalog's governance features. These features enable Unity Catalog to reliably manage the full data lifecycle including lineage tracking, access control enforcement, and data versioning. External tables can use any format (Parquet, CSV, JSON, etc.) since Unity Catalog only manages their metadata.
