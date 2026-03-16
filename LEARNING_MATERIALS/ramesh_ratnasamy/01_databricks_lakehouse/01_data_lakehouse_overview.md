@@ -28,8 +28,8 @@ This combination helps create a robust data platform which is suited for handlin
 +=====================================================================+
 |                                                                     |
 |  1980s              2011               2020+                        |
-|    |                  |                  |                           |
-|    v                  v                  v                           |
+|    |                  |                  |                          |
+|    v                  v                  v                          |
 | +----------+    +-----------+    +--------------+                   |
 | |  DATA     |    |  DATA     |    |  DATA        |                  |
 | | WAREHOUSE |    |  LAKE     |    |  LAKEHOUSE   |                  |
@@ -82,18 +82,18 @@ By the early 2000, most large companies had at least one data warehouse because 
 |            TRADITIONAL DATA WAREHOUSE ARCHITECTURE                  |
 +====================================================================+
 |                                                                     |
-|  +----------+  +----------+  +----------+                          |
-|  | ERP      |  | CRM      |  | Finance  |    Source Systems        |
-|  | System   |  | System   |  | System   |                          |
-|  +----+-----+  +----+-----+  +----+-----+                          |
-|       |             |             |                                  |
-|       v             v             v                                  |
+|  +----------+  +----------+  +----------+                           |
+|  | ERP      |  | CRM      |  | Finance  |    Source Systems         |
+|  | System   |  | System   |  | System   |                           |
+|  +----+-----+  +----+-----+  +----+-----+                           |
+|       |             |             |                                 |
+|       v             v             v                                 |
 |  +==========================================+                       |
 |  |          ETL PROCESS                     |                       |
 |  |  Extract --> Transform --> Load          |                       |
 |  +==========================================+                       |
-|                     |                                                |
-|                     v                                                |
+|                     |                                               |
+|                     v                                               |
 |  +==========================================+                       |
 |  |        DATA WAREHOUSE                    |                       |
 |  |  +------------+  +------------+          |                       |
@@ -101,8 +101,8 @@ By the early 2000, most large companies had at least one data warehouse because 
 |  |  | (Sales)    |  | (Finance)  |          |                       |
 |  |  +------------+  +------------+          |                       |
 |  +==========================================+                       |
-|                     |                                                |
-|                     v                                                |
+|                     |                                               |
+|                     v                                               |
 |  +==========================================+                       |
 |  |         BI REPORTS & DASHBOARDS          |                       |
 |  +==========================================+                       |
@@ -138,13 +138,13 @@ Those issues paved the way for data lakes.
 |          DATA WAREHOUSE CHALLENGES SUMMARY                          |
 +====================================================================+
 |                                                                     |
-|  [X] Cannot handle unstructured data (images, video, text)         |
-|  [X] Long development times (ETL before load)                      |
-|  [X] Proprietary formats --> vendor lock-in                        |
-|  [X] Difficult to scale (on-premises hardware)                     |
-|  [X] Coupled storage + compute --> expensive                       |
-|  [X] No support for ML/AI workloads                                |
-|  [X] MPP engines are costly at scale                               |
+|  [X] Cannot handle unstructured data (images, video, text)          |
+|  [X] Long development times (ETL before load)                       |
+|  [X] Proprietary formats --> vendor lock-in                         | 
+|  [X] Difficult to scale (on-premises hardware)                      |
+|  [X] Coupled storage + compute --> expensive                        |
+|  [X] No support for ML/AI workloads                                 |
+|  [X] MPP engines are costly at scale                                |
 |                                                                     |
 +====================================================================+
 ```
@@ -180,26 +180,26 @@ To solve this, companies often copied a subset of the data from the data lake to
 |                DATA LAKE ARCHITECTURE                               |
 +====================================================================+
 |                                                                     |
-|  +-----------+  +-----------+  +-----------+  +-----------+        |
-|  | Databases |  | IoT/Logs  |  | Files     |  | APIs      |        |
-|  | (struct.) |  | (semi-st.)|  | (unstruct)|  | (JSON)    |        |
-|  +-----+-----+  +-----+-----+  +-----+-----+  +-----+-----+       |
-|        |              |              |              |                |
-|        v              v              v              v                |
-|  +======================================================+          |
+|  +-----------+  +-----------+  +-----------+  +-----------+         |
+|  | Databases |  | IoT/Logs  |  | Files     |  | APIs      |         |
+|  | (struct.) |  | (semi-st.)|  | (unstruct)|  | (JSON)    |         |
+|  +-----+-----+  +-----+-----+  +-----+-----+  +-----+-----+         |
+|        |              |              |              |               |
+|        v              v              v              v               |
+|  +======================================================+           |
 |  |              RAW INGESTION (No ETL)                   |          |
-|  +======================================================+          |
+|  +======================================================+           |
 |                          |                                          |
 |                          v                                          |
-|  +======================================================+          |
+|  +======================================================+           |
 |  |                  DATA LAKE                            |          |
-|  |          (HDFS / S3 / ADLS / GCS)                      |          |
+|  |          (HDFS / S3 / ADLS / GCS)                      |         |
 |  |        Parquet, ORC, Avro, JSON, CSV                  |          |
-|  +======================================================+          |
+|  +======================================================+           |
 |           |                              |                          |
 |           v                              v                          |
 |  +-----------------+          +-------------------+                 |
-|  | ML / Data       |          | Copy to Warehouse |  <-- Problem!  |
+|  | ML / Data       |          | Copy to Warehouse |  <-- Problem!   |
 |  | Science         |          | for BI Reporting  |                 |
 |  +-----------------+          +-------------------+                 |
 +=====================================================================+
@@ -278,26 +278,26 @@ This eliminates the need to copy the data into a separate data warehouse.
 |              DATA LAKEHOUSE ARCHITECTURE                            |
 +====================================================================+
 |                                                                     |
-|  +-----------+  +-----------+  +-----------+  +-----------+        |
-|  | Databases |  | IoT/Logs  |  | Files     |  | APIs      |        |
-|  +-----+-----+  +-----+-----+  +-----+-----+  +-----+-----+       |
-|        |              |              |              |                |
-|        v              v              v              v                |
-|  +======================================================+          |
+|  +-----------+  +-----------+  +-----------+  +-----------+         |
+|  | Databases |  | IoT/Logs  |  | Files     |  | APIs      |         |
+|  +-----+-----+  +-----+-----+  +-----+-----+  +-----+-----+         |
+|        |              |              |              |               |
+|        v              v              v              v               |
+|  +======================================================+           |
 |  |        INGESTION (Batch + Streaming Unified)          |          |
-|  +======================================================+          |
+|  +======================================================+           |
 |                          |                                          |
 |                          v                                          |
-|  +======================================================+          |
+|  +======================================================+           |
 |  |              DATA LAKEHOUSE                           |          |
-|  |  +--------------------------------------------------+|          |
+|  |  +--------------------------------------------------+|           |
 |  |  |  Delta Lake (ACID Transactions + Open Format)     ||          |
-|  |  +--------------------------------------------------+|          |
+|  |  +--------------------------------------------------+|           |
 |  |  |  Unity Catalog (Governance + Access Control)      ||          |
-|  |  +--------------------------------------------------+|          |
-|  |  |  Cloud Object Storage (S3 / ADLS / GCS)          ||          |
-|  |  +--------------------------------------------------+|          |
-|  +======================================================+          |
+|  |  +--------------------------------------------------+|           |
+|  |  |  Cloud Object Storage (S3 / ADLS / GCS)          ||           |
+|  |  +--------------------------------------------------+|           |
+|  +======================================================+           |
 |         |              |                |                           |
 |         v              v                v                           |
 |  +------------+  +------------+  +--------------+                   |
@@ -396,28 +396,28 @@ The Lambda Architecture was a common workaround before Lakehouses. Understanding
 +====================================================================+
 |                                                                     |
 |                   +-------------+                                   |
-|                   | Data Source  |                                   |
+|                   | Data Source |                                   |
 |                   +------+------+                                   |
-|                    /           \                                     |
-|                   v             v                                    |
+|                    /           \                                    |
+|                   v             v                                   |
 |     +----------------+   +----------------+                         |
 |     |  BATCH LAYER   |   | SPEED LAYER    |                         |
 |     |  (Hadoop/Spark) |   | (Storm/Flink)  |                        |
 |     |  High latency   |   | Low latency    |                        |
-|     |  Complete data   |   | Recent data    |                        |
+|     |  Complete data   |   | Recent data    |                       |
 |     +-------+--------+   +-------+--------+                         |
-|             |                     |                                  |
-|             v                     v                                  |
+|             |                     |                                 |
+|             v                     v                                 |
 |     +----------------+   +----------------+                         |
 |     | Batch Views    |   | Real-time      |                         |
 |     |                |   | Views          |                         |
 |     +-------+--------+   +-------+--------+                         |
-|              \                   /                                   |
-|               v                 v                                    |
-|           +-----------------------+                                  |
-|           |   SERVING LAYER       |                                  |
-|           |   (Merge results)     |                                  |
-|           +-----------------------+                                  |
+|              \                   /                                  |
+|               v                 v                                   |
+|           +-----------------------+                                 |
+|           |   SERVING LAYER       |                                 |
+|           |   (Merge results)     |                                 |
+|           +-----------------------+                                 |
 +====================================================================+
 
 +====================================================================+
@@ -425,7 +425,7 @@ The Lambda Architecture was a common workaround before Lakehouses. Understanding
 +====================================================================+
 |                                                                     |
 |                   +-------------+                                   |
-|                   | Data Source  |                                   |
+|                   | Data Source  |                                  |
 |                   +------+------+                                   |
 |                          |                                          |
 |                          v                                          |
@@ -475,25 +475,25 @@ Before lakehouses, most organizations ran both a data lake AND a data warehouse 
 |  |                 |--------->|                 |                   |
 |  |  Raw data       |  ETL     |  Clean data     |                   |
 |  |  ML workloads   |  Sync    |  BI workloads   |                   |
-|  |  Cheap storage  |  ???     |  Expensive       |                   |
+|  |  Cheap storage  |  ???     |  Expensive       |                  |
 |  +-----------------+          +-----------------+                   |
 |                                                                     |
 |  PROBLEMS:                                                          |
-|  +--------------------------------------------------------------+  |
-|  | 1. Data duplication --> inconsistency between systems        |  |
-|  | 2. ETL to copy data --> extra cost, latency, failure points  |  |
-|  | 3. Two systems to secure, govern, and maintain               |  |
-|  | 4. "Which system has the truth?" --> no single source        |  |
-|  | 5. Double licensing and infrastructure costs                 |  |
-|  +--------------------------------------------------------------+  |
+|  +--------------------------------------------------------------+   |
+|  | 1. Data duplication --> inconsistency between systems        |   |
+|  | 2. ETL to copy data --> extra cost, latency, failure points  |   |
+|  | 3. Two systems to secure, govern, and maintain               |   |
+|  | 4. "Which system has the truth?" --> no single source        |   |
+|  | 5. Double licensing and infrastructure costs                 |   |
+|  +--------------------------------------------------------------+   |
 |                                                                     |
 |  LAKEHOUSE SOLUTION:                                                |
-|  +--------------------------------------------------------------+  |
-|  | Single platform that serves BOTH BI and ML workloads          |  |
-|  | No data copying needed                                        |  |
-|  | One governance model (Unity Catalog)                          |  |
-|  | One source of truth                                           |  |
-|  +--------------------------------------------------------------+  |
+|  +--------------------------------------------------------------+   |
+|  | Single platform that serves BOTH BI and ML workloads         |   |
+|  | No data copying needed                                       |   |
+|  | One governance model (Unity Catalog)                         |   |
+|  | One source of truth                                          |   |
+|  +--------------------------------------------------------------+   |
 +====================================================================+
 ```
 
@@ -508,25 +508,25 @@ Three technologies make the Lakehouse architecture possible:
 |           KEY ENABLING TECHNOLOGIES                                 |
 +====================================================================+
 |                                                                     |
-|  +-------------------+  +-------------------+  +----------------+  |
-|  |   DELTA LAKE      |  |  UNITY CATALOG    |  |   PHOTON       |  |
-|  |                   |  |                   |  |                |  |
-|  | Open-source       |  | Unified           |  | Vectorized     |  |
-|  | storage layer     |  | governance        |  | query engine   |  |
-|  |                   |  | solution          |  |                |  |
-|  | - ACID txns       |  | - Access control  |  | - C++ engine   |  |
-|  | - Schema enforce  |  | - Data lineage    |  | - 8x faster    |  |
-|  | - Time travel     |  | - Audit logging   |  | - Auto-enabled |  |
-|  | - Versioning      |  | - Data discovery  |  | - SQL + Spark  |  |
-|  | - Unified batch   |  | - Cross-workspace |  |   compatible   |  |
-|  |   + streaming     |  |   governance      |  |                |  |
-|  | - Schema evolve   |  | - Data sharing    |  |                |  |
-|  +-------------------+  +-------------------+  +----------------+  |
+|  +-------------------+  +-------------------+  +----------------+   |
+|  |   DELTA LAKE      |  |  UNITY CATALOG    |  |   PHOTON       |   |
+|  |                   |  |                   |  |                |   |
+|  | Open-source       |  | Unified           |  | Vectorized     |   |
+|  | storage layer     |  | governance        |  | query engine   |   |
+|  |                   |  | solution          |  |                |   |
+|  | - ACID txns       |  | - Access control  |  | - C++ engine   |   |
+|  | - Schema enforce  |  | - Data lineage    |  | - 8x faster    |   |
+|  | - Time travel     |  | - Audit logging   |  | - Auto-enabled |   |
+|  | - Versioning      |  | - Data discovery  |  | - SQL + Spark  |   |
+|  | - Unified batch   |  | - Cross-workspace |  |   compatible   |   |
+|  |   + streaming     |  |   governance      |  |                |   |
+|  | - Schema evolve   |  | - Data sharing    |  |                |   |
+|  +-------------------+  +-------------------+  +----------------+   |
 |         |                       |                      |            |
 |         v                       v                      v            |
-|  +--------------------------------------------------------------+  |
+|  +--------------------------------------------------------------+   |
 |  |             DATA LAKEHOUSE PLATFORM                           |  |
-|  +--------------------------------------------------------------+  |
+|  +--------------------------------------------------------------+   |
 +====================================================================+
 ```
 
