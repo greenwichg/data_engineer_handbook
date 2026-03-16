@@ -21,23 +21,23 @@ A checkpoint is a persistent record of a streaming query's progress stored on du
 Checkpoint Contents:
 
 /checkpoints/my_stream/
-├── offsets/          ← Which data has been PLANNED for processing
+├── offsets/         ← Which data has been PLANNED for processing
 │   ├── 0            ← Batch 0 offset (which files/records to process)
 │   ├── 1            ← Batch 1 offset
 │   └── 2            ← Batch 2 offset
 │
-├── commits/          ← Which batches have been COMMITTED (completed)
+├── commits/         ← Which batches have been COMMITTED (completed)
 │   ├── 0            ← Batch 0 committed ✓
 │   ├── 1            ← Batch 1 committed ✓
 │   └── 2            ← Batch 2 committed ✓
 │
-├── metadata          ← Query metadata (ID, run ID)
+├── metadata         ← Query metadata (ID, run ID)
 │
-├── sources/          ← Source-specific state
+├── sources/         ← Source-specific state
 │   └── 0/           ← State for source 0 (e.g., file list for cloudFiles)
 │
-└── state/            ← State store data (for stateful operations)
-    └── 0/            ← Aggregation state, deduplication state, etc.
+└── state/           ← State store data (for stateful operations)
+    └── 0/           ← Aggregation state, deduplication state, etc.
         └── ...
 ```
 
