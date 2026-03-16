@@ -333,7 +333,7 @@ Databricks provides a visual streaming dashboard in notebooks that shows:
 ```
 Databricks Streaming Dashboard:
 
-Input Rate:     ████████████████████  250 rows/sec
+Input Rate:     ████████████████████   250 rows/sec
 Processing:     ██████████████████████ 300 rows/sec
 Batch Duration: ██████                 1.2 sec
 State Rows:     ████████████           15,000
