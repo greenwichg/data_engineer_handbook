@@ -817,36 +817,36 @@ Understanding how metastore setup differs across cloud providers is important fo
 
 ```
 +---------------------------------------------------------------------+
-|                     AWS DATABRICKS                                   |
-|                                                                      |
-|  Account Console: https://accounts.cloud.databricks.com              |
-|  Identity Provider: Databricks-native or SCIM from IdP               |
-|  Admin Requirement: Account admin in Databricks                      |
-|  Auto-creation: Since November 2023 for new accounts                 |
-|  Default Storage: S3 bucket (optional, not recommended)              |
-|  Access: IAM roles for cross-account access                          |
+|                     AWS DATABRICKS                                  |
+|                                                                     |
+|  Account Console: https://accounts.cloud.databricks.com             |
+|  Identity Provider: Databricks-native or SCIM from IdP              |
+|  Admin Requirement: Account admin in Databricks                     |
+|  Auto-creation: Since November 2023 for new accounts                |
+|  Default Storage: S3 bucket (optional, not recommended)             |
+|  Access: IAM roles for cross-account access                         |
 +---------------------------------------------------------------------+
 
 +---------------------------------------------------------------------+
-|                    AZURE DATABRICKS                                   |
-|                                                                      |
-|  Account Console: https://accounts.azure.databricks.net              |
-|  Identity Provider: Microsoft Entra ID (formerly Azure AD)           |
-|  Admin Requirement: Global Administrator in Entra ID                 |
-|  Auto-creation: Since November 2023 for new subscriptions            |
-|  Default Storage: ADLS Gen2 (optional, not recommended)              |
-|  Access Connector: Azure-native first-party service                  |
+|                    AZURE DATABRICKS                                 |
+|                                                                     |
+|  Account Console: https://accounts.azure.databricks.net             |
+|  Identity Provider: Microsoft Entra ID (formerly Azure AD)          |
+|  Admin Requirement: Global Administrator in Entra ID                |
+|  Auto-creation: Since November 2023 for new subscriptions           |
+|  Default Storage: ADLS Gen2 (optional, not recommended)             |
+|  Access Connector: Azure-native first-party service                 |
 +---------------------------------------------------------------------+
 
 +---------------------------------------------------------------------+
-|                     GCP DATABRICKS                                   |
-|                                                                      |
-|  Account Console: https://accounts.gcp.databricks.com                |
-|  Identity Provider: Google Identity or SCIM                          |
-|  Admin Requirement: Account admin in Databricks                      |
-|  Auto-creation: Since November 2023 for new accounts                 |
-|  Default Storage: GCS bucket (optional, not recommended)             |
-|  Access: Service accounts for storage access                         |
+|                     GCP DATABRICKS                                  |
+|                                                                     |
+|  Account Console: https://accounts.gcp.databricks.com               |
+|  Identity Provider: Google Identity or SCIM                         |
+|  Admin Requirement: Account admin in Databricks                     |
+|  Auto-creation: Since November 2023 for new accounts                |
+|  Default Storage: GCS bucket (optional, not recommended)            |
+|  Access: Service accounts for storage access                        |
 +---------------------------------------------------------------------+
 ```
 
@@ -854,8 +854,8 @@ Understanding how metastore setup differs across cloud providers is important fo
 
 ```
 +-------------------------------------------------------------+
-|              Databricks Account                              |
-|                                                              |
+|              Databricks Account                             |
+|                                                             |
 |  Region: us-east-1        Region: us-west-2                 |
 |  +-------------------+   +-------------------+              |
 |  |   Metastore       |   |   Metastore       |              |
@@ -868,10 +868,10 @@ Understanding how metastore setup differs across cloud providers is important fo
 |  |  | Workspace B |  |   |  | Workspace D |  |              |
 |  |  +-------------+  |   |  +-------------+  |              |
 |  +-------------------+   +-------------------+              |
-|                                                              |
-|  Rule: Workspace and Metastore MUST be in same region        |
-|  Rule: Multiple workspaces can share one Metastore           |
-|  Rule: A workspace can attach to only ONE Metastore          |
+|                                                             |
+|  Rule: Workspace and Metastore MUST be in same region       |
+|  Rule: Multiple workspaces can share one Metastore          |
+|  Rule: A workspace can attach to only ONE Metastore         |
 +-------------------------------------------------------------+
 ```
 
@@ -931,18 +931,18 @@ ANTI-PATTERN: Default Metastore Storage
 ========================================
 
   +-----------------------------------------------+
-  |         Single S3 Bucket                       |
-  |                                                |
-  |  /dev_catalog/schema1/table1/                  |
-  |  /dev_catalog/schema2/table2/                  |
-  |  /prod_catalog/schema1/table3/   <- MIXED!     |
-  |  /test_catalog/schema1/table4/   <- MESSY!     |
-  |                                                |
-  |  Problems:                                     |
-  |  - Cannot set different retention policies     |
-  |  - Cannot isolate billing per catalog          |
-  |  - Difficult to apply catalog-level ACLs       |
-  |  - Single point of failure                     |
+  |         Single S3 Bucket                      |
+  |                                               |
+  |  /dev_catalog/schema1/table1/                 |
+  |  /dev_catalog/schema2/table2/                 |
+  |  /prod_catalog/schema1/table3/   <- MIXED!    |
+  |  /test_catalog/schema1/table4/   <- MESSY!    |
+  |                                               |
+  |  Problems:                                    |
+  |  - Cannot set different retention policies    |
+  |  - Cannot isolate billing per catalog         |
+  |  - Difficult to apply catalog-level ACLs      |
+  |  - Single point of failure                    |
   +-----------------------------------------------+
 
 
