@@ -1,6 +1,6 @@
 # PySpark Implementation: Pivot and Unpivot Data
 
-## Problem Statement 
+## Problem Statement
 
 Given a dataset of product sales across different quarters, **pivot** the data so that each quarter becomes a separate column showing the total sales. Then demonstrate how to **unpivot** (melt) the pivoted data back to its original long format. This is a very common interview question that tests your understanding of data reshaping in PySpark.
 
@@ -163,10 +163,109 @@ unpivoted_df.show()
 
 ---
 
-## Method 4: Unpivot Using melt (PySpark 3.4+)
+## Method 4: Unpivot Using create_map() + explode()
 
 ```python
-# Available in PySpark 3.4 and above
+from pyspark.sql.functions import create_map, lit, explode
+
+# Build a map: {month_name -> sales_value}
+# Using a second sample dataset with monthly columns
+data_wide = [
+    ("S001", "Laptop", 120, 95, 140),
+    ("S002", "Phone", 200, 180, 210),
+    ("S003", "Tablet", 80, None, 90)
+]
+columns_wide = ["store_id", "product", "jan_sales", "feb_sales", "mar_sales"]
+df_wide = spark.createDataFrame(data_wide, columns_wide)
+
+unpivoted_v2 = df_wide.select(
+    "store_id",
+    "product",
+    explode(
+        create_map(
+            lit("Jan"), col("jan_sales"),
+            lit("Feb"), col("feb_sales"),
+            lit("Mar"), col("mar_sales")
+        )
+    ).alias("month", "sales")
+)
+
+unpivoted_v2.show(truncate=False)
+```
+
+### How create_map() + explode() Works
+
+#### Step 1: create_map() builds a dictionary per row
+
+| store_id | product | map_column                          |
+|----------|---------|-------------------------------------|
+| S001     | Laptop  | {Jan: 120, Feb: 95, Mar: 140}       |
+| S002     | Phone   | {Jan: 200, Feb: 180, Mar: 210}      |
+
+#### Step 2: explode() on a map produces key-value rows
+
+Each map entry becomes its own row with `key` and `value` columns.
+
+**Connection to quantity_explode:** Both patterns create a collection (array or map) and explode it. `quantity_explode` uses `array_repeat` -> `explode`. This uses `create_map` -> `explode`.
+
+---
+
+## Method 5: Unpivot Using array() + posexplode()
+
+```python
+from pyspark.sql.functions import array, posexplode, when
+
+# Build array of values, use position as month index
+unpivoted_v3 = df_wide.select(
+    "store_id",
+    "product",
+    posexplode(
+        array(col("jan_sales"), col("feb_sales"), col("mar_sales"))
+    ).alias("month_idx", "sales")
+)
+
+# Map index to month name
+unpivoted_v3 = unpivoted_v3.withColumn(
+    "month",
+    when(col("month_idx") == 0, "Jan")
+    .when(col("month_idx") == 1, "Feb")
+    .when(col("month_idx") == 2, "Mar")
+).select("store_id", "product", "month", "sales")
+
+unpivoted_v3.show(truncate=False)
+```
+
+`posexplode` is like `explode` but also returns the array index (0-based).
+
+---
+
+## Method 6: Unpivot Using SQL LATERAL VIEW
+
+```python
+df_wide.createOrReplaceTempView("sales_wide")
+
+# Using stack with LATERAL VIEW syntax
+spark.sql("""
+    SELECT
+        store_id,
+        product,
+        month,
+        sales
+    FROM sales_wide
+    LATERAL VIEW stack(3,
+        'Jan', jan_sales,
+        'Feb', feb_sales,
+        'Mar', mar_sales
+    ) t AS month, sales
+""").show(truncate=False)
+```
+
+---
+
+## Method 7: Unpivot Using melt() / unpivot() (PySpark 3.4+)
+
+```python
+# melt() — PySpark equivalent of pandas melt()
 unpivoted_melt = pivoted_df.melt(
     ids=["product"],
     values=["Q1", "Q2", "Q3"],
@@ -175,9 +274,113 @@ unpivoted_melt = pivoted_df.melt(
 )
 
 unpivoted_melt.show()
+
+# unpivot() — native API (also Spark 3.4+)
+unpivoted_native = df_wide.unpivot(
+    ids=["store_id", "product"],
+    values=["jan_sales", "feb_sales", "mar_sales"],
+    variableColumnName="month",
+    valueColumnName="sales"
+)
+
+unpivoted_native.show(truncate=False)
 ```
 
-- **Explanation:** The `melt()` function is the PySpark equivalent of pandas `melt()`. It converts wide-format data to long-format by turning specified columns into rows.
+- **Explanation:** `melt()` and `unpivot()` are the cleanest APIs for wide-to-long conversion, but require Spark 3.4+. In interviews, mention them but also know `stack()` and `create_map` + `explode` for older Spark versions.
+
+---
+
+## Practical Application: Unpivot + Re-Pivot for Cross-Tabulation
+
+```python
+# Round-trip: Wide -> Long -> Different Wide
+# First unpivot, then pivot by a different dimension
+
+# Unpivot to long format
+long_df = df_wide.select(
+    "store_id",
+    "product",
+    expr("stack(3, 'Jan', jan_sales, 'Feb', feb_sales, 'Mar', mar_sales) AS (month, sales)")
+)
+
+# Re-pivot: now pivot by store instead of month
+from pyspark.sql.functions import first
+
+repivoted = long_df.groupBy("product", "month").pivot("store_id").agg(
+    first("sales")
+).orderBy("product", "month")
+
+repivoted.show(truncate=False)
+```
+
+---
+
+## Practical Application: Unpivot Multiple Value Columns
+
+```python
+# What if you have both sales AND returns per month?
+multi_data = [
+    ("S001", "Laptop", 120, 10, 95, 8, 140, 12),
+    ("S002", "Phone", 200, 15, 180, 20, 210, 18)
+]
+multi_cols = ["store_id", "product",
+              "jan_sales", "jan_returns",
+              "feb_sales", "feb_returns",
+              "mar_sales", "mar_returns"]
+multi_df = spark.createDataFrame(multi_data, multi_cols)
+
+# Stack pairs of columns together
+multi_unpivoted = multi_df.select(
+    "store_id",
+    "product",
+    expr("""
+        stack(3,
+            'Jan', jan_sales, jan_returns,
+            'Feb', feb_sales, feb_returns,
+            'Mar', mar_sales, mar_returns
+        ) AS (month, sales, returns)
+    """)
+)
+
+multi_unpivoted.show(truncate=False)
+```
+
+- **Output:**
+
+  | store_id | product | month | sales | returns |
+  |----------|---------|-------|-------|---------|
+  | S001     | Laptop  | Jan   | 120   | 10      |
+  | S001     | Laptop  | Feb   | 95    | 8       |
+  | S001     | Laptop  | Mar   | 140   | 12      |
+  | S002     | Phone   | Jan   | 200   | 15      |
+  | S002     | Phone   | Feb   | 180   | 20      |
+  | S002     | Phone   | Mar   | 210   | 18      |
+
+---
+
+## Filtering Nulls After Unpivot
+
+```python
+# By default, stack() keeps null values. To drop them:
+unpivoted_no_nulls = unpivoted_df.filter(col("sales").isNotNull())
+unpivoted_no_nulls.show(truncate=False)
+
+# With create_map + explode, nulls in map values are kept
+# With explode_outer, nulls are also kept
+# Use .filter() after to remove if needed
+```
+
+---
+
+## Unpivot Method Comparison
+
+| Method | Pros | Cons | Spark Version |
+|--------|------|------|---------------|
+| `stack()` | Fast, no serialization | SQL expression syntax | All |
+| `create_map` + `explode` | Pure DataFrame API | Map doesn't allow null keys | All |
+| `array` + `posexplode` | Gives position index | Requires manual index-to-name mapping | All |
+| SQL `LATERAL VIEW` | Familiar to SQL users | Requires temp view | All |
+| `melt()` / `unpivot()` native | Cleanest API, most readable | Spark 3.4+ only | 3.4+ |
 
 ---
 
@@ -194,8 +397,21 @@ unpivoted_melt.show()
 
 1. **Why is explicit pivot faster?** It avoids an additional aggregation job to discover distinct values.
 2. **When to use pivot?** Reporting, cross-tabulation, feature engineering in ML pipelines.
-3. **Null handling:** If a product doesn't have sales for a quarter, the pivot fills it with `null`. Use `.fillna(0)` to replace nulls.
+3. **Null handling:** If a product doesn't have sales for a quarter, the pivot fills it with `null`. Use `.fillna(0)` to replace nulls. For unpivot, `stack()` preserves nulls by default — use `.filter()` to remove them.
 4. **Multiple aggregations:** You can apply multiple agg functions: `.agg(sum("sales"), avg("sales"))` — this creates columns like `Q1_sum_sales`, `Q1_avg_sales`.
+5. **Unpivot is the reverse of pivot:** `pivot` goes long-to-wide (rows-to-columns). `unpivot`/`melt` goes wide-to-long (columns-to-rows). Know both directions.
+6. **`stack()` is the most interview-friendly:** It's compact, doesn't require imports, and works in both DataFrame and SQL contexts. `stack(N, k1, v1, k2, v2, ...)` creates N rows per input row.
+7. **Connection to the explode family:**
+   - `quantity_explode`: `array_repeat` -> `explode` (repeat a value N times)
+   - `expand_date_ranges`: `sequence` -> `explode` (generate dates)
+   - `unpivot`: `create_map` -> `explode` (columns to rows)
+   - All follow the same pattern: **build a collection, then explode it**.
+8. **When to unpivot in real projects:**
+   - Converting Excel/CSV "wide" reports to database-friendly "long" format
+   - Preparing data for time-series analysis (monthly columns -> date + value rows)
+   - Normalizing denormalized tables for proper joins
+   - ETL pipelines that ingest wide-format source data
+9. **Mention `unpivot()` / `melt()` for modern Spark:** Shows you know the latest API. But always be prepared to write `stack()` for older versions.
 
 ## Summary
 
@@ -203,4 +419,7 @@ unpivoted_melt.show()
 |-----------|--------|----------|
 | Pivot (long to wide) | `groupBy().pivot().agg()` | Reshapes rows into columns |
 | Unpivot (wide to long) | `stack()` via `expr()` | Reshapes columns into rows |
-| Unpivot (PySpark 3.4+) | `melt()` | Native DataFrame method |
+| Unpivot (wide to long) | `create_map()` + `explode()` | Pure DataFrame API approach |
+| Unpivot (wide to long) | `array()` + `posexplode()` | With position index |
+| Unpivot (wide to long) | SQL `LATERAL VIEW stack()` | SQL syntax approach |
+| Unpivot (PySpark 3.4+) | `melt()` / `unpivot()` | Native DataFrame method |

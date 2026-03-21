@@ -317,8 +317,140 @@ spark.stop()
 - **Cumulative distinct count**: Use `collect_set` over a cumulative window, then `size` to count unique elements. Be cautious with memory for high-cardinality columns.
 - **Performance**: Cumulative windows require sorting within each partition. Ensure partitions are reasonably sized to avoid memory issues.
 
+## Method 6: Same-Date Running Totals (Aggregate + Join Approach)
+
+When multiple rows share the same date and all same-date rows must have identical running totals, pre-aggregate daily totals before computing the cumulative sum, then join back.
+
+### Sample Data
+
+```
+customer_id  order_date  amount
+12345        01-Aug-25   100
+12345        02-Aug-25   200
+12345        02-Aug-25   150
+12345        13-Aug-25   250
+12345        13-Aug-25   500
+12345        13-Aug-25   300
+```
+
+### Expected Output
+
+| customer_id | order_date | amount | running_total |
+|-------------|------------|--------|---------------|
+| 12345       | 01-Aug-25  | 100    | 100           |
+| 12345       | 02-Aug-25  | 200    | 450           |
+| 12345       | 02-Aug-25  | 150    | 450           |
+| 12345       | 13-Aug-25  | 250    | 1500          |
+| 12345       | 13-Aug-25  | 500    | 1500          |
+| 12345       | 13-Aug-25  | 300    | 1500          |
+
+Note: All rows on the same date share the same running total (100 + 200 + 150 = 450 for Aug 2; 450 + 250 + 500 + 300 = 1500 for Aug 13).
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import sum as spark_sum, col
+from pyspark.sql.window import Window
+
+spark = SparkSession.builder.appName("RunningTotal").getOrCreate()
+
+data = [
+    ("12345", "01-Aug-25", 100),
+    ("12345", "02-Aug-25", 200),
+    ("12345", "02-Aug-25", 150),
+    ("12345", "13-Aug-25", 250),
+    ("12345", "13-Aug-25", 500),
+    ("12345", "13-Aug-25", 300)
+]
+
+columns = ["customer_id", "order_date", "amount"]
+df = spark.createDataFrame(data, columns)
+
+# Filter for the specific customer
+df_filtered = df.filter(col("customer_id") == "12345")
+
+# Step 1: Aggregate daily totals (sum per date)
+daily_totals = df_filtered.groupBy("order_date").agg(
+    spark_sum("amount").alias("daily_total")
+)
+
+# Step 2: Compute running total on daily aggregated data
+window_spec = Window.orderBy("order_date").rowsBetween(
+    Window.unboundedPreceding, Window.currentRow
+)
+daily_running = daily_totals.withColumn(
+    "running_total", spark_sum("daily_total").over(window_spec)
+)
+
+# Step 3: Join running totals back to original rows
+result = df_filtered.join(daily_running, on="order_date", how="left") \
+    .select("customer_id", "order_date", "amount", "running_total")
+
+result.show()
+```
+
+### Step-by-Step Explanation with Intermediate DataFrames
+
+**Step 1: Aggregate Daily Totals**
+
+Groups by `order_date` and sums all amounts for that date. This is necessary because multiple orders on the same date should all share the same cumulative total. If we computed a running sum directly on individual rows, rows on the same date would get different running totals depending on their processing order.
+
+| order_date | daily_total |
+|------------|-------------|
+| 01-Aug-25  | 100         |
+| 02-Aug-25  | 350         |
+| 13-Aug-25  | 1050        |
+
+**Step 2: Compute Running Total**
+
+A window ordered by `order_date` with frame `unboundedPreceding` to `currentRow` computes the cumulative sum of `daily_total`.
+
+| order_date | daily_total | running_total |
+|------------|-------------|---------------|
+| 01-Aug-25  | 100         | 100           |
+| 02-Aug-25  | 350         | 450           |
+| 13-Aug-25  | 1050        | 1500          |
+
+**Step 3: Join Back to Original Rows**
+
+Left-joins the running totals back to the original filtered DataFrame on `order_date`. This replicates the running total for every row that shares the same date.
+
+### Alternative: Using rangeBetween (No Pre-Aggregation)
+
+```python
+from pyspark.sql.functions import to_date, unix_timestamp
+
+# Convert to proper date for rangeBetween to work
+df_with_date = df_filtered.withColumn(
+    "order_date_parsed", to_date(col("order_date"), "dd-MMM-yy")
+)
+
+# rangeBetween on dates: all rows with the same or earlier date get the same total
+window_range = Window.orderBy("order_date_parsed").rangeBetween(
+    Window.unboundedPreceding, Window.currentRow
+)
+
+result_alt = df_with_date.withColumn(
+    "running_total", spark_sum("amount").over(window_range)
+).select("customer_id", "order_date", "amount", "running_total")
+
+result_alt.show()
+```
+
+**Key difference:** `rangeBetween` groups rows with identical `order_date` values together in the window frame, so all same-date rows get the same running total — no pre-aggregation or join needed. However, it requires a numeric or date-type ordering column.
+
+## Key Concepts
+
+- **Window frame specification**: `rowsBetween(Window.unboundedPreceding, Window.currentRow)` defines a cumulative frame from the first row to the current row within each partition.
+- **ROWS vs RANGE**: `ROWS` counts physical rows; `RANGE` groups rows with the same order key value. Default behavior for `sum().over(Window.orderBy(...))` without explicit frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`.
+- **Cumulative product**: PySpark does not have a native cumulative product function. Use the mathematical identity: `product(x_i) = exp(sum(log(x_i)))`. Only works for positive values.
+- **Cumulative distinct count**: Use `collect_set` over a cumulative window, then `size` to count unique elements. Be cautious with memory for high-cardinality columns.
+- **Performance**: Cumulative windows require sorting within each partition. Ensure partitions are reasonably sized to avoid memory issues.
+
 ## Interview Tips
 
 - Always specify the frame explicitly (`rowsBetween` or `rangeBetween`) to avoid relying on default behavior, which varies between `ROWS` and `RANGE` depending on whether `orderBy` is present.
 - Demonstrate awareness that window functions do not reduce row count; they add computed columns to each row.
 - Mention that cumulative aggregations are commonly used for YTD (year-to-date) calculations, account balance tracking, and progressive quota attainment.
+- **Why aggregate + join for same-date totals?** The aggregate-then-join approach avoids the `rowsBetween` ordering issue where same-date rows get different totals. This is the safest approach when you cannot guarantee the date column type. The `rangeBetween` alternative is cleaner but requires a proper date/numeric column.
+- **Multi-customer extension:** Add `partitionBy("customer_id")` to the window spec. A single-customer filter works for demos, but partitioning scales to all customers without filtering.
+- **Performance of aggregate + join vs rangeBetween:** The aggregate + join approach triggers two shuffles (groupBy + join). The `rangeBetween` approach needs only one shuffle (window). For large datasets, the single-pass window approach is preferable.

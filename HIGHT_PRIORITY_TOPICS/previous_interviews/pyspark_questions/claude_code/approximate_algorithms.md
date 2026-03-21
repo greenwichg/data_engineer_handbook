@@ -263,6 +263,51 @@ comparison.agg(
 large_df.unpersist()
 ```
 
+## Method 4: Error Calculation Pattern (DataFrame API)
+
+```python
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import (
+    countDistinct, approx_count_distinct, col, abs as spark_abs, round as spark_round
+)
+
+spark = SparkSession.builder.appName("ErrorCalculation").getOrCreate()
+
+# Given a DataFrame `df` with columns: user_id, page_url
+# Compute exact vs approximate counts with multiple rsd levels and calculate error %
+
+comparison = df.groupBy("page_url").agg(
+    countDistinct("user_id").alias("exact_distinct"),
+    approx_count_distinct("user_id").alias("approx_default"),         # default rsd = 0.05
+    approx_count_distinct("user_id", 0.01).alias("approx_precise"),   # tighter rsd
+    approx_count_distinct("user_id", 0.20).alias("approx_fast"),      # looser rsd
+)
+
+# Add error percentage columns for each rsd level
+result = comparison.withColumn(
+    "error_default_pct",
+    spark_round(
+        spark_abs(col("exact_distinct") - col("approx_default")) / col("exact_distinct") * 100, 2
+    )
+).withColumn(
+    "error_precise_pct",
+    spark_round(
+        spark_abs(col("exact_distinct") - col("approx_precise")) / col("exact_distinct") * 100, 2
+    )
+).withColumn(
+    "error_fast_pct",
+    spark_round(
+        spark_abs(col("exact_distinct") - col("approx_fast")) / col("exact_distinct") * 100, 2
+    )
+)
+
+result.orderBy(col("exact_distinct").desc()).show()
+```
+
+*Note: With small data the approximation is often exact. Error becomes visible at millions of rows.
+At scale, `approx_fast` (rsd=0.20) may show errors up to ~20%, while `approx_precise` (rsd=0.01)
+stays within ~1%.*
+
 ## Key Concepts
 
 | Concept | Details |
@@ -270,7 +315,7 @@ large_df.unpersist()
 | **approx_count_distinct** | Uses HyperLogLog algorithm; `rsd` parameter controls accuracy vs memory tradeoff |
 | **HyperLogLog (HLL)** | Probabilistic data structure that estimates cardinality using fixed memory (~1.5 KB for millions of values) |
 | **percentile_approx** | Uses t-digest algorithm; `accuracy` parameter (default 10000) controls precision |
-| **Relative Standard Deviation (rsd)** | Lower rsd = more accurate but more memory; default is 0.05 (5%) |
+| **Relative Standard Deviation (rsd)** | Lower rsd = more accurate but more memory; default is 0.05 (5%). Memory is proportional to `1 / (rsd^2)` |
 | **When to use approximations** | Datasets with billions of rows where exact counts are too slow or memory-intensive |
 | **Accuracy guarantee** | approx_count_distinct is within ~2% error for most practical datasets |
 
@@ -278,10 +323,16 @@ large_df.unpersist()
 
 1. **Know when to use approximate vs exact**: If your dataset has billions of rows and you need a quick cardinality estimate (e.g., daily unique visitors), approximate is the way to go. For billing or compliance, use exact.
 
-2. **Understand the tradeoff parameters**: Be ready to explain that `rsd=0.05` means roughly 5% relative standard deviation, and how decreasing it increases memory usage.
+2. **Understand the tradeoff parameters**: Be ready to explain that `rsd=0.05` means roughly 5% relative standard deviation, and how decreasing it increases memory usage. The memory used is proportional to `1 / (relativeSD^2)`.
 
-3. **HyperLogLog explanation**: At a high level, HLL hashes each element and counts leading zeros in the binary hash. More leading zeros statistically imply more distinct elements. It uses multiple "registers" to average out the estimate.
+3. **HyperLogLog explanation**: At a high level, HLL hashes each element and counts leading zeros in the binary hash. More leading zeros statistically imply more distinct elements. It uses multiple "registers" to average out the estimate. It uses O(log log n) space.
 
-4. **Real-world use cases**: Ad-tech (unique impressions), web analytics (unique visitors), IoT (unique device counts), and any COUNT DISTINCT on high-cardinality columns.
+4. **When to use exact `countDistinct()`**: Financial or compliance reporting where exact numbers are required; small to medium datasets where performance is not a concern; validating the accuracy of approximate methods.
 
-5. **Spark SQL equivalents**: `APPROX_COUNT_DISTINCT()` and `PERCENTILE_APPROX()` work the same way in SQL mode, which is useful in notebook environments.
+5. **Real-world use cases**: Ad-tech (unique impressions), web analytics (unique visitors), IoT (unique device counts), cardinality estimation for query planning, and any COUNT DISTINCT on high-cardinality columns.
+
+6. **Catalyst optimizer behavior**: `countDistinct` requires a full shuffle and deduplication, while `approx_count_distinct` uses a sketch-based partial aggregation that reduces shuffle volume dramatically.
+
+7. **Composability limitation**: HLL sketches from `approx_count_distinct` cannot be merged across separate Spark jobs. For mergeable sketches, consider using the `spark-alchemy` library or DataSketches integration.
+
+8. **Spark SQL equivalents**: `APPROX_COUNT_DISTINCT()` and `PERCENTILE_APPROX()` work the same way in SQL mode, which is useful in notebook environments.
