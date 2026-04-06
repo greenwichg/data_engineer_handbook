@@ -17,5 +17,5 @@
 - [pyspark_json_cheatsheet.md](https://github.com/greenwichg/data_engineer_handbook/blob/main/CHEATSHEETS/frameworks/pyspark/cheatsheets/pyspark_json_cheatsheet.md)
 - [pyspark_questions/claude_code](https://github.com/greenwichg/data_engineer_handbook/tree/main/INTERVIEW_PRACTICE/pyspark_questions/claude_code)
 - [pyspark_questions/openai_codex](https://github.com/greenwichg/data_engineer_handbook/tree/main/INTERVIEW_PRACTICE/pyspark_questions/openai_codex)
-- [cross_reference/sql_pyspark_equivalent](https://github.com/greenwichg/de_interview_prep/blob/main/PREPARATION_STRATEGY/frameworks/sql/cross_reference/sql_pyspark_equivalent.md)
+- [cross_reference/sql_pyspark_equivalent](https://github.com/greenwichg/data_engineer_handbook/blob/main/CHEATSHEETS/frameworks/structured_query_language/cross_reference/sql_pyspark_equivalent.md)
   
