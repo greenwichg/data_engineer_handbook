@@ -1,6 +1,6 @@
 ## SQL
 - [sql/ajay_kadiyala](https://github.com/greenwichg/de_interview_prep/tree/main/LEARNING_MATERIALS/ajay_kadiyala/core_tech_stacks/core_programming)
-- [sql/anand_narayanan](https://github.com/greenwichg/de_interview_prep/tree/main/PREPARATION_STRATEGY/sql_patterns/anand_narayanan/organized/top_interview_questions)
+- [sql/anand_narayanan](https://github.com/greenwichg/data_engineer_handbook/tree/main/CHEATSHEETS/structured_query_language/anand_narayanan/organized/top_interview_questions)
 - [sql/shubham_wadekar](https://github.com/greenwichg/de_interview_prep/tree/main/LEARNING_MATERIALS/shubham_wadekar/CORE%20TOPICS/SQL/CODING%20Q%26A)
 - [ajay_kadiyala/sql_interview_guide](https://github.com/greenwichg/de_interview_prep/blob/main/LEARNING_MATERIALS/ajay_kadiyala/core_tech_stacks/core_programming/SQL_Interview_Guide.pdf)
   
