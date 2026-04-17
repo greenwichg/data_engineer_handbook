@@ -1467,17 +1467,46 @@ df_mom = (df
 
 ```sql
 -- SQL: Recursive CTE
+-- Find the full management chain for a specific employee.
+-- Traverses the org chart BOTTOM-UP: starts at the employee and walks
+-- up to the CEO, one level per iteration.
 WITH RECURSIVE chain AS (
+
+    -- ANCHOR: Start recursion at the specified employee.
+    -- 123 is the emp_id of the employee whose management chain we want.
+    -- `level = 0` marks this as the starting point; each step up the tree
+    -- will increment level by 1.
     SELECT emp_id, name, manager_id, 0 AS level
-    FROM employees WHERE emp_id = 123
+    FROM employees
+    WHERE emp_id = 123
 
     UNION ALL
 
+    -- RECURSIVE STEP: For each person currently in `chain`,
+    -- find the employee who is their manager. Each iteration
+    -- climbs one level up the hierarchy:
+    --   Iteration 1: finds the employee's direct manager
+    --   Iteration 2: finds that manager's manager
+    --   ...continues until we reach the CEO (manager_id IS NULL),
+    --      at which point the INNER JOIN produces no match and stops.
+    --
+    -- Join direction note: `c.manager_id = e.emp_id` means
+    -- "find the employee (e) whose emp_id matches the manager_id
+    -- in the CTE (c)" — this walks UP the hierarchy by following
+    -- the current row's pointer to its parent.
+    --
+    -- `c.level + 1` tracks depth: level 0 = employee, level 1 = their
+    -- manager, level 2 = their manager's manager, and so on.
     SELECT e.emp_id, e.name, e.manager_id, c.level + 1
     FROM employees e
     JOIN chain c ON c.manager_id = e.emp_id
 )
-SELECT * FROM chain ORDER BY level;
+
+-- Order by level so the chain reads bottom-up: the starting employee
+-- appears first (level 0), followed by each successive manager up to the CEO.
+SELECT *
+FROM chain
+ORDER BY level;
 ```
 
 ```python
@@ -1513,18 +1542,39 @@ spark.sql("""
 
 ```sql
 -- SQL
+-- Find all subordinates (direct and indirect) of a specific manager.
+-- Traverses the org chart TOP-DOWN: starts at the manager and walks
+-- down to leaves, one level per iteration.
 WITH RECURSIVE subordinates AS (
+
+    -- ANCHOR: Start recursion at the specified manager.
+    -- 456 is the emp_id of the manager whose org we want to explore.
     SELECT emp_id, name, manager_id
     FROM employees
-    WHERE emp_id = 456  -- Manager's ID
+    WHERE emp_id = 456
 
     UNION ALL
 
+    -- RECURSIVE STEP: For each person currently in `subordinates`,
+    -- find employees who report directly to them. Each iteration
+    -- extends the tree one level deeper:
+    --   Iteration 1: finds the manager's direct reports
+    --   Iteration 2: finds reports of those reports
+    --   ...continues until no new reports are found.
+    --
+    -- Join direction note: `e.manager_id = s.emp_id` means
+    -- "find employees (e) whose manager is someone already in
+    -- the CTE (s)" — this walks DOWN the hierarchy.
     SELECT e.emp_id, e.name, e.manager_id
     FROM employees e
     JOIN subordinates s ON e.manager_id = s.emp_id
 )
-SELECT * FROM subordinates WHERE emp_id != 456;
+
+-- Exclude the starting manager from the output.
+-- The anchor added them to the CTE, but they are not their own subordinate.
+SELECT *
+FROM subordinates
+WHERE emp_id != 456;
 ```
 
 ### Category Path Building
