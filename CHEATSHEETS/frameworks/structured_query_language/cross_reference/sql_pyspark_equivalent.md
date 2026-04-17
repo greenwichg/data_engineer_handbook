@@ -1660,20 +1660,84 @@ WHERE t1.id = specific_id AND t2.id != specific_id;
 
 ```sql
 -- SQL: Always add cycle protection in recursive CTEs!
+-- Build the full hierarchical tree with cycle protection for production safety.
+-- Traverses the tree TOP-DOWN from all roots down to all leaves, while actively
+-- guarding against two failure modes:
+--   1. CYCLES — malformed data where A's parent is B and B's parent is A,
+--      which would cause infinite recursion without protection.
+--   2. RUNAWAY DEPTH — pathologically deep trees (or subtle cycles the path
+--      check misses) that could exhaust memory or time out the query.
+--
+-- Both guards are essential in production. Never assume the data is clean
+-- enough to skip them — a single bad row can hang your database.
 WITH RECURSIVE hierarchy AS (
-    SELECT id, parent_id, ARRAY[id] AS path
+
+    -- ANCHOR: Start recursion at every root of the forest.
+    -- A "root" is any row with no parent (parent_id IS NULL).
+    --
+    -- `path` is an ARRAY tracking every id visited from the root down to this row.
+    -- For a root, the path contains only the root's own id (e.g., [1]).
+    -- This array serves two purposes:
+    --   1. It IS the cycle-detection mechanism (see the recursive step).
+    --   2. ARRAY_LENGTH(path, 1) gives us the current depth for the depth cap.
+    SELECT
+        id,
+        parent_id,
+        ARRAY[id] AS path
     FROM table_name
     WHERE parent_id IS NULL
 
     UNION ALL
 
-    SELECT t.id, t.parent_id, h.path || t.id
+    -- RECURSIVE STEP: For each row currently in `hierarchy`, find its children
+    -- and extend their path array by appending the child's id. Each iteration
+    -- extends the tree one level deeper:
+    --   Iteration 1: finds children of each root
+    --   Iteration 2: finds grandchildren
+    --   ...continues until either leaves are reached OR a guard trips.
+    --
+    -- Join direction note: `t.parent_id = h.id` means "find rows (t) whose
+    -- parent is someone already in the CTE (h)" — this walks DOWN the hierarchy.
+    --
+    -- Path accumulation note: `h.path || t.id` appends the child's id to the
+    -- parent's already-complete path. Each row ends up with an array of every
+    -- ancestor's id from the root to itself — useful for the guards below,
+    -- and also handy downstream (e.g., checking if X is an ancestor of Y).
+    SELECT
+        t.id,
+        t.parent_id,
+        h.path || t.id AS path
     FROM table_name t
     JOIN hierarchy h ON t.parent_id = h.id
-    WHERE NOT (t.id = ANY(h.path))      -- Prevent cycles
-      AND ARRAY_LENGTH(h.path, 1) < 100 -- Depth limit
+
+    -- GUARD 1 — CYCLE DETECTION:
+    -- Only add the child row if its id has NOT already appeared in the path.
+    -- `t.id = ANY(h.path)` returns TRUE if the child's id is anywhere in the
+    -- ancestor array. If it is, we've seen this row before on this traversal
+    -- branch — i.e., there's a cycle. Skip it to break the loop.
+    --
+    -- Example: if A's parent is B, B's parent is C, and C's parent is A,
+    -- when we try to add A as C's child the path would be [A, B, C] and
+    -- t.id (A) would match an entry in h.path. This condition filters it out.
+    WHERE NOT (t.id = ANY(h.path))
+
+    -- GUARD 2 — DEPTH CAP:
+    -- Refuse to recurse deeper than 100 levels. ARRAY_LENGTH(path, 1) returns
+    -- the current depth (the "1" is the array dimension — always 1 for a flat array).
+    -- This is a belt-and-suspenders safety net:
+    --   - Catches pathologically deep but cycle-free trees (e.g., 10,000 levels).
+    --   - Catches cycles that GUARD 1 might miss (e.g., cycles involving NULL
+    --     or edge cases where path tracking is imperfect).
+    -- The limit (100) is arbitrary; tune it to your domain. Most real-world
+    -- hierarchies are < 20 levels deep.
+      AND ARRAY_LENGTH(h.path, 1) < 100
 )
-SELECT * FROM hierarchy;
+
+-- Return every row with its full ancestor path.
+-- If a cycle or depth limit trips, the affected branch simply stops growing —
+-- the query still returns cleanly with everything else.
+SELECT *
+FROM hierarchy;
 ```
 
 ---
