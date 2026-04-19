@@ -38,14 +38,14 @@ The crucial mental move is to **trust the recursion**: when you write `answer_le
 ### Template A — canonical recursive shape
 ```python
 def solve(instance):
-    # 1) Base case — smallest / trivial input
+    # 1) Base case — smallest / trivial input. GOTCHA: MUST come first — missing base case = infinite recursion
     if is_base(instance):
         return base_answer(instance)
 
     # 2) Reduce — split into strictly smaller subproblems
     parts = split(instance)
 
-    # 3) Recurse — solve each subproblem, trusting it returns correctly
+    # 3) Recurse — solve each subproblem, trusting it returns correctly (list-comp)
     sub_answers = [solve(p) for p in parts]
 
     # 4) Combine — merge subproblem answers
@@ -55,34 +55,34 @@ def solve(instance):
 ### Template B — tree recursion (post-order combine)
 ```python
 def max_depth(node):
-    if node is None:
-        return 0
-    return 1 + max(max_depth(node.left), max_depth(node.right))
+    if node is None:                              # GOTCHA: `is None` (identity) — more explicit than `if not node`
+        return 0                                   # return 0 for empty tree (identity element for max)
+    return 1 + max(max_depth(node.left), max_depth(node.right))   # +1 for current node
 
 def tree_sum(node):
-    if node is None: return 0
-    return node.val + tree_sum(node.left) + tree_sum(node.right)
+    if node is None: return 0                     # 0 = identity for sum
+    return node.val + tree_sum(node.left) + tree_sum(node.right)   # + is left-associative; evaluation order L→R
 ```
 
 ### Template C — divide and conquer (merge sort)
 ```python
 def merge_sort(arr):
     if len(arr) <= 1:
-        return arr[:]
-    mid = len(arr) // 2
-    left = merge_sort(arr[:mid])
-    right = merge_sort(arr[mid:])
+        return arr[:]                              # GOTCHA: `arr[:]` returns a shallow COPY — avoids mutating caller's list
+    mid = len(arr) // 2                            # `//` integer division; `/` returns float in Py3
+    left = merge_sort(arr[:mid])                   # slice up to (but not including) mid — end-exclusive
+    right = merge_sort(arr[mid:])                  # slice from mid onward — no overlap with left
     return merge(left, right)
 
 def merge(a, b):
-    i = j = 0
+    i = j = 0                                      # chained assignment: both set to 0
     out = []
     while i < len(a) and j < len(b):
-        if a[i] <= b[j]:
+        if a[i] <= b[j]:                           # `<=` (not `<`) preserves stability
             out.append(a[i]); i += 1
         else:
             out.append(b[j]); j += 1
-    out.extend(a[i:]); out.extend(b[j:])
+    out.extend(a[i:]); out.extend(b[j:])           # one slice is empty; `extend` O(len(slice))
     return out
 ```
 
@@ -90,41 +90,41 @@ def merge(a, b):
 ```python
 from functools import lru_cache
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=None)                           # maxsize=None = unbounded cache. GOTCHA: args must be HASHABLE (no lists/dicts)
 def fib(n):
-    if n < 2: return n
+    if n < 2: return n                             # covers both n=0 and n=1 via `return n`
     return fib(n - 1) + fib(n - 2)
 
 # Or with an explicit dict
 def fib_dict(n, memo=None):
-    if memo is None: memo = {}
+    if memo is None: memo = {}                    # GOTCHA: `memo={}` as default would SHARE state across calls (mutable default trap)
     if n < 2: return n
-    if n in memo: return memo[n]
-    memo[n] = fib_dict(n - 1, memo) + fib_dict(n - 2, memo)
+    if n in memo: return memo[n]                  # check memo BEFORE computing
+    memo[n] = fib_dict(n - 1, memo) + fib_dict(n - 2, memo)   # store AFTER computing
     return memo[n]
 ```
 
 ### Template E — fast exponentiation (halve the problem)
 ```python
 def power(x, n):
-    if n == 0: return 1
-    if n < 0: return 1 / power(x, -n)
-    half = power(x, n // 2)
-    return half * half * (x if n & 1 else 1)
+    if n == 0: return 1                            # identity base case
+    if n < 0: return 1 / power(x, -n)              # GOTCHA: returns float for negative exponents
+    half = power(x, n // 2)                        # compute once, reuse — key to O(log n) speedup
+    return half * half * (x if n & 1 else 1)       # `n & 1` tests odd; ternary picks extra factor of x
 ```
 
 ### Template F — tail-recursion rewritten as iteration
 ```python
-# Tail-recursive (do not use in Python — no TCO)
-def factorial_tail(n, acc=1):
+# Tail-recursive (do not use in Python — no TCO, blows stack at ~1000)
+def factorial_tail(n, acc=1):                      # `acc=1` is OK as default here — int is immutable (not a mutable default!)
     if n <= 1: return acc
-    return factorial_tail(n - 1, acc * n)   # last action is a call
+    return factorial_tail(n - 1, acc * n)         # last action is a call
 
 # Iterative equivalent
 def factorial(n):
     acc = 1
-    while n > 1:
-        acc *= n; n -= 1
+    while n > 1:                                   # loop body mirrors the recursive call
+        acc *= n; n -= 1                            # GOTCHA: `acc *= n` BEFORE `n -= 1` — else multiply by n-1 instead
     return acc
 ```
 
@@ -134,10 +134,10 @@ def iterative_dfs_preorder(root):
     if not root: return []
     out = []; stack = [root]
     while stack:
-        node = stack.pop()
+        node = stack.pop()                        # LIFO: last pushed = first popped
         out.append(node.val)
-        if node.right: stack.append(node.right)
-        if node.left:  stack.append(node.left)   # left pushed last → popped first
+        if node.right: stack.append(node.right)   # push right FIRST so it's popped AFTER left
+        if node.left:  stack.append(node.left)    # left pushed last → popped first (preserves preorder)
     return out
 ```
 
@@ -184,8 +184,8 @@ This is the canonical worked example for three reasons: it exposes the **exponen
 ### Step 1. Write the naive recursion and see it explode
 ```python
 def fib(n):
-    if n < 2: return n
-    return fib(n - 1) + fib(n - 2)
+    if n < 2: return n                             # handles F(0)=0 and F(1)=1 in one line
+    return fib(n - 1) + fib(n - 2)                # GOTCHA: no memo → exponential O(φⁿ)
 ```
 Call tree for `n = 5`:
 
@@ -208,10 +208,10 @@ Count the calls: 1 + 2 + 4 + 6 + 2 = 15 (`fib(5)` plus all descendants). More ge
 ### Step 2. Add a memo (top-down DP)
 ```python
 def fib(n, memo=None):
-    if memo is None: memo = {}
+    if memo is None: memo = {}                    # GOTCHA: `memo={}` as default is SHARED across top-level calls — use None sentinel
     if n < 2: return n
-    if n in memo: return memo[n]
-    memo[n] = fib(n - 1, memo) + fib(n - 2, memo)
+    if n in memo: return memo[n]                  # `in dict` is O(1) avg
+    memo[n] = fib(n - 1, memo) + fib(n - 2, memo) # must pass `memo` to both children to share state
     return memo[n]
 ```
 
@@ -239,9 +239,9 @@ Top-down memoised recursion is exactly top-down DP. To convert to bottom-up:
 ```python
 def fib_bottom_up(n):
     if n < 2: return n
-    prev2, prev1 = 0, 1
-    for _ in range(2, n + 1):
-        prev2, prev1 = prev1, prev2 + prev1
+    prev2, prev1 = 0, 1                           # F(0), F(1)
+    for _ in range(2, n + 1):                     # range end-exclusive: iterates 2..n
+        prev2, prev1 = prev1, prev2 + prev1       # GOTCHA: tuple-assign — RHS fully evaluated BEFORE LHS; avoids needing `tmp`
     return prev1
 ```
 
