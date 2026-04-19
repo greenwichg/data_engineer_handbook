@@ -36,50 +36,50 @@ Example: "max path sum through any node" (LC 124). Each call *returns* the best 
 ### Template A — pre-order / in-order / post-order skeleton
 ```python
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val=0, left=None, right=None):   # GOTCHA: None defaults safe (immutable); mutable defaults like [] are NOT
         self.val = val
         self.left = left
         self.right = right
 
 def preorder(node, out):
-    if node is None: return
-    out.append(node.val)                # visit
-    preorder(node.left, out)
+    if node is None: return             # `is None` identity check, not truthy — val could be 0/False
+    out.append(node.val)                # visit FIRST = pre-order
+    preorder(node.left, out)            # `out` passed by reference (mutated in place)
     preorder(node.right, out)
 
 def inorder(node, out):
     if node is None: return
     inorder(node.left, out)
-    out.append(node.val)                # visit
+    out.append(node.val)                # visit BETWEEN = in-order (sorted for BST)
     inorder(node.right, out)
 
 def postorder(node, out):
     if node is None: return
     postorder(node.left, out)
     postorder(node.right, out)
-    out.append(node.val)                # visit
+    out.append(node.val)                # visit LAST = post-order (children done before self)
 ```
 
 ### Template B — post-order aggregate (height, sum, count)
 ```python
 def height(node):
-    if node is None: return 0
-    return 1 + max(height(node.left), height(node.right))
+    if node is None: return 0              # 0 = identity for max; empty tree has height 0
+    return 1 + max(height(node.left), height(node.right))   # +1 for current node's edge to child
 
 def subtree_sum(node):
-    if node is None: return 0
-    return node.val + subtree_sum(node.left) + subtree_sum(node.right)
+    if node is None: return 0              # 0 = identity for sum
+    return node.val + subtree_sum(node.left) + subtree_sum(node.right)   # + left-associative, L→R evaluation
 ```
 
 ### Template C — pre-order with accumulated state
 ```python
 def has_path_sum(node, target):
-    if node is None: return False
-    if node.left is None and node.right is None:
+    if node is None: return False           # GOTCHA: returning False NOT True at None — else empty trees match any target
+    if node.left is None and node.right is None:     # leaf check: BOTH children None
         return target == node.val
     remaining = target - node.val
     return (has_path_sum(node.left, remaining)
-         or has_path_sum(node.right, remaining))
+         or has_path_sum(node.right, remaining))    # `or` short-circuits — stops on first True
 ```
 
 ### Template D — tree DP with dual-direction state (diameter / max path sum)
@@ -87,12 +87,12 @@ def has_path_sum(node, target):
 def diameter(root):
     best = 0
     def depth(node):
-        nonlocal best
+        nonlocal best                    # GOTCHA: `nonlocal` needed to REBIND outer var; without it, `best = ...` creates local
         if node is None: return 0
         l = depth(node.left)
         r = depth(node.right)
-        best = max(best, l + r)         # path through this node (both legs)
-        return 1 + max(l, r)            # single leg reported to parent
+        best = max(best, l + r)          # path through this node (both legs) — the real answer
+        return 1 + max(l, r)             # single leg reported to parent (can't reuse a node twice)
     depth(root)
     return best
 ```
@@ -101,13 +101,13 @@ def diameter(root):
 ```python
 def rob(root):
     def go(node):
-        if node is None: return (0, 0)  # (robbed, not_robbed)
-        l_rob, l_skip = go(node.left)
+        if node is None: return (0, 0)   # (robbed, not_robbed) — identity pair
+        l_rob, l_skip = go(node.left)    # tuple-unpack the returned pair
         r_rob, r_skip = go(node.right)
-        robbed = node.val + l_skip + r_skip
-        not_robbed = max(l_rob, l_skip) + max(r_rob, r_skip)
+        robbed = node.val + l_skip + r_skip           # if I rob, children must skip
+        not_robbed = max(l_rob, l_skip) + max(r_rob, r_skip)   # if I skip, each child picks best
         return (robbed, not_robbed)
-    return max(go(root))
+    return max(go(root))                 # `max` of a 2-tuple returns the larger element
 ```
 
 ### Template F — iterative DFS with explicit stack
@@ -116,40 +116,40 @@ def preorder_iter(root):
     if not root: return []
     out, stack = [], [root]
     while stack:
-        node = stack.pop()
+        node = stack.pop()                        # LIFO pop
         out.append(node.val)
-        if node.right: stack.append(node.right)   # push right first
-        if node.left:  stack.append(node.left)    # left popped first
+        if node.right: stack.append(node.right)   # push right FIRST so left is popped FIRST (preorder)
+        if node.left:  stack.append(node.left)
     return out
 
 def inorder_iter(root):
     out, stack = [], []
     node = root
-    while stack or node:
-        while node:
+    while stack or node:                          # continue while EITHER has work
+        while node:                                # walk-left phase: push all left ancestors
             stack.append(node); node = node.left
-        node = stack.pop()
+        node = stack.pop()                         # visit phase: leftmost-pending
         out.append(node.val)
-        node = node.right
+        node = node.right                          # then attempt right subtree
     return out
 ```
 
 ### Template G — two trees in lock-step (same tree, symmetric)
 ```python
 def is_same(a, b):
-    if a is None and b is None: return True
-    if a is None or b is None: return False
+    if a is None and b is None: return True      # GOTCHA: order matters — "both None" must come BEFORE "one None"
+    if a is None or b is None: return False      # only one None → mismatch
     if a.val != b.val: return False
-    return is_same(a.left, b.left) and is_same(a.right, b.right)
+    return is_same(a.left, b.left) and is_same(a.right, b.right)    # `and` short-circuits
 
 def is_symmetric(root):
     def mirror(a, b):
         if a is None and b is None: return True
         if a is None or b is None: return False
         return (a.val == b.val
-             and mirror(a.left, b.right)
+             and mirror(a.left, b.right)          # MIRROR: a.left vs b.right (flipped!)
              and mirror(a.right, b.left))
-    return root is None or mirror(root.left, root.right)
+    return root is None or mirror(root.left, root.right)    # empty tree is trivially symmetric
 ```
 
 Key mental tools:
@@ -191,14 +191,14 @@ If a subtree's best single-legged path is negative, you are better off *not incl
 ### Step 3. Implement
 ```python
 def maxPathSum(root):
-    best = float('-inf')
+    best = float('-inf')                 # GOTCHA: `float('-inf')` is infinitely negative; math.inf/-math.inf also works
     def gain(node):
-        nonlocal best
-        if node is None: return 0
-        l = max(gain(node.left), 0)      # drop negative children
+        nonlocal best                    # rebind outer var (else `best = ...` creates local)
+        if node is None: return 0        # empty subtree contributes 0 (negatives clipped below)
+        l = max(gain(node.left), 0)      # GOTCHA: clip to 0 — skip child if its path is negative
         r = max(gain(node.right), 0)
-        best = max(best, node.val + l + r)
-        return node.val + max(l, r)
+        best = max(best, node.val + l + r)   # through-path: both legs included
+        return node.val + max(l, r)      # return single-leg for parent (can't use node twice)
     gain(root)
     return best
 ```
