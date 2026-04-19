@@ -26,15 +26,15 @@ The conceptual generalisation: a stack lets you **defer a decision** about an el
 ### Template A — matching / balance (paired brackets)
 ```python
 def is_balanced(s):
-    pair = {')': '(', ']': '[', '}': '{'}
-    stack = []
+    pair = {')': '(', ']': '[', '}': '{'}   # dict literal; values are the matching opener
+    stack = []                               # GOTCHA: plain list used as stack; .append/.pop are O(1) amortised
     for ch in s:
-        if ch in '([{':
+        if ch in '([{':                      # `in <string>` does substring membership char-by-char
             stack.append(ch)
         elif ch in ')]}':
-            if not stack or stack.pop() != pair[ch]:
-                return False
-    return not stack                      # all openers must be closed
+            if not stack or stack.pop() != pair[ch]:   # OR short-circuits: .pop() not called on empty stack
+                return False                            # GOTCHA: list.pop() on empty raises IndexError — guard first
+    return not stack                          # `not stack` is True for empty list (Pythonic emptiness check)
 ```
 
 ### Template B — monotonic stack (next greater / next smaller)
@@ -42,13 +42,13 @@ def is_balanced(s):
 def next_greater(arr):
     """For each i, the next index j > i with arr[j] > arr[i], else -1."""
     n = len(arr)
-    out = [-1] * n
-    stack = []                            # indices; arr[stack] strictly decreasing
+    out = [-1] * n                          # default -1 for "no next greater" — never overwritten if stack leftover
+    stack = []                              # indices; arr[stack] strictly decreasing. GOTCHA: store INDICES not values
     for i, x in enumerate(arr):
-        while stack and arr[stack[-1]] < x:
-            out[stack.pop()] = i          # next greater of j is i
+        while stack and arr[stack[-1]] < x:    # `while` (not `if`) — may pop multiple. stack[-1] peeks top
+            out[stack.pop()] = i            # .pop() removes AND returns; combined lookup+write
         stack.append(i)
-    return out
+    return out                              # indices left in stack get out[j] = -1 (their default)
 ```
 
 Flip the comparator (`<` → `>`) and/or direction (iterate right-to-left) to get the four variants: next-greater, next-smaller, previous-greater, previous-smaller.
@@ -60,33 +60,33 @@ def eval_rpn(tokens):
     ops = {'+': lambda a, b: a + b,
            '-': lambda a, b: a - b,
            '*': lambda a, b: a * b,
-           '/': lambda a, b: int(a / b)}  # truncate toward zero per LC 150
+           '/': lambda a, b: int(a / b)}  # GOTCHA: int(a/b) truncates toward 0; a//b floors (differs for negatives!)
     for t in tokens:
         if t in ops:
-            b = stack.pop(); a = stack.pop()
+            b = stack.pop(); a = stack.pop()   # ORDER MATTERS: b first (top), then a. `a-b` not `b-a`
             stack.append(ops[t](a, b))
         else:
-            stack.append(int(t))
-    return stack[0]
+            stack.append(int(t))            # int("-3") works; int handles leading minus
+    return stack[0]                         # exactly one value remains on well-formed RPN; use stack.pop() defensively
 ```
 
 ### Template D — nested decode / frame stack
 ```python
 def decode_string(s):
     """LC 394: '3[a2[c]]' -> 'accaccacc'."""
-    stack = []                            # list of (repeat_count, accumulated_str_before)
-    cur = ""; k = 0
+    stack = []                            # list of (repeat_count, accumulated_str_before) — tuples are immutable
+    cur = ""; k = 0                        # GOTCHA: k aggregates multi-digit numbers like "23" via k*10+digit
     for ch in s:
         if ch.isdigit():
-            k = k * 10 + int(ch)
+            k = k * 10 + int(ch)           # must handle multi-digit; single int(ch) would lose "23"
         elif ch == '[':
-            stack.append((k, cur))
-            cur, k = "", 0
+            stack.append((k, cur))         # snapshot context; tuple-packing without parens would also work
+            cur, k = "", 0                 # tuple-unpacking assignment resets both simultaneously
         elif ch == ']':
-            prev_k, prev_str = stack.pop()
-            cur = prev_str + cur * prev_k
+            prev_k, prev_str = stack.pop() # tuple unpacking from popped frame
+            cur = prev_str + cur * prev_k  # `str * int` repeats: "ab" * 3 == "ababab"
         else:
-            cur += ch
+            cur += ch                      # GOTCHA: O(n²) for long strings; use list+join in hot paths
     return cur
 ```
 
@@ -95,24 +95,24 @@ def decode_string(s):
 def remove_k_digits(num, k):
     """LC 402: remove k digits to produce the smallest number."""
     stack = []
-    for d in num:
-        while k and stack and stack[-1] > d:   # pop larger digits from the front
+    for d in num:                                # iterating a str yields chars; '9' > '5' uses lexicographic compare (OK for digits)
+        while k and stack and stack[-1] > d:    # `k` truthy == k>0; three conditions via AND short-circuit
             stack.pop(); k -= 1
         stack.append(d)
-    stack = stack[:len(stack) - k]              # trailing removals if k not yet 0
-    return "".join(stack).lstrip("0") or "0"
+    stack = stack[:len(stack) - k]               # slice end-exclusive; negative result OK but len-k always >=0 here
+    return "".join(stack).lstrip("0") or "0"    # `or "0"` handles empty/all-zero result (empty str is falsy)
 ```
 
 ### Template F — iterative DFS via explicit stack
 ```python
 def iterative_dfs(root):
-    if not root: return
+    if not root: return                          # GOTCHA: `not root` is True for None AND for empty list — usually fine for tree nodes
     stack = [root]
     while stack:
-        node = stack.pop()
+        node = stack.pop()                       # pops from end (LIFO); pop(0) would be BFS but O(n) — use deque instead
         visit(node)
-        for child in reversed(node.children):   # so leftmost is processed first
-            stack.append(child)
+        for child in reversed(node.children):    # reversed() returns an iterator, not a new list — cheap
+            stack.append(child)                  # pushing last → popped first, so leftmost child processed first
 ```
 
 Key mental tools:
@@ -147,16 +147,16 @@ Both are variants of Template B. For `right`, scan left-to-right with a strictly
 ```python
 def largestRectangleArea(heights):
     n = len(heights)
-    left = [-1] * n
-    right = [n] * n
-    stack = []                                 # indices, heights[stack] strictly increasing
+    left = [-1] * n                              # default sentinel — "no smaller bar to the left"
+    right = [n] * n                              # default sentinel — "no smaller bar to the right"
+    stack = []                                   # indices, heights[stack] strictly increasing. GOTCHA: >= pops equals too
     for i, h in enumerate(heights):
         while stack and heights[stack[-1]] >= h:
             j = stack.pop()
-            right[j] = i                       # first strictly smaller on the right
-        left[i] = stack[-1] if stack else -1   # last strictly smaller on the left
+            right[j] = i                         # first strictly smaller on the right
+        left[i] = stack[-1] if stack else -1     # ternary: read AFTER popping; top is now previous-smaller
         stack.append(i)
-    return max(h * (right[i] - left[i] - 1) for i, h in enumerate(heights))
+    return max(h * (right[i] - left[i] - 1) for i, h in enumerate(heights))   # generator expr inside max() — O(1) space
 ```
 
 ### Step 3. Trace with `heights = [2, 1, 5, 6, 2, 3]`
@@ -193,12 +193,12 @@ The two arrays can be fused into a single pass by sentinelling `heights + [0]`: 
 ```python
 def largestRectangleArea(heights):
     stack = []; best = 0
-    for i, h in enumerate(heights + [0]):
+    for i, h in enumerate(heights + [0]):        # `+ [0]` sentinel forces all bars to resolve. GOTCHA: `heights[i]` below would fail at sentinel — we iterate h here
         while stack and heights[stack[-1]] >= h:
             top = stack.pop()
-            width = i if not stack else i - stack[-1] - 1
+            width = i if not stack else i - stack[-1] - 1   # empty stack ⇒ bar extends all the way left
             best = max(best, heights[top] * width)
-        stack.append(i)
+        stack.append(i)                          # always push current index (even sentinel) — it still triggers resolution for smaller bars
     return best
 ```
 
