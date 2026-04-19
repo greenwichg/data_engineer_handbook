@@ -20,79 +20,81 @@ Sorting is also a canonicalisation primitive: two structurally-equivalent inputs
 
 ### Sort by key (most interview uses)
 ```python
-items.sort(key=lambda x: x.priority)              # ascending
-items.sort(key=lambda x: -x.age)                  # descending
-items.sort(key=lambda x: (x.priority, -x.age))    # composite tie-breaks
+items.sort(key=lambda x: x.priority)              # ascending. GOTCHA: .sort() returns None — chain on `sorted()` instead
+items.sort(key=lambda x: -x.age)                  # descending via negation. Only works for numeric keys
+items.sort(key=lambda x: (x.priority, -x.age))    # tuple key: compare priority first, then -age. Ties broken left-to-right
+# For non-numeric reverse, use reverse=True (e.g. items.sort(key=str, reverse=True))
 ```
 
 ### Sort-then-sweep skeleton
 ```python
 def sweep(items):
-    items.sort(key=lambda x: x.start)             # dominant preprocessing
-    prev = None
+    items.sort(key=lambda x: x.start)             # dominant preprocessing. GOTCHA: mutates caller's list in place
+    prev = None                                    # GOTCHA: `is not None` (not `if prev:`) — empty/zero-valued objects are falsy
     out = []
     for x in items:
-        if prev is not None and overlaps(prev, x):
+        if prev is not None and overlaps(prev, x):    # AND short-circuits: `overlaps` never sees None
             prev = merge(prev, x)
         else:
             if prev is not None: out.append(prev)
             prev = x
-    if prev is not None: out.append(prev)
+    if prev is not None: out.append(prev)          # GOTCHA: don't forget the final flush after the loop
     return out
 ```
 
 ### Counting sort (bounded integer range)
 ```python
 def count_sort(arr, lo_val, hi_val):
-    V = hi_val - lo_val + 1
-    buckets = [0] * V
-    for x in arr: buckets[x - lo_val] += 1
+    V = hi_val - lo_val + 1                        # GOTCHA: +1 because range is inclusive on both ends
+    buckets = [0] * V                              # `[0]*V` safe (ints are immutable). Never `[[0]]*V` — shared rows!
+    for x in arr: buckets[x - lo_val] += 1         # offset so lo_val maps to index 0
     out = []
     for v, c in enumerate(buckets):
-        out.extend([v + lo_val] * c)
+        out.extend([v + lo_val] * c)               # `list * c` repeats; `extend` avoids O(n) reallocs vs `+=`
     return out
 ```
 
 ### Custom comparator via cmp_to_key
 ```python
-from functools import cmp_to_key
+from functools import cmp_to_key                   # GOTCHA: Python 3 dropped `cmp=`; must wrap with cmp_to_key
 
 def compare(a, b):
-    # Return <0 if a before b, 0 if equal, >0 if a after b
-    if a + b > b + a: return -1
+    # Return <0 if a before b, 0 if equal, >0 if a after b (C-style, NOT bool)
+    if a + b > b + a: return -1                    # returning True/False here silently breaks sort (True==1, False==0)
     elif a + b < b + a: return 1
-    return 0
+    return 0                                        # must return 0 for equals — else sort may be unstable/incorrect
 
-items.sort(key=cmp_to_key(compare))
+items.sort(key=cmp_to_key(compare))                 # slower than key=lambda because each compare is a Python call
 ```
 
 ### Bucket sort (distribute into bins, sort each bin)
 ```python
 def bucket_sort(arr, num_buckets):
-    lo, hi = min(arr), max(arr)
-    size = (hi - lo) / num_buckets + 1e-9
-    buckets = [[] for _ in range(num_buckets)]
+    lo, hi = min(arr), max(arr)                    # GOTCHA: min/max on empty arr → ValueError; guard upstream
+    size = (hi - lo) / num_buckets + 1e-9          # +epsilon so max value doesn't land at index==num_buckets
+    buckets = [[] for _ in range(num_buckets)]     # list comprehension — NEVER `[[]]*n` (shared inner list!)
     for x in arr:
-        buckets[int((x - lo) / size)].append(x)
+        buckets[int((x - lo) / size)].append(x)    # int() truncates toward zero (floor for non-negatives)
     out = []
     for b in buckets:
-        b.sort(); out.extend(b)
+        b.sort(); out.extend(b)                    # semicolon is legal but stylistically unusual in Python
     return out
 ```
 
 ### Top-k / kth via heap (partial sort)
 ```python
 import heapq
-k_largest = heapq.nlargest(k, arr)                # O(n log k)
-k_smallest = heapq.nsmallest(k, arr)
+k_largest = heapq.nlargest(k, arr)                # O(n log k). GOTCHA: k >= n just returns sorted(arr, reverse=True)
+k_smallest = heapq.nsmallest(k, arr)              # returns a LIST (not a heap); already sorted
+# For objects: heapq.nlargest(k, arr, key=lambda x: x.score)  — key only applied once per item (cached)
 ```
 
 ### Stable sort guarantee
 ```python
-# Python: .sort() and sorted() are stable (Timsort).
+# Python: .sort() and sorted() are stable (Timsort). GOTCHA: NOT guaranteed in C++ std::sort, use stable_sort.
 # You can layer sorts: sort by secondary first, then by primary.
-items.sort(key=lambda x: x.secondary)
-items.sort(key=lambda x: x.primary)               # primary wins; secondary breaks ties
+items.sort(key=lambda x: x.secondary)             # must apply LEAST-significant key first
+items.sort(key=lambda x: x.primary)               # primary wins; secondary breaks ties (only works because stable)
 ```
 
 Key mental tools:
@@ -127,14 +129,14 @@ The correct question for any pair `(a, b)`: which order produces a larger concat
 from functools import cmp_to_key
 
 def largestNumber(nums):
-    strs = list(map(str, nums))
+    strs = list(map(str, nums))           # GOTCHA: map() returns an iterator in Py3 — wrap with list() to sort
     def cmp(a, b):
-        if a + b > b + a: return -1       # a should come first
+        if a + b > b + a: return -1       # a should come first (descending: smaller return → earlier position)
         elif a + b < b + a: return 1
-        return 0
+        return 0                           # must return 0 on equal — omitting falls through to None → TypeError
     strs.sort(key=cmp_to_key(cmp))
-    result = "".join(strs)
-    return "0" if result[0] == "0" else result   # handle all-zero input
+    result = "".join(strs)                # "".join — empty separator; joining a list of strs (not ints!)
+    return "0" if result[0] == "0" else result   # handle all-zero input. ternary: `x if cond else y`
 ```
 
 ### Step 3. Trace on `nums = [3, 30, 34, 5, 9]`
