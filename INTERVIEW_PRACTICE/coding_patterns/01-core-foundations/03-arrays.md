@@ -20,53 +20,53 @@ In-place manipulation leans on two primitives: **swap** (constant work, no shift
 ```python
 def one_pass(arr):
     n = len(arr)
-    if n == 0: return None
-    running = arr[0]
-    for i in range(1, n):
-        running = combine(running, arr[i])   # e.g. sum / max / min / gcd
+    if n == 0: return None                       # GOTCHA: arr[0] would IndexError on empty input
+    running = arr[0]                             # seed with first element so combine sees a real value
+    for i in range(1, n):                        # start at 1 because arr[0] is already in `running`
+        running = combine(running, arr[i])       # e.g. running = max(running, arr[i])
     return running
 ```
 
 ### Two-pointer in-place filter (read/write pointers)
 ```python
 def filter_in_place(arr, keep):
-    write = 0
-    for read in range(len(arr)):
+    write = 0                                # next slot to write a kept element
+    for read in range(len(arr)):             # `read` always advances; `write` advances only on a keep
         if keep(arr[read]):
-            arr[write] = arr[read]
+            arr[write] = arr[read]           # safe: write <= read, so we never overwrite an unread element
             write += 1
-    return write           # arr[:write] is the kept prefix
+    return write                             # arr[:write] is the kept prefix; arr[write:] is garbage
 ```
 
 ### Reverse in place
 ```python
 def reverse_in_place(arr, lo=0, hi=None):
-    if hi is None: hi = len(arr) - 1
-    while lo < hi:
-        arr[lo], arr[hi] = arr[hi], arr[lo]
-        lo += 1; hi -= 1
+    if hi is None: hi = len(arr) - 1         # GOTCHA: never use `hi=len(arr)-1` in the def line — defaults are evaluated ONCE at import
+    while lo < hi:                            # strict `<`: when lo == hi we'd swap an element with itself (harmless but pointless)
+        arr[lo], arr[hi] = arr[hi], arr[lo]   # tuple swap — no temp variable needed in Python
+        lo += 1; hi -= 1                      # `;` lets us put two statements on one line (use sparingly)
 ```
 
 ### Cyclic rotation via three reverses (the k-rotation trick)
 ```python
 def rotate(arr, k):
-    n = len(arr); k %= n
-    reverse_in_place(arr, 0, n - 1)
-    reverse_in_place(arr, 0, k - 1)
-    reverse_in_place(arr, k, n - 1)
+    n = len(arr); k %= n                     # GOTCHA: k may exceed n; `k %= n` normalises (also handles k = 0 correctly)
+    reverse_in_place(arr, 0, n - 1)          # 1) reverse whole array
+    reverse_in_place(arr, 0, k - 1)          # 2) reverse first k (the new front)
+    reverse_in_place(arr, k, n - 1)          # 3) reverse rest. Three reverses == one rotation, O(1) extra memory
 ```
 
 ### Dutch National Flag — 3-way partition in one pass
 ```python
 def dutch_flag(arr, pivot):
-    lo, mid, hi = 0, 0, len(arr) - 1
-    while mid <= hi:
+    lo, mid, hi = 0, 0, len(arr) - 1         # tuple unpacking initialises three vars in one line
+    while mid <= hi:                          # `<=`: must process the element AT hi too
         if arr[mid] < pivot:
-            arr[lo], arr[mid] = arr[mid], arr[lo]; lo += 1; mid += 1
+            arr[lo], arr[mid] = arr[mid], arr[lo]; lo += 1; mid += 1   # safe to advance both — swapped value is always 1 (already classified)
         elif arr[mid] > pivot:
-            arr[mid], arr[hi] = arr[hi], arr[mid]; hi -= 1
+            arr[mid], arr[hi] = arr[hi], arr[mid]; hi -= 1             # KEY: do NOT advance mid — the swapped-in value is still unclassified
         else:
-            mid += 1
+            mid += 1                          # value == pivot; already in middle region
 ```
 
 ### Index-as-hash (values in `1..n` → place at `arr[i-1]`)
@@ -74,11 +74,15 @@ def dutch_flag(arr, pivot):
 def first_missing_positive(arr):
     n = len(arr)
     for i in range(n):
-        while 1 <= arr[i] <= n and arr[arr[i] - 1] != arr[i]:
+        # `while` (not `if`): one swap may bring in another out-of-place value that ALSO needs swapping
+        while 1 <= arr[i] <= n and arr[arr[i] - 1] != arr[i]:   # second condition prevents infinite loop on duplicates
+            # GOTCHA: order matters! Python evaluates RHS fully before assigning. If we wrote
+            #   arr[i], arr[arr[i]-1] = arr[arr[i]-1], arr[i]
+            # then the SECOND target `arr[arr[i]-1]` would re-read the just-changed arr[i] → wrong index.
             arr[arr[i] - 1], arr[i] = arr[i], arr[arr[i] - 1]
     for i in range(n):
-        if arr[i] != i + 1: return i + 1
-    return n + 1
+        if arr[i] != i + 1: return i + 1     # first slot whose value doesn't match position+1
+    return n + 1                              # all 1..n present; answer is n+1
 ```
 
 Key mental tools:
@@ -112,15 +116,15 @@ Invariant: three pointers partition the array into four regions.
 
 ```python
 def sortColors(arr):
-    lo, mid, hi = 0, 0, len(arr) - 1
-    while mid <= hi:
-        v = arr[mid]
+    lo, mid, hi = 0, 0, len(arr) - 1         # lo: end of 0-region; mid: scanner; hi: start of 2-region
+    while mid <= hi:                          # `<=` because element AT hi is still unclassified
+        v = arr[mid]                          # snapshot; arr[mid] might be mutated by the swap below
         if v == 0:
             arr[lo], arr[mid] = arr[mid], arr[lo]
-            lo += 1; mid += 1
+            lo += 1; mid += 1                 # swap brings in a 1 from middle region (already-scanned), safe to advance mid
         elif v == 2:
             arr[mid], arr[hi] = arr[hi], arr[mid]
-            hi -= 1
+            hi -= 1                           # KEY: do NOT advance mid — incoming value is unscanned, must re-examine next loop
         else:  # v == 1
             mid += 1
 ```
@@ -143,10 +147,10 @@ Final `[0, 0, 1, 1, 2, 2]`. Time `O(n)`, space `O(1)`, exactly one pass. Why thr
 Input: `nums = [1, 1, 2, 2, 2, 3, 4, 4, 5]`.
 
 ```python
-write = 1
-for read in range(1, len(nums)):
-    if nums[read] != nums[read - 1]:
-        nums[write] = nums[read]
+write = 1                                    # nums[0] is always kept (the first occurrence)
+for read in range(1, len(nums)):             # start at 1 because we compare with read-1
+    if nums[read] != nums[read - 1]:         # input is sorted ⇒ duplicates are adjacent
+        nums[write] = nums[read]             # safe: write <= read, never overwrites unread element
         write += 1
 ```
 

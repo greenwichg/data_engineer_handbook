@@ -29,60 +29,60 @@ The five ingredients to name explicitly before writing any code:
 ```python
 # "Longest/shortest subarray/substring satisfying P"
 def variable_window(arr):
-    l = 0
-    best = 0 or float('inf')
+    l = 0                                          # left edge (inclusive)
+    best = 0 or float('inf')                       # init: 0 for longest (we maximise), inf for shortest (we minimise)
     state = init_state()
-    for r, x in enumerate(arr):
-        state = add(state, x)                      # (2) on add
-        while not is_valid(state):                 # (4) validity
-            state = remove(state, arr[l]); l += 1  # (3) on remove
-        best = better(best, r - l + 1)             # (5) record
+    for r, x in enumerate(arr):                    # r is the right edge (inclusive)
+        state = add(state, x)                      # (2) on add — extending window by one
+        while not is_valid(state):                 # KEY: `while` not `if` — may need to remove multiple elements before valid again
+            state = remove(state, arr[l]); l += 1  # (3) on remove — shrinking from the left
+        best = better(best, r - l + 1)             # (5) record. Window length = r - l + 1 (both inclusive)
     return best
 ```
 
 ### Template B — fixed size-k window
 ```python
 def max_sum_k(arr, k):
-    s = sum(arr[:k])
-    best = s
-    for r in range(k, len(arr)):
-        s += arr[r] - arr[r - k]                   # slide by one
+    s = sum(arr[:k])                               # GOTCHA: arr[:k] creates a copy. For huge k, use sum(islice(arr, k)) instead
+    best = s                                       # initialise with first window's sum (don't use float('-inf') unless arr could be empty)
+    for r in range(k, len(arr)):                   # r starts at k — first NEW right-edge after the initial window
+        s += arr[r] - arr[r - k]                   # slide: add new right, drop old left. arr[r-k] is the element falling out
         best = max(best, s)
     return best
 ```
 
 ### Template C — "at most k" count trick
 ```python
-# # subarrays with at most k distinct
+# count subarrays with at most k distinct
 def at_most(arr, k):
     from collections import Counter
-    cnt = Counter(); l = 0; total = 0
+    cnt = Counter(); l = 0; total = 0              # Counter starts empty; missing keys default to 0 on `+=`
     for r, x in enumerate(arr):
-        cnt[x] += 1
-        while len(cnt) > k:
+        cnt[x] += 1                                # Counter is dict subclass; missing keys auto-init to 0 BEFORE the +=
+        while len(cnt) > k:                        # `len(cnt)` = number of distinct keys with non-zero count (after del below)
             cnt[arr[l]] -= 1
-            if cnt[arr[l]] == 0: del cnt[arr[l]]
+            if cnt[arr[l]] == 0: del cnt[arr[l]]   # KEY: must DELETE zero-count keys; otherwise len(cnt) overcounts distincts
             l += 1
-        total += r - l + 1                         # new subarrays ending at r
+        total += r - l + 1                         # ARITHMETIC TRICK: every valid window of size r-l+1 contributes that many subarrays ending at r
     return total
 
-# exactly k = at_most(k) - at_most(k - 1)
+# exactly k = at_most(k) - at_most(k - 1)         # subtraction trick: "exactly" rarely has a clean direct formula
 ```
 
 ### Template D — max/min over sliding window (monotonic deque)
 ```python
 from collections import deque
 def max_sliding_window(arr, k):
-    dq = deque()                                    # indices; arr[dq] strictly decreasing
+    dq = deque()                                    # store INDICES (not values) so we can detect when an index falls out of window
     out = []
     for i, x in enumerate(arr):
-        while dq and dq[0] <= i - k:                # evict out-of-window index
-            dq.popleft()
-        while dq and arr[dq[-1]] < x:               # maintain monotonicity
-            dq.pop()
+        while dq and dq[0] <= i - k:                # evict from FRONT if leftmost index is now outside [i-k+1, i]
+            dq.popleft()                            # popleft is O(1) on deque (list.pop(0) is O(n) — never use for queue)
+        while dq and arr[dq[-1]] < x:               # KEY: smaller-or-equal old values can never be the max while x is in window — pop them
+            dq.pop()                                # pop from BACK
         dq.append(i)
-        if i >= k - 1:
-            out.append(arr[dq[0]])                  # current window max
+        if i >= k - 1:                              # only start emitting once we've seen k elements
+            out.append(arr[dq[0]])                  # front of deque holds the current max's index
     return out
 ```
 
@@ -90,19 +90,20 @@ def max_sliding_window(arr, k):
 ```python
 from collections import Counter
 def min_window(s, t):
-    need = Counter(t)
-    missing = len(t)
+    need = Counter(t)                              # need[c] = how many more of c we still need (positive = still need; negative = surplus)
+    missing = len(t)                                # total chars still missing across all keys
     l = 0
-    best = (float('inf'), 0, 0)                    # length, start, end
+    best = (float('inf'), 0, 0)                    # tuple: (length, start, end) — compare by first element
     for r, ch in enumerate(s):
+        # KEY: only decrement `missing` when need was POSITIVE — surplus chars don't reduce missing
         if need[ch] > 0: missing -= 1
-        need[ch] -= 1                               # may go negative (surplus)
+        need[ch] -= 1                               # may go negative; tracks surplus for later add-back
         while missing == 0:
-            if r - l + 1 < best[0]: best = (r - l + 1, l, r)
+            if r - l + 1 < best[0]: best = (r - l + 1, l, r)   # record BEFORE shrinking past critical char
             need[s[l]] += 1
-            if need[s[l]] > 0: missing += 1
+            if need[s[l]] > 0: missing += 1         # only re-increment missing when we cross from satisfied (≤0) to needed (>0)
             l += 1
-    return "" if best[0] == float('inf') else s[best[1]:best[2] + 1]
+    return "" if best[0] == float('inf') else s[best[1]:best[2] + 1]   # +1: slice end exclusive
 ```
 
 Key mental tools:
@@ -130,17 +131,17 @@ Approach: Template E. `need[c]` tracks how many of `c` the window still needs (n
 from collections import Counter
 
 def minWindow(s, t):
-    need = Counter(t)            # need: {A:1, B:1, C:1}
-    missing = len(t)
+    need = Counter(t)                              # need: {A:1, B:1, C:1} for t="ABC"
+    missing = len(t)                                # total chars still owed; window valid when this hits 0
     l = 0
-    best = (float('inf'), 0, 0)
+    best = (float('inf'), 0, 0)                    # tuple comparison uses first element first → effectively comparing lengths
     for r, ch in enumerate(s):
-        if need[ch] > 0: missing -= 1
-        need[ch] -= 1
+        if need[ch] > 0: missing -= 1              # only count toward `missing` if this char was still needed
+        need[ch] -= 1                               # always decrement; goes negative for surplus chars
         while missing == 0:
-            if r - l + 1 < best[0]: best = (r - l + 1, l, r)
+            if r - l + 1 < best[0]: best = (r - l + 1, l, r)   # KEY: record BEFORE attempting to remove (next removal may invalidate)
             need[s[l]] += 1
-            if need[s[l]] > 0: missing += 1
+            if need[s[l]] > 0: missing += 1        # only when need crosses 0→positive does the window become invalid
             l += 1
     return "" if best[0] == float('inf') else s[best[1]:best[2] + 1]
 ```

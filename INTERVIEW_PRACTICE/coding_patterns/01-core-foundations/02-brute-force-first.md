@@ -19,12 +19,12 @@ The brute force mirrors the problem statement literally: enumerate the search sp
 ### Generic enumerate-check-update skeleton
 ```python
 def brute_force(inputs):
-    best = None  # or float('inf'), or []
+    best = None                                # use `None` when type/value of best is unknown until first valid candidate
     for candidate in generate_candidates(inputs):
-        if is_valid(candidate, inputs):
+        if is_valid(candidate, inputs):        # filter step: skip infeasible candidates
             score = evaluate(candidate, inputs)
-            if best is None or score < best:
-                best = candidate, score
+            if best is None or score < best:   # GOTCHA: `best is None` short-circuits BEFORE comparing — needed since None < int raises in Py3
+                best = candidate, score        # tuple packing — best is a (candidate, score) pair
     return best
 ```
 
@@ -32,33 +32,33 @@ def brute_force(inputs):
 ```python
 # All pairs (i < j)                 -> O(n^2)
 for i in range(n):
-    for j in range(i + 1, n):
+    for j in range(i + 1, n):              # i+1 (not i) avoids the (i,i) self-pair AND the (j,i) duplicate of (i,j)
         check(arr[i], arr[j])
 
 # All triples (i < j < k)           -> O(n^3)
 for i in range(n):
     for j in range(i + 1, n):
-        for k in range(j + 1, n):
+        for k in range(j + 1, n):          # nested i+1 / j+1 keeps strict ordering — no permutations of same triple
             check(arr[i], arr[j], arr[k])
 
 # All subarrays (contiguous)        -> O(n^2) ranges
 for i in range(n):
-    for j in range(i, n):
-        check(arr[i:j+1])
+    for j in range(i, n):                  # j starts at i so single-element subarrays count
+        check(arr[i:j+1])                  # GOTCHA: slice end is EXCLUSIVE, so use j+1 to include arr[j]
 
 # All subsets via bitmask           -> O(2^n)
-for mask in range(1 << n):
-    subset = [arr[i] for i in range(n) if mask >> i & 1]
+for mask in range(1 << n):                 # 1 << n == 2**n; range covers 0 .. 2^n - 1 (each int's bits = chosen indices)
+    subset = [arr[i] for i in range(n) if mask >> i & 1]   # bit i set ⇒ include arr[i]. `>>` is shift, `&` is AND
     check(subset)
 
 # All permutations                  -> O(n!)
 from itertools import permutations
-for p in permutations(arr):
+for p in permutations(arr):                # yields tuples (not lists). Convert with list(p) if mutation needed
     check(p)
 
 # All k-combinations                -> O(C(n,k))
 from itertools import combinations
-for c in combinations(arr, k):
+for c in combinations(arr, k):             # combinations are sorted by INPUT POSITION, not value — sort arr first if value order matters
     check(c)
 ```
 
@@ -66,21 +66,21 @@ for c in combinations(arr, k):
 ```python
 def enumerate_with_prune(partial, remaining):
     if is_goal(partial):
-        record(partial); return
+        record(partial[:]); return         # GOTCHA: record a COPY (partial[:]) — `partial` is mutated by caller; storing the ref shares state
     if is_infeasible(partial):
-        return                    # prune — the earlier, the better
+        return                             # prune — the earlier infeasibility is detected, the more branches saved
     for choice in remaining:
-        partial.append(choice)
-        enumerate_with_prune(partial, remaining - {choice})
-        partial.pop()
+        partial.append(choice)             # try the choice
+        enumerate_with_prune(partial, remaining - {choice})   # set difference: returns NEW set, doesn't mutate `remaining`
+        partial.pop()                      # backtrack: undo append so siblings see clean state
 ```
 
 ### Brute force as an oracle
 ```python
 import random
 for _ in range(1000):
-    arr = [random.randint(-5, 5) for _ in range(random.randint(0, 8))]
-    assert fast(arr) == brute(arr), arr
+    arr = [random.randint(-5, 5) for _ in range(random.randint(0, 8))]   # randint is INCLUSIVE on both ends (unlike range)
+    assert fast(arr) == brute(arr), arr   # the trailing `, arr` becomes the AssertionError message — prints the failing input
 ```
 
 ## 4. Classic Problems
@@ -97,10 +97,10 @@ Problem: given `nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]`, find the contiguous sub
 Walk all `(i, j)` windows, sum them freshly each time.
 
 ```python
-best = float('-inf')
+best = float('-inf')                       # sentinel: any real sum beats -inf on first compare
 for i in range(n):
     for j in range(i, n):
-        s = sum(nums[i:j+1])   # recomputes from scratch
+        s = sum(nums[i:j+1])               # GOTCHA: nums[i:j+1] creates a NEW list each time (O(n) memory + time hidden here)
         best = max(best, s)
 ```
 
@@ -123,9 +123,9 @@ Answer `= 6`, window `[4, -1, 2, 1]`. Correct, but `O(n^3)`.
 
 ```python
 for i in range(n):
-    s = 0
+    s = 0                                  # reset rolling sum at each new start index i
     for j in range(i, n):
-        s += nums[j]
+        s += nums[j]                       # extend the previous sum by ONE element instead of re-summing the slice
         best = max(best, s)
 ```
 
@@ -135,10 +135,10 @@ Now `O(n^2)`. What changed: the inner work dropped from `O(j - i + 1)` to `O(1)`
 Every outer `i` restarts `s` at `0`. But if the running sum ever goes negative, restarting is strictly better than continuing — no matter what comes next. That observation, visible *only* because the brute force exposed the running-sum structure, is Kadane's algorithm:
 
 ```python
-cur = best = nums[0]
-for x in nums[1:]:
-    cur = max(x, cur + x)       # extend or restart at x
-    best = max(best, cur)
+cur = best = nums[0]                       # chained assignment: both names bound to nums[0] (safe — int is immutable)
+for x in nums[1:]:                         # nums[1:] copies the tail; for huge inputs use indexed loop to avoid the copy
+    cur = max(x, cur + x)                  # KEY INSIGHT: if cur turned negative, cur+x < x — restart at x
+    best = max(best, cur)                  # `best` only ever grows
 ```
 
 `O(n)`, answer still `6`. The brute force was the ladder to the insight; it was never a throwaway.
@@ -149,8 +149,8 @@ While writing Kadane, keep the `O(n^2)` version around and randomly test:
 ```python
 import random
 for _ in range(1000):
-    arr = [random.randint(-5, 5) for _ in range(random.randint(1, 12))]
-    assert kadane(arr) == brute_n2(arr), arr
+    arr = [random.randint(-5, 5) for _ in range(random.randint(1, 12))]   # min length 1 — Kadane crashes on empty input
+    assert kadane(arr) == brute_n2(arr), arr   # `, arr` makes the failing input visible in the AssertionError
 ```
 
 If Kadane breaks on an edge case, the oracle will tell you the exact input.

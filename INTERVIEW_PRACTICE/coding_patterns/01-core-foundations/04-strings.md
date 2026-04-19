@@ -19,10 +19,10 @@ The right question on any string problem: *"what is the canonical form of this c
 ### Fixed 26-slot counter (lowercase English)
 ```python
 def count_lower(s):
-    freq = [0] * 26
+    freq = [0] * 26                          # GOTCHA: `[[0]] * 26` would share the same inner list (mutable trap). Plain ints are safe.
     for ch in s:
-        freq[ord(ch) - ord('a')] += 1
-    return freq           # tuple(freq) is a hashable fingerprint
+        freq[ord(ch) - ord('a')] += 1        # ord('a') == 97; subtracting maps 'a'..'z' → 0..25
+    return freq                               # use tuple(freq) when you need a hashable key (e.g. dict / set)
 ```
 
 ### Two-pointer palindrome check with alnum-skip
@@ -30,9 +30,10 @@ def count_lower(s):
 def is_palindrome(s):
     lo, hi = 0, len(s) - 1
     while lo < hi:
-        while lo < hi and not s[lo].isalnum(): lo += 1
+        # `lo < hi` guard inside the inner while prevents pointers crossing on all-non-alnum input like " ,;"
+        while lo < hi and not s[lo].isalnum(): lo += 1   # `.isalnum()` is True for letters AND digits
         while lo < hi and not s[hi].isalnum(): hi -= 1
-        if s[lo].lower() != s[hi].lower(): return False
+        if s[lo].lower() != s[hi].lower(): return False  # `.lower()` per char is OK; cheaper to lower s once if reused
         lo += 1; hi -= 1
     return True
 ```
@@ -41,12 +42,13 @@ def is_palindrome(s):
 ```python
 def longest_palindrome(s):
     def expand(l, r):
+        # Boundary check FIRST (short-circuits on l < 0 or r >= len), then char compare. Order matters — Python AND short-circuits left-to-right.
         while l >= 0 and r < len(s) and s[l] == s[r]:
             l -= 1; r += 1
-        return s[l+1:r]
+        return s[l+1:r]                       # loop exits one step PAST valid bounds; +1/-1 corrects, slice end is exclusive
     best = ""
     for i in range(len(s)):
-        for a, b in ((i, i), (i, i + 1)):      # odd-length and even-length
+        for a, b in ((i, i), (i, i + 1)):     # (i,i) = odd-length center; (i, i+1) = even-length (between two chars)
             cand = expand(a, b)
             if len(cand) > len(best): best = cand
     return best
@@ -55,29 +57,33 @@ def longest_palindrome(s):
 ### Anagram comparison (vector equality)
 ```python
 def is_anagram(a, b):
-    if len(a) != len(b): return False
+    if len(a) != len(b): return False        # cheap early exit; without this you'd still get the right answer but slower
     f = [0] * 26
-    for ch in a: f[ord(ch) - ord('a')] += 1
-    for ch in b: f[ord(ch) - ord('a')] -= 1
-    return all(v == 0 for v in f)
+    for ch in a: f[ord(ch) - ord('a')] += 1  # +1 for letters in a
+    for ch in b: f[ord(ch) - ord('a')] -= 1  # -1 for letters in b — net zero ⇒ same multiset
+    return all(v == 0 for v in f)            # `all` short-circuits on first non-zero ⇒ faster than `sum(map(abs, f)) == 0`
 ```
 
 ### Rolling hash (Rabin-Karp skeleton)
 ```python
 def rabin_karp(text, pattern, base=31, mod=(1 << 61) - 1):
+    # `(1 << 61) - 1` is a large Mersenne prime — minimises collision chance and fits in 64-bit signed
     n, m = len(text), len(pattern)
     if m > n: return -1
     p_hash = t_hash = 0
-    power = 1
+    power = 1                                 # will hold base^(m-1) mod p — used to subtract the leading char on slide
     for i in range(m):
-        p_hash = (p_hash * base + ord(pattern[i])) % mod
+        p_hash = (p_hash * base + ord(pattern[i])) % mod   # polynomial hash: c0*b^(m-1) + c1*b^(m-2) + ...
         t_hash = (t_hash * base + ord(text[i])) % mod
-        if i < m - 1: power = power * base % mod
+        if i < m - 1: power = power * base % mod           # avoid one extra multiply on the last iter
     for i in range(n - m + 1):
+        # GOTCHA: hash equality is NOT proof of substring equality (collisions exist) — verify with text[i:i+m] == pattern
         if t_hash == p_hash and text[i:i+m] == pattern:
             return i
         if i + m < n:
+            # Slide window: subtract leading char's contribution, multiply by base, add new trailing char
             t_hash = ((t_hash - ord(text[i]) * power) * base + ord(text[i+m])) % mod
+            # Python's `%` already returns non-negative for positive mod, so no extra normalisation needed
     return -1
 ```
 
@@ -86,8 +92,8 @@ def rabin_karp(text, pattern, base=31, mod=(1 << 61) - 1):
 def transform(s):
     parts = []
     for ch in s:
-        parts.append(ch.upper() if ch.isalpha() else ch)
-    return "".join(parts)          # O(n); '+=' would be O(n^2)
+        parts.append(ch.upper() if ch.isalpha() else ch)   # ternary: `value_if_true if cond else value_if_false`
+    return "".join(parts)                     # KEY: strings are IMMUTABLE in Python; `result += ch` allocates a NEW string each time → O(n^2)
 ```
 
 Key mental tools:
@@ -112,17 +118,18 @@ Approach: for each index `i`, treat it as the **center** of a palindrome and exp
 ```python
 def longestPalindrome(s):
     def expand(l, r):
+        # Bounds first, then char compare — Python AND short-circuits, so s[l] never indexes out-of-range
         while l >= 0 and r < len(s) and s[l] == s[r]:
             l -= 1; r += 1
-        return l + 1, r - 1     # inclusive bounds of the palindrome
+        return l + 1, r - 1                  # loop overshoots by 1 each side; +1/-1 reels back to the last valid match
 
-    best_l, best_r = 0, 0
+    best_l, best_r = 0, 0                    # default to a length-1 palindrome at index 0
     for i in range(len(s)):
-        for a, b in ((i, i), (i, i + 1)):
+        for a, b in ((i, i), (i, i + 1)):    # try odd center (single char) and even center (between two chars)
             l, r = expand(a, b)
-            if r - l > best_r - best_l:
+            if r - l > best_r - best_l:      # compare lengths via index difference (cheaper than len(slice))
                 best_l, best_r = l, r
-    return s[best_l:best_r + 1]
+    return s[best_l:best_r + 1]              # +1 because slice end is exclusive
 ```
 
 Trace on `s = "babad"` (indices 0..4):

@@ -20,13 +20,13 @@ The conceptual generalisation: prefix sum turns **range queries** into **point q
 ### 1D prefix-sum array (range-sum query)
 ```python
 def build_prefix(arr):
-    P = [0] * (len(arr) + 1)
+    P = [0] * (len(arr) + 1)             # KEY: size n+1 with P[0]=0 as the "empty prefix"; eliminates off-by-one in range_sum
     for i, x in enumerate(arr):
-        P[i + 1] = P[i] + x
+        P[i + 1] = P[i] + x              # P[i+1] = sum(arr[0..i]) inclusive
     return P
 
-def range_sum(P, l, r):                 # sum of arr[l..r], inclusive
-    return P[r + 1] - P[l]
+def range_sum(P, l, r):                  # sum of arr[l..r], inclusive
+    return P[r + 1] - P[l]               # GOTCHA: r+1 not r, because P[r+1] includes arr[r]
 ```
 
 ### Count subarrays with sum = k (LC 560)
@@ -36,12 +36,12 @@ from collections import defaultdict
 def subarray_sum_equals_k(arr, k):
     count = 0
     running = 0
-    seen = defaultdict(int)
-    seen[0] = 1                          # empty prefix
+    seen = defaultdict(int)              # missing keys default to 0 — no KeyError on `seen[x]` lookup
+    seen[0] = 1                          # KEY SEED: empty prefix sums to 0; without this, subarrays starting at index 0 are missed
     for x in arr:
         running += x
-        count += seen[running - k]
-        seen[running] += 1
+        count += seen[running - k]       # how many earlier prefix-sums equal (running - k)? Each one bookends a subarray summing to k
+        seen[running] += 1               # GOTCHA: increment AFTER the lookup — otherwise a zero-length subarray is counted
     return count
 ```
 
@@ -49,12 +49,12 @@ def subarray_sum_equals_k(arr, k):
 ```python
 def subarrays_div_by_k(arr, k):
     seen = defaultdict(int)
-    seen[0] = 1
+    seen[0] = 1                          # empty prefix has mod-class 0
     running = 0
     total = 0
     for x in arr:
-        running = (running + x) % k       # keep bucket in [0, k)
-        total += seen[running]
+        running = (running + x) % k      # GOTCHA: Python `%` returns non-negative for positive k (Java/C++ may give negative — add k)
+        total += seen[running]           # two prefixes with same mod-class ⇒ their difference is divisible by k
         seen[running] += 1
     return total
 ```
@@ -63,15 +63,18 @@ def subarrays_div_by_k(arr, k):
 ```python
 def build_2d(mat):
     m, n = len(mat), len(mat[0])
+    # GOTCHA: `[[0]*(n+1)]*(m+1)` would share inner lists. Use list comprehension to allocate INDEPENDENT rows.
     P = [[0] * (n + 1) for _ in range(m + 1)]
     for i in range(m):
         for j in range(n):
+            # Inclusion-exclusion: top-rect + left-rect - top-left-overlap (counted twice) + this cell
             P[i+1][j+1] = (mat[i][j]
                           + P[i][j+1] + P[i+1][j]
                           - P[i][j])
     return P
 
 def rect_sum(P, r1, c1, r2, c2):
+    # Inclusion-exclusion again: full big rect minus top strip minus left strip plus the doubly-subtracted corner
     return (P[r2+1][c2+1] - P[r1][c2+1]
           - P[r2+1][c1] + P[r1][c1])
 ```
@@ -79,14 +82,14 @@ def rect_sum(P, r1, c1, r2, c2):
 ### Difference array — O(1) range-update, O(n) finalise
 ```python
 def range_updates(n, updates):           # updates = [(l, r, inc)]
-    diff = [0] * (n + 1)
+    diff = [0] * (n + 1)                 # KEY: size n+1 — diff[r+1] -= inc may write to index n (past last element); the extra slot prevents IndexError
     for l, r, inc in updates:
-        diff[l] += inc
-        diff[r + 1] -= inc
+        diff[l] += inc                   # mark "+inc starting at l"
+        diff[r + 1] -= inc               # mark "increment ENDS after r" (cancel from r+1 onward)
     out = [0] * n
     out[0] = diff[0]
     for i in range(1, n):
-        out[i] = out[i - 1] + diff[i]
+        out[i] = out[i - 1] + diff[i]    # prefix-sum the diff array → recover per-index totals
     return out
 ```
 
@@ -94,10 +97,10 @@ def range_updates(n, updates):           # updates = [(l, r, inc)]
 ```python
 def subarrays_xor_k(arr, k):
     count = 0; running = 0
-    seen = defaultdict(int); seen[0] = 1
+    seen = defaultdict(int); seen[0] = 1   # empty prefix has XOR 0
     for x in arr:
-        running ^= x
-        count += seen[running ^ k]
+        running ^= x                     # `^=` XOR-assign; XOR is its OWN inverse (a ^ a == 0)
+        count += seen[running ^ k]       # need earlier prefix p such that p ^ running == k ⇒ p == running ^ k
         seen[running] += 1
     return count
 ```
@@ -105,14 +108,14 @@ def subarrays_xor_k(arr, k):
 ### Equal-count trick — map labels to +1 / -1
 ```python
 def longest_equal_01(arr):               # LC 525
-    first_seen = {0: -1}                 # prefix-balance -> earliest index
+    first_seen = {0: -1}                 # KEY SEED: balance 0 at "index -1" — so a prefix [0..i] with balance 0 gives length i - (-1) = i+1
     running = 0; best = 0
     for i, x in enumerate(arr):
-        running += 1 if x == 1 else -1
+        running += 1 if x == 1 else -1   # ternary inside expression; equivalent to: 1 if x==1 else -1
         if running in first_seen:
-            best = max(best, i - first_seen[running])
+            best = max(best, i - first_seen[running])   # same balance seen before ⇒ subarray between has equal +/- ⇒ equal 0/1 count
         else:
-            first_seen[running] = i
+            first_seen[running] = i      # KEY: only record FIRST occurrence to maximise length (later occurrences give shorter windows)
     return best
 ```
 
@@ -140,13 +143,13 @@ Let `P[j] = nums[0] + ... + nums[j-1]`. Subarray `nums[i..j-1]` sums to `k` iff 
 
 ```python
 def subarraySum(nums, k):
-    seen = {0: 1}                        # empty prefix
+    seen = {0: 1}                        # SEED: empty prefix sums to 0; needed so subarrays starting at index 0 are countable
     running = 0
     count = 0
     for x in nums:
         running += x
-        count += seen.get(running - k, 0)
-        seen[running] = seen.get(running, 0) + 1
+        count += seen.get(running - k, 0)   # `.get(key, 0)` avoids KeyError on missing prefix sums
+        seen[running] = seen.get(running, 0) + 1   # GOTCHA: count BEFORE incrementing, else a zero-length subarray gets counted
     return count
 ```
 

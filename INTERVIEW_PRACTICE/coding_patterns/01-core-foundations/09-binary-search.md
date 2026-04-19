@@ -22,15 +22,15 @@ Two templates cover 95% of problems: the **exact-target** template (find `x` equ
 ### Template A — exact target in a sorted array
 ```python
 def find(arr, target):
-    lo, hi = 0, len(arr) - 1              # inclusive
-    while lo <= hi:
-        mid = (lo + hi) // 2
+    lo, hi = 0, len(arr) - 1             # both ENDS INCLUSIVE — choose convention and stick to it
+    while lo <= hi:                       # `<=` matches the inclusive convention. Half-open uses `<`
+        mid = (lo + hi) // 2              # GOTCHA in C++/Java: overflow risk → use `lo + (hi - lo) // 2`. Python ints don't overflow.
         if arr[mid] == target:
             return mid
         elif arr[mid] < target:
-            lo = mid + 1
+            lo = mid + 1                  # KEY: `mid + 1` (not `mid`) — must SHRINK the range or you loop forever
         else:
-            hi = mid - 1
+            hi = mid - 1                  # symmetric: `mid - 1`
     return -1
 ```
 
@@ -39,14 +39,14 @@ def find(arr, target):
 def lower_bound(arr, is_ok):
     """Smallest i in [0, n] where is_ok(arr[i]) is True.
     If no such i exists, returns len(arr)."""
-    lo, hi = 0, len(arr)                  # half-open; hi = past-the-end
-    while lo < hi:
-        mid = (lo + hi) // 2
+    lo, hi = 0, len(arr)                  # HALF-OPEN: hi = past-the-end. Compare with Template A's inclusive convention.
+    while lo < hi:                        # `<` (strict) for half-open
+        mid = (lo + hi) // 2              # `mid` is always in [lo, hi); never equals hi (so safe to set hi = mid)
         if is_ok(arr[mid]):
-            hi = mid                      # keep mid as a candidate
+            hi = mid                      # KEEP mid (it might be the answer); narrow to left half [lo, mid)
         else:
-            lo = mid + 1                  # discard mid and everything left
-    return lo
+            lo = mid + 1                  # discard mid (False predicate); next candidate is mid+1
+    return lo                             # `lo == hi` at exit; this is the boundary
 ```
 
 ### Template C — binary search on the answer
@@ -54,13 +54,15 @@ def lower_bound(arr, is_ok):
 def min_feasible(lo, hi, feasible):
     """feasible(x) is False...False, True...True. Find smallest x with True.
     lo must be infeasible-or-feasible, hi must be feasible."""
+    # CRITICAL: hi MUST satisfy feasible(hi)==True, otherwise the loop returns hi but the answer doesn't exist.
+    # Choose hi as a provably-large bound (e.g., max(piles), sum(weights), 10**18).
     while lo < hi:
         mid = (lo + hi) // 2
         if feasible(mid):
-            hi = mid
+            hi = mid                      # mid works; try smaller
         else:
-            lo = mid + 1
-    return lo
+            lo = mid + 1                  # mid fails; smallest viable is at least mid+1
+    return lo                             # `lo == hi` at exit = smallest feasible value
 ```
 
 ### Template D — rotated sorted array
@@ -71,12 +73,14 @@ def search_rotated(arr, target):
         mid = (lo + hi) // 2
         if arr[mid] == target:
             return mid
-        if arr[lo] <= arr[mid]:           # left half sorted
+        # KEY INSIGHT: at least one half [lo..mid] or [mid..hi] is fully sorted (rotation point lies in the OTHER half)
+        if arr[lo] <= arr[mid]:           # left half [lo..mid] is sorted (no rotation pivot here)
+            # Python chained compare: `a <= b < c` is `a <= b and b < c` — works on numbers
             if arr[lo] <= target < arr[mid]:
-                hi = mid - 1
+                hi = mid - 1              # target lies in the sorted left half
             else:
-                lo = mid + 1
-        else:                             # right half sorted
+                lo = mid + 1              # target must be in the right half
+        else:                             # right half [mid..hi] is sorted
             if arr[mid] < target <= arr[hi]:
                 lo = mid + 1
             else:
@@ -88,13 +92,15 @@ def search_rotated(arr, target):
 ```python
 def find_root(f, lo, hi, iters=100):
     """f is monotone. Find x with f(x) approximately 0."""
+    # KEY: use FIXED iteration count (not `lo < hi`) for floats — float subtraction never reaches exact zero
+    # 100 iters halves the range 100 times → 2^-100 precision (way more than float64 can represent)
     for _ in range(iters):
-        mid = (lo + hi) / 2
+        mid = (lo + hi) / 2               # `/` is float division (`//` would give int floor)
         if f(mid) > 0:
-            hi = mid
+            hi = mid                      # NOT `mid - eps` — for floats we just keep narrowing, no off-by-one risk
         else:
             lo = mid
-    return (lo + hi) / 2
+    return (lo + hi) / 2                  # return midpoint of final tight range
 ```
 
 Key mental tools:
@@ -139,15 +145,16 @@ from math import ceil
 
 def minEatingSpeed(piles, h):
     def feasible(k):
+        # GOTCHA: `p / k` is float division ⇒ ceil works correctly. Pure-int alternative: `(p + k - 1) // k` (avoids float)
         return sum(ceil(p / k) for p in piles) <= h
 
-    lo, hi = 1, max(piles)
-    while lo < hi:
+    lo, hi = 1, max(piles)                # hi = max(piles): eating faster never helps (can't split hours across piles)
+    while lo < hi:                        # half-open style: at exit lo == hi == answer
         mid = (lo + hi) // 2
         if feasible(mid):
-            hi = mid                      # mid is a candidate; look smaller
+            hi = mid                      # KEEP mid as a candidate; look smaller
         else:
-            lo = mid + 1                  # mid too slow; discard it and below
+            lo = mid + 1                  # discard mid (too slow) and everything below
     return lo
 ```
 

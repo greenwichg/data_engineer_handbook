@@ -32,21 +32,21 @@ Three orthogonal resources matter: **time**, **auxiliary space** (the data struc
 ### Mental walking-the-code recipe
 ```python
 def analyze(arr):
-    n = len(arr)
+    n = len(arr)                          # len() is O(1) — Python stores length, no count loop
 
-    # O(1) — single op, no loop
-    first = arr[0]
+    # O(1) — single index lookup, no loop
+    first = arr[0]                        # raises IndexError if arr is empty — guard with `if arr`
 
-    # O(n) — one pass
-    total = sum(arr)
+    # O(n) — one linear pass over every element
+    total = sum(arr)                      # built-in C loop, ~3x faster than a Python `for x in arr`
 
-    # O(n log n) — sort dominates linear work around it
-    arr.sort()
+    # O(n log n) — Timsort dominates any linear work around it
+    arr.sort()                            # GOTCHA: in-place, returns None. Use sorted(arr) for a new list
 
     # O(n^2) — two nested loops over n
     for i in range(n):
-        for j in range(i + 1, n):
-            _ = arr[i] + arr[j]
+        for j in range(i + 1, n):         # i+1 avoids (i,i) self-pairs and (j,i) duplicates
+            _ = arr[i] + arr[j]           # `_` = throwaway var by convention
 
     # O(n log n) via recursion: T(n) = 2*T(n/2) + O(n)  (merge sort)
     # O(n)     via recursion: T(n) = 2*T(n/2) + O(1)    (tree traversal)
@@ -55,9 +55,9 @@ def analyze(arr):
 
     # Space:
     #   - `total`, `first` are scalars         -> O(1)
-    #   - `arr.sort()` in Python               -> O(n) extra (Timsort)
-    #   - the copy below                       -> O(n)
-    copy = arr[:]
+    #   - `arr.sort()` in Python               -> O(n) extra (Timsort merge buffer)
+    #   - the copy below                       -> O(n) new list
+    copy = arr[:]                         # slice = shallow copy. For nested lists use copy.deepcopy
 
     return total, copy
 ```
@@ -92,21 +92,21 @@ We'll compute complexity at each refinement.
 
 ### Attempt A — `O(n^3)` brute
 ```python
-best = float('-inf')
+best = float('-inf')                       # sentinel: any real sum will beat -inf on first compare
 for i in range(n):
-    for j in range(i, n):
-        s = sum(nums[i:j+1])   # inner pass over subarray
-        best = max(best, s)
+    for j in range(i, n):                  # j starts at i so single-element subarrays count
+        s = sum(nums[i:j+1])               # GOTCHA: nums[i:j+1] makes a NEW list every iteration (O(n) work + O(n) memory)
+        best = max(best, s)                # equivalent to: if s > best: best = s
 ```
 Work count: `∑_{i=0}^{n-1} ∑_{j=i}^{n-1} (j - i + 1)` ≈ `n^3 / 6`. At `n = 10^5`, that is `~10^{14}` — decades of runtime.
 
 ### Attempt B — `O(n^2)` rolling sum
 ```python
 for i in range(n):
-    s = 0
+    s = 0                                  # reset rolling sum at each new start index i
     for j in range(i, n):
-        s += nums[j]
-        best = max(best, s)
+        s += nums[j]                       # KEY TRICK: extend previous sum instead of re-summing slice
+        best = max(best, s)                # compare every prefix sum starting at i
 ```
 Work count: `∑_{i=0}^{n-1} (n - i)` ≈ `n^2 / 2`. At `n = 10^5`, that is `~5·10^9` — still TLE.
 
@@ -123,10 +123,10 @@ Trace of inner state for `i = 3`, `nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]`:
 
 ### Attempt C — `O(n)` Kadane
 ```python
-cur = best = nums[0]
-for x in nums[1:]:
-    cur = max(x, cur + x)   # extend or restart
-    best = max(best, cur)
+cur = best = nums[0]                       # chained assignment: both bound to nums[0]. Safe here because int is immutable
+for x in nums[1:]:                         # nums[1:] copies; for huge inputs use `for i in range(1, len(nums)): x = nums[i]`
+    cur = max(x, cur + x)                  # KEY INSIGHT: if cur+x < x, drop the prefix and restart at x
+    best = max(best, cur)                  # `best` only ever grows
 ```
 Work: single pass, constant work per element → `O(n)`. Space: `O(1)`.
 

@@ -20,9 +20,9 @@ Sets answer *"does X exist?"*. Dicts answer *"what extra info goes with X?"* (in
 ### Seen-before membership (set)
 ```python
 def has_duplicate(arr):
-    seen = set()
+    seen = set()                              # `set()` — empty set; `{}` is an empty DICT (common beginner trap)
     for x in arr:
-        if x in seen: return True
+        if x in seen: return True             # `in set` is O(1) avg vs `in list` which is O(n)
         seen.add(x)
     return False
 ```
@@ -30,11 +30,11 @@ def has_duplicate(arr):
 ### Complement lookup (two-sum pattern)
 ```python
 def two_sum(arr, target):
-    index_of = {}                          # value -> index we saw it at
-    for i, x in enumerate(arr):
-        if target - x in index_of:
+    index_of = {}                            # value -> index we saw it at
+    for i, x in enumerate(arr):              # enumerate yields (index, value) pairs — cleaner than range(len(...))
+        if target - x in index_of:           # KEY: check BEFORE inserting x, otherwise x might pair with itself when target == 2*x
             return [index_of[target - x], i]
-        index_of[x] = i
+        index_of[x] = i                      # if duplicate values, this overwrites — keeping the LATEST index
     return []
 ```
 
@@ -42,19 +42,19 @@ def two_sum(arr, target):
 ```python
 from collections import defaultdict
 def group_anagrams(strs):
-    buckets = defaultdict(list)
+    buckets = defaultdict(list)              # GOTCHA: `defaultdict(list)` auto-creates `[]` on first access — `buckets[key].append` just works
     for s in strs:
-        key = tuple(sorted(s))             # canonical form
+        key = tuple(sorted(s))               # `sorted(s)` returns a LIST of chars; tuple() makes it hashable for dict-key use
         buckets[key].append(s)
-    return list(buckets.values())
+    return list(buckets.values())            # `.values()` is a view; wrap in list() to materialise
 ```
 
 ### Frequency / top-k
 ```python
 from collections import Counter
 def top_k_frequent(nums, k):
-    cnt = Counter(nums)
-    return [v for v, _ in cnt.most_common(k)]
+    cnt = Counter(nums)                      # Counter is a dict subclass: Counter([1,1,2]) → {1: 2, 2: 1}
+    return [v for v, _ in cnt.most_common(k)]   # most_common(k) returns list of (value, count) tuples; `_` discards the count
 ```
 
 ### Prefix-sum + hash (count subarrays with sum = k)
@@ -62,11 +62,11 @@ def top_k_frequent(nums, k):
 def subarray_sum_equals_k(arr, k):
     cnt = 0
     running = 0
-    seen = {0: 1}                          # empty prefix
+    seen = {0: 1}                            # KEY: seed with prefix-sum 0 occurring once (the empty prefix). Without this, subarrays starting at index 0 with sum=k are missed.
     for x in arr:
         running += x
-        cnt += seen.get(running - k, 0)
-        seen[running] = seen.get(running, 0) + 1
+        cnt += seen.get(running - k, 0)      # `.get(key, 0)` returns 0 if key absent — avoids KeyError
+        seen[running] = seen.get(running, 0) + 1   # GOTCHA: must check BEFORE inserting (otherwise zero-sum subarray of length 0 gets counted)
     return cnt
 ```
 
@@ -74,24 +74,26 @@ def subarray_sum_equals_k(arr, k):
 ```python
 def isomorphic(s, t):
     if len(s) != len(t): return False
-    s_to_t, t_to_s = {}, {}
-    for a, b in zip(s, t):
-        if a in s_to_t and s_to_t[a] != b: return False
-        if b in t_to_s and t_to_s[b] != a: return False
+    s_to_t, t_to_s = {}, {}                  # need TWO maps: a single map allows two source chars to alias to one target
+    for a, b in zip(s, t):                   # zip stops at the shorter sequence — length check above ensures full coverage
+        if a in s_to_t and s_to_t[a] != b: return False   # `a` previously mapped to a different `b` ⇒ not a function
+        if b in t_to_s and t_to_s[b] != a: return False   # `b` previously came from a different `a` ⇒ not injective
         s_to_t[a] = b; t_to_s[b] = a
     return True
 ```
 
 ### Making unhashable things hashable
 ```python
+# Mutable containers (list, set, dict) can't be dict keys or set elements.
+# Convert to their immutable counterpart:
 # list     -> tuple
-key = tuple(lst)
+key = tuple(lst)                              # GOTCHA: tuple of lists is still unhashable — must be tuple of immutables all the way down
 # set      -> frozenset
-key = frozenset(s)
+key = frozenset(s)                            # frozenset preserves "no order, no duplicates" semantics, IS hashable
 # dict     -> tuple of sorted items
-key = tuple(sorted(d.items()))
+key = tuple(sorted(d.items()))                # sorted() ensures dicts equal by content hash to the same key regardless of insertion order
 # counter  -> tuple of fixed-size vector
-key = tuple(freq_vector)
+key = tuple(freq_vector)                      # for [0]*26 anagram fingerprints
 ```
 
 Key mental tools:
@@ -121,14 +123,14 @@ Expected answer: `4` (sequence `1, 2, 3, 4`).
 
 ```python
 def longestConsecutive(nums):
-    s = set(nums)
+    s = set(nums)                            # dedupe AND get O(1) membership in one step
     best = 0
-    for x in s:
+    for x in s:                              # iterating a set is fine; order is insertion-time but irrelevant here
         if x - 1 in s:
-            continue                        # not a run head; skip
+            continue                         # KEY: skip non-heads. This is what keeps total work O(n) instead of O(n^2)
         length = 1
         y = x
-        while y + 1 in s:
+        while y + 1 in s:                    # walk forward; each value visited at most once across all run-heads
             y += 1
             length += 1
         best = max(best, length)
