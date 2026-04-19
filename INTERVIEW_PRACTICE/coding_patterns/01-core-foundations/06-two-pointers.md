@@ -23,27 +23,28 @@ Three flavours dominate:
 ### Variant A — opposite ends, converging (sorted pair-sum)
 ```python
 def pair_sum(arr, target):
-    arr.sort()                     # required: monotonicity
-    lo, hi = 0, len(arr) - 1
-    while lo < hi:
+    arr.sort()                               # GOTCHA: in-place — mutates caller's list. Use sorted(arr) to keep original.
+    lo, hi = 0, len(arr) - 1                 # tuple unpacking initialises both vars
+    while lo < hi:                           # strict `<`: at lo == hi we'd be summing one element with itself
         s = arr[lo] + arr[hi]
         if s == target:
             return (lo, hi)
         elif s < target:
-            lo += 1                # need a larger sum
+            lo += 1                          # need a larger sum — moving lo right gives a bigger arr[lo] (sorted)
         else:
-            hi -= 1                # need a smaller sum
+            hi -= 1                          # need a smaller sum — moving hi left gives a smaller arr[hi]
     return None
 ```
 
 ### Variant B — slow / fast (cycle detection, middle)
 ```python
 def has_cycle(head):
-    slow = fast = head
+    slow = fast = head                       # both bound to the same node initially (chained assignment)
+    # `fast and fast.next`: must check fast itself first to avoid AttributeError on None.next
     while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow is fast: return True
+        slow = slow.next                     # 1 step
+        fast = fast.next.next                # 2 steps — guaranteed safe by the loop guard
+        if slow is fast: return True         # `is` checks identity (same object), `==` would be value comparison
     return False
 
 def middle(head):
@@ -51,18 +52,18 @@ def middle(head):
     while fast and fast.next:
         slow = slow.next
         fast = fast.next.next
-    return slow                    # even length: returns 2nd middle
+    return slow                              # KEY: when len is even, returns the SECOND middle (1->2->3->4 gives 3, not 2)
 ```
 
 ### Variant C — read / write (in-place filter)
 ```python
 def move_non_zero_forward(arr):
-    write = 0
+    write = 0                                # next slot to place a non-zero
     for read in range(len(arr)):
         if arr[read] != 0:
-            arr[write], arr[read] = arr[read], arr[write]
+            arr[write], arr[read] = arr[read], arr[write]   # swap (not just copy) keeps zeros being shoved to the back
             write += 1
-    return arr
+    return arr                               # arr[:write] are the non-zeros in original order; arr[write:] are zeros
 ```
 
 ### Variant D — merge two sorted sequences
@@ -71,12 +72,12 @@ def merge(a, b):
     i = j = 0
     out = []
     while i < len(a) and j < len(b):
-        if a[i] <= b[j]:
+        if a[i] <= b[j]:                     # `<=` (not `<`) keeps the merge STABLE — equal values from `a` come first
             out.append(a[i]); i += 1
         else:
             out.append(b[j]); j += 1
-    out.extend(a[i:])
-    out.extend(b[j:])
+    out.extend(a[i:])                        # whichever loop exited still has tail; extend handles empty slice gracefully
+    out.extend(b[j:])                        # exactly one of these will be non-empty
     return out
 ```
 
@@ -86,14 +87,15 @@ def three_sum(arr):
     arr.sort()
     res = []
     n = len(arr)
-    for i in range(n - 2):
-        if i > 0 and arr[i] == arr[i - 1]: continue   # skip duplicate anchor
+    for i in range(n - 2):                   # n-2 because we need at least 2 more elements for lo, hi
+        if i > 0 and arr[i] == arr[i - 1]: continue   # KEY: dedupe ANCHOR. Skip when same value already used as anchor.
         lo, hi = i + 1, n - 1
         while lo < hi:
             s = arr[i] + arr[lo] + arr[hi]
             if s == 0:
                 res.append([arr[i], arr[lo], arr[hi]])
-                lo += 1; hi -= 1
+                lo += 1; hi -= 1             # advance both AFTER recording (otherwise infinite loop)
+                # KEY: dedupe lo/hi by comparing to PREVIOUS slot (not next) — `arr[lo - 1]` is the value we just used
                 while lo < hi and arr[lo] == arr[lo - 1]: lo += 1
                 while lo < hi and arr[hi] == arr[hi + 1]: hi -= 1
             elif s < 0:
@@ -133,21 +135,22 @@ def threeSum(nums):
     res = []
     n = len(nums)
     for i in range(n - 2):
-        if nums[i] > 0: break                              # optimisation
-        if i > 0 and nums[i] == nums[i - 1]: continue      # dedupe anchor
+        if nums[i] > 0: break                              # OPTIMISATION: smallest is positive ⇒ no triplet sums to 0
+        if i > 0 and nums[i] == nums[i - 1]: continue      # dedupe anchor: same anchor value already produced its triplets
         lo, hi = i + 1, n - 1
-        target = -nums[i]
+        target = -nums[i]                                  # need lo + hi == -anchor for total = 0
         while lo < hi:
             s = nums[lo] + nums[hi]
             if s == target:
                 res.append([nums[i], nums[lo], nums[hi]])
-                lo += 1; hi -= 1
+                lo += 1; hi -= 1                           # MUST advance both — otherwise next iteration finds same triplet
+                # Dedupe AFTER moving so we compare to the value we just used (arr[lo-1] / arr[hi+1])
                 while lo < hi and nums[lo] == nums[lo - 1]: lo += 1
                 while lo < hi and nums[hi] == nums[hi + 1]: hi -= 1
             elif s < target:
-                lo += 1
+                lo += 1                                    # need bigger sum
             else:
-                hi -= 1
+                hi -= 1                                    # need smaller sum
     return res
 ```
 
