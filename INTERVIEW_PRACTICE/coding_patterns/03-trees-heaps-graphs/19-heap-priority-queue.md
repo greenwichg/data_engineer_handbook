@@ -43,42 +43,42 @@ A naive build — `n` pushes — is `O(n log n)`. Floyd's sift-down from `n//2 -
 
 ### Template A — basic heap operations
 ```python
-import heapq
+import heapq                      # GOTCHA: stdlib module provides MIN-heap only — no `heappushmax`
 
 # heapq is a min-heap.
 pq = []
-heapq.heappush(pq, 5)
+heapq.heappush(pq, 5)             # O(log n); mutates pq in place
 heapq.heappush(pq, 2)
 heapq.heappush(pq, 7)
-print(heapq.heappop(pq))        # 2  (smallest)
+print(heapq.heappop(pq))          # 2  (smallest). GOTCHA: heappop mutates AND returns
 
 # heapify in O(n)
 arr = [5, 3, 8, 1, 9, 2]
-heapq.heapify(arr)              # arr is now a valid min-heap
+heapq.heapify(arr)                # GOTCHA: mutates in place, returns None. arr IS the heap (not sorted!)
 
 # Max-heap by negation
 max_pq = []
-heapq.heappush(max_pq, -x)      # push -x
-largest = -heapq.heappop(max_pq)
+heapq.heappush(max_pq, -x)        # negate on push
+largest = -heapq.heappop(max_pq)  # negate on pop to restore original
 
 # Shortcut aggregates (both O(n log k))
-heapq.nlargest(3, arr)
-heapq.nsmallest(3, arr)
+heapq.nlargest(3, arr)            # returns list in descending order; not a heap
+heapq.nsmallest(3, arr)           # returns list in ascending order
 ```
 
 ### Template B — top-k largest with a min-heap of size k
 ```python
 def top_k_largest(nums, k):
-    h = []
+    h = []                               # MIN-heap of size k holds the k LARGEST seen
     for x in nums:
         heapq.heappush(h, x)
         if len(h) > k:
-            heapq.heappop(h)            # drop smallest so the k largest remain
-    return h                             # k largest in arbitrary order
+            heapq.heappop(h)             # drop smallest so the k largest remain
+    return h                              # k largest in ARBITRARY order (heap not sorted)
 
 # Kth largest itself:
 def kth_largest(nums, k):
-    return top_k_largest(nums, k)[0]   # root = smallest of the k largest
+    return top_k_largest(nums, k)[0]     # h[0] is the ROOT = smallest-of-k = kth largest overall
 ```
 
 ### Template C — top-k frequent (heap over (count, item))
@@ -86,13 +86,13 @@ def kth_largest(nums, k):
 from collections import Counter
 
 def top_k_frequent(nums, k):
-    counts = Counter(nums)
+    counts = Counter(nums)               # Counter: dict subclass; O(n) one-pass count
     h = []
-    for val, c in counts.items():
-        heapq.heappush(h, (c, val))
+    for val, c in counts.items():        # .items() yields (key, value) pairs
+        heapq.heappush(h, (c, val))      # GOTCHA: (count, val) — heap compares by count FIRST, then val
         if len(h) > k:
             heapq.heappop(h)
-    return [val for _, val in h]
+    return [val for _, val in h]         # unpack tuple; `_` discards count
 ```
 
 ### Template D — merge k sorted lists
@@ -100,13 +100,13 @@ def top_k_frequent(nums, k):
 def merge_k(lists):
     h = []
     for i, lst in enumerate(lists):
-        if lst:
-            heapq.heappush(h, (lst[0], i, 0))    # (value, list_idx, elem_idx)
+        if lst:                                   # skip empty lists — else lst[0] raises IndexError
+            heapq.heappush(h, (lst[0], i, 0))    # (value, list_idx, elem_idx). i = tie-breaker + locator
     out = []
     while h:
-        val, i, j = heapq.heappop(h)
+        val, i, j = heapq.heappop(h)              # tuple-unpack
         out.append(val)
-        if j + 1 < len(lists[i]):
+        if j + 1 < len(lists[i]):                 # only enqueue if NEXT index exists
             heapq.heappush(h, (lists[i][j + 1], i, j + 1))
     return out
 ```
@@ -115,19 +115,19 @@ def merge_k(lists):
 ```python
 class MedianFinder:
     def __init__(self):
-        self.lo = []                       # max-heap via negation; lower half
+        self.lo = []                       # max-heap via negation; lower half (values stored as negatives)
         self.hi = []                       # min-heap; upper half
 
     def addNum(self, x):
-        heapq.heappush(self.lo, -x)        # tentatively add to lower
-        heapq.heappush(self.hi, -heapq.heappop(self.lo))   # rebalance
+        heapq.heappush(self.lo, -x)        # push negative to simulate max-heap
+        heapq.heappush(self.hi, -heapq.heappop(self.lo))   # move lo's max to hi (double-negate to restore)
         if len(self.hi) > len(self.lo):
-            heapq.heappush(self.lo, -heapq.heappop(self.hi))
+            heapq.heappush(self.lo, -heapq.heappop(self.hi))   # rebalance: push hi's min back to lo
 
     def findMedian(self):
         if len(self.lo) > len(self.hi):
-            return -self.lo[0]              # odd total
-        return (-self.lo[0] + self.hi[0]) / 2   # even → average the roots
+            return -self.lo[0]              # odd total; negate back. GOTCHA: list[0] is peek — heap not sorted
+        return (-self.lo[0] + self.hi[0]) / 2   # even → average the roots. `/` is float division in Py3
 ```
 
 ### Template F — Dijkstra's algorithm (weighted shortest path)
@@ -135,16 +135,16 @@ class MedianFinder:
 def dijkstra(graph, src):
     """graph: adjacency list {u: [(v, w), ...]} with non-negative weights."""
     dist = {src: 0}
-    pq = [(0, src)]                        # (distance, node)
+    pq = [(0, src)]                        # (distance, node) — distance FIRST so heap orders by it
     while pq:
         d, u = heapq.heappop(pq)
-        if d > dist.get(u, float('inf')):
-            continue                        # lazy-deleted stale entry
-        for v, w in graph.get(u, []):
+        if d > dist.get(u, float('inf')):  # dict.get avoids KeyError; default +inf
+            continue                        # lazy-deleted stale entry — don't remove from heap, skip
+        for v, w in graph.get(u, []):       # .get with [] default: absent key → empty neighbour list
             nd = d + w
             if nd < dist.get(v, float('inf')):
                 dist[v] = nd
-                heapq.heappush(pq, (nd, v))
+                heapq.heappush(pq, (nd, v))   # push even if already exists — stale entries filtered above
     return dist
 ```
 
@@ -155,12 +155,12 @@ import itertools
 class PriorityQueue:
     def __init__(self):
         self.pq = []
-        self.counter = itertools.count()
+        self.counter = itertools.count()   # infinite counter starting at 0
     def push(self, priority, item):
-        heapq.heappush(self.pq, (priority, next(self.counter), item))
+        heapq.heappush(self.pq, (priority, next(self.counter), item))    # counter prevents TypeError on item comparison
     def pop(self):
-        priority, _, item = heapq.heappop(self.pq)
-        return priority, item
+        priority, _, item = heapq.heappop(self.pq)    # `_` discards counter
+        return priority, item               # implicit tuple return
 ```
 
 The `counter` prevents `TypeError` when two tuples tie on `priority` and Python tries to compare `item` objects that may not support `<`.
@@ -170,19 +170,19 @@ The `counter` prevents `TypeError` when two tuples tie on `priority` and Python 
 from collections import deque, Counter
 
 def least_interval(tasks, n):
-    counts = Counter(tasks)
-    h = [-c for c in counts.values()]
-    heapq.heapify(h)
-    cooldown = deque()                     # (available_time, count)
+    counts = Counter(tasks)                # count each task's frequency
+    h = [-c for c in counts.values()]      # GOTCHA: negate for max-heap; list-comp over .values()
+    heapq.heapify(h)                       # O(n) heap build — faster than n pushes
+    cooldown = deque()                     # (available_time, count) tuples, FIFO
     time = 0
-    while h or cooldown:
+    while h or cooldown:                   # loop while EITHER has work
         time += 1
         if h:
-            c = heapq.heappop(h) + 1       # execute one unit
-            if c < 0:
+            c = heapq.heappop(h) + 1       # `+1` because counts are NEGATIVE (decrement toward 0)
+            if c < 0:                       # still tasks left of this type
                 cooldown.append((time + n, c))
         if cooldown and cooldown[0][0] == time:
-            heapq.heappush(h, cooldown.popleft()[1])
+            heapq.heappush(h, cooldown.popleft()[1])   # [1] extracts count from tuple
     return time
 ```
 
@@ -246,19 +246,19 @@ import heapq
 
 class MedianFinder:
     def __init__(self):
-        self.lo = []        # max-heap (store negatives)
-        self.hi = []        # min-heap
+        self.lo = []        # max-heap (store negatives — heappop returns -max, negate to get max)
+        self.hi = []        # min-heap (stores actual values)
 
     def addNum(self, x):
-        heapq.heappush(self.lo, -x)
-        heapq.heappush(self.hi, -heapq.heappop(self.lo))
-        if len(self.hi) > len(self.lo):
+        heapq.heappush(self.lo, -x)                               # step 1: tentatively add to lo
+        heapq.heappush(self.hi, -heapq.heappop(self.lo))          # step 2: hand off lo's max to hi
+        if len(self.hi) > len(self.lo):                           # step 3: rebalance if needed
             heapq.heappush(self.lo, -heapq.heappop(self.hi))
 
     def findMedian(self):
         if len(self.lo) > len(self.hi):
-            return -self.lo[0]
-        return (-self.lo[0] + self.hi[0]) / 2
+            return -self.lo[0]                                     # odd total → lo has one extra
+        return (-self.lo[0] + self.hi[0]) / 2                      # even → average roots; `/` returns float
 ```
 
 ### Step 4. Trace the stream `[1, 2, 3, 4, 5]`
