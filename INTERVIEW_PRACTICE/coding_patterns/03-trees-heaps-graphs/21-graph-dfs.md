@@ -49,23 +49,23 @@ Back-edge presence ↔ cycle existence. DFS finish-times give the topological or
 ### Template A — recursive DFS (reachability / flood fill)
 ```python
 def dfs(u, neighbours, seen):
-    if u in seen: return
-    seen.add(u)
+    if u in seen: return                      # base case — no explicit return value means returns None
+    seen.add(u)                               # MUTATE caller's set in place — no need to return it
     for v in neighbours(u):
-        dfs(v, neighbours, seen)
+        dfs(v, neighbours, seen)              # Python default recursion limit is 1000 — deep graphs need sys.setrecursionlimit
 ```
 
 ### Template B — iterative DFS (stack; avoids recursion-depth limits)
 ```python
 def dfs_iter(src, neighbours):
-    seen = set()
-    stack = [src]
+    seen = set()                              # empty set — `set()`, NOT `{}` (which is an empty DICT)
+    stack = [src]                             # Python list doubles as a stack — .pop() defaults to last element
     while stack:
-        u = stack.pop()
-        if u in seen: continue
+        u = stack.pop()                       # pop() from list is O(1); pop(0) would be O(n) — use deque if popping left
+        if u in seen: continue                # re-check on POP — we may have pushed u multiple times before marking it
         seen.add(u)
         for v in neighbours(u):
-            if v not in seen:
+            if v not in seen:                 # pre-check on PUSH shrinks stack but doesn't guarantee dedup
                 stack.append(v)
     return seen
 ```
@@ -73,55 +73,55 @@ def dfs_iter(src, neighbours):
 ### Template C — connected components count (undirected)
 ```python
 def count_components(n, edges):
-    g = [[] for _ in range(n)]
+    g = [[] for _ in range(n)]                # LIST COMP — do NOT write [[]]*n (all rows alias the same list)
     for a, b in edges:
-        g[a].append(b); g[b].append(a)
-    seen = [False] * n
-    def dfs(u):
+        g[a].append(b); g[b].append(a)        # undirected — add both directions
+    seen = [False] * n                        # [False]*n is SAFE: bool is immutable, no alias problem
+    def dfs(u):                               # closure captures `g` and `seen` from enclosing scope
         seen[u] = True
         for v in g[u]:
             if not seen[v]:
                 dfs(v)
     components = 0
-    for u in range(n):
+    for u in range(n):                        # MUST iterate every node — graph may be disconnected
         if not seen[u]:
-            dfs(u); components += 1
+            dfs(u); components += 1           # each unvisited root discovers exactly one new component
     return components
 ```
 
 ### Template D — directed cycle detection (three colours)
 ```python
 def has_cycle(graph):
-    WHITE, GRAY, BLACK = 0, 1, 2
-    color = {u: WHITE for u in graph}
+    WHITE, GRAY, BLACK = 0, 1, 2              # tuple-unpack ASSIGNMENT — three constants in one line
+    color = {u: WHITE for u in graph}         # dict comp — keys are the nodes
 
     def visit(u):
-        color[u] = GRAY
+        color[u] = GRAY                       # mark as ON CURRENT PATH before recursion
         for v in graph[u]:
-            if color[v] == GRAY:       # back edge → cycle
+            if color[v] == GRAY:              # back edge → cycle; GRAY means ancestor on the recursion stack
                 return True
-            if color[v] == WHITE and visit(v):
+            if color[v] == WHITE and visit(v):  # short-circuit: recurse only if unvisited; early-exit on sub-cycle
                 return True
-        color[u] = BLACK
+        color[u] = BLACK                      # fully processed — LEAVES the current path
         return False
 
-    return any(color[u] == WHITE and visit(u) for u in graph)
+    return any(color[u] == WHITE and visit(u) for u in graph)  # `any` short-circuits at first True — skips BLACK nodes
 ```
 
 ### Template E — grid DFS / flood fill
 ```python
-DIRS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+DIRS = ((1, 0), (-1, 0), (0, 1), (0, -1))     # tuple of tuples — immutable; hoist out of function
 
 def flood_fill(grid, r, c, target, replacement):
     m, n = len(grid), len(grid[0])
     if grid[r][c] != target or target == replacement:
-        return
+        return                                # second check guards against infinite recursion on no-op fill
     def dfs(r, c):
-        if not (0 <= r < m and 0 <= c < n): return
-        if grid[r][c] != target: return
-        grid[r][c] = replacement
+        if not (0 <= r < m and 0 <= c < n): return  # bounds first — short-circuit protects grid[r][c] from IndexError
+        if grid[r][c] != target: return       # `!=` check doubles as visited check (replacement != target)
+        grid[r][c] = replacement              # MUTATE grid as the "seen" marker — no separate set needed
         for dr, dc in DIRS:
-            dfs(r + dr, c + dc)
+            dfs(r + dr, c + dc)               # Python int add is arbitrary-precision — never overflows
     dfs(r, c)
 ```
 
@@ -130,33 +130,33 @@ def flood_fill(grid, r, c, target, replacement):
 def topo_sort(graph):
     WHITE, GRAY, BLACK = 0, 1, 2
     color = {u: WHITE for u in graph}
-    order = []
+    order = []                                # will hold POST-ORDER finish sequence
 
     def visit(u):
         color[u] = GRAY
         for v in graph[u]:
-            if color[v] == GRAY: raise ValueError("cycle")
-            if color[v] == WHITE: visit(v)
+            if color[v] == GRAY: raise ValueError("cycle")  # exceptions propagate out of recursion automatically
+            if color[v] == WHITE: visit(v)    # if-guard, not elif — BLACK nodes are silently skipped
         color[u] = BLACK
-        order.append(u)                 # post-order
+        order.append(u)                       # post-order append — u is added AFTER its descendants
 
-    for u in graph:
+    for u in graph:                           # iteration over dict yields KEYS (same as .keys())
         if color[u] == WHITE: visit(u)
-    return order[::-1]                  # reverse finish-times
+    return order[::-1]                        # `[::-1]` creates a REVERSED COPY — the original `order` is not mutated
 ```
 
 ### Template G — all simple paths source → target (DAG; backtracking)
 ```python
 def all_paths(graph, src, dst):
     res = []
-    path = [src]
+    path = [src]                              # single SHARED list — mutated as we walk; must COPY on record
     def dfs(u):
         if u == dst:
-            res.append(path.copy()); return
+            res.append(path.copy()); return   # .copy() = shallow copy; `path[:]` works identically
         for v in graph[u]:
-            path.append(v)
+            path.append(v)                    # push — THIS is backtracking
             dfs(v)
-            path.pop()
+            path.pop()                        # pop — MUST pair with append exactly; missing it corrupts siblings
     dfs(src)
     return res
 ```
@@ -167,23 +167,23 @@ def find_bridges(n, edges):
     g = [[] for _ in range(n)]
     for a, b in edges:
         g[a].append(b); g[b].append(a)
-    disc = [-1] * n                      # discovery time
-    low = [-1] * n                       # lowest disc reachable from subtree
+    disc = [-1] * n                           # discovery time — -1 sentinel for unvisited
+    low = [-1] * n                            # lowest disc reachable from subtree (low-link)
     bridges = []
-    timer = [0]
+    timer = [0]                               # one-element LIST — mutable box; lets closure REBIND without `nonlocal`
 
     def dfs(u, parent):
-        disc[u] = low[u] = timer[0]; timer[0] += 1
+        disc[u] = low[u] = timer[0]; timer[0] += 1  # chained assignment — both names point to same int value
         for v in g[u]:
             if disc[v] == -1:
                 dfs(v, u)
-                low[u] = min(low[u], low[v])
+                low[u] = min(low[u], low[v])   # propagate child's low-link upward after recursion returns
                 if low[v] > disc[u]:
-                    bridges.append((u, v))    # bridge: no back-edge across this edge
-            elif v != parent:
+                    bridges.append((u, v))    # bridge: no back-edge bypasses this edge
+            elif v != parent:                 # ignore the edge we came in on — avoids false back-edge on undirected
                 low[u] = min(low[u], disc[v])
     for u in range(n):
-        if disc[u] == -1: dfs(u, -1)
+        if disc[u] == -1: dfs(u, -1)          # -1 as parent sentinel for roots — any non-node value works
     return bridges
 ```
 
@@ -250,24 +250,24 @@ On exiting `u`, set `color[u] = BLACK`.
 ### Step 3. Implement
 ```python
 def canFinish(numCourses, prerequisites):
-    graph = [[] for _ in range(numCourses)]
+    graph = [[] for _ in range(numCourses)]   # LIST COMP (not [[]]*n which shares the same inner list!)
     for a, b in prerequisites:
-        graph[b].append(a)                  # edge b → a
+        graph[b].append(a)                    # edge b → a — "to take a, first take b" means b points to a
 
-    WHITE, GRAY, BLACK = 0, 1, 2
-    color = [WHITE] * numCourses
+    WHITE, GRAY, BLACK = 0, 1, 2              # tuple unpacking — readable constants
+    color = [WHITE] * numCourses              # [0]*n safe — int is immutable
 
     def visit(u):
         color[u] = GRAY
         for v in graph[u]:
-            if color[v] == GRAY: return True       # back edge → cycle
-            if color[v] == WHITE and visit(v): return True
+            if color[v] == GRAY: return True  # back edge → cycle → return TRUE meaning "cycle found"
+            if color[v] == WHITE and visit(v): return True  # short-circuit: recurse then propagate early
         color[u] = BLACK
         return False
 
     for u in range(numCourses):
-        if color[u] == WHITE and visit(u):
-            return False
+        if color[u] == WHITE and visit(u):    # `and` short-circuits — visit() only called on WHITE nodes
+            return False                      # cycle means we CAN'T finish → return False to caller
     return True
 ```
 

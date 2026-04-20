@@ -31,13 +31,13 @@ Complexity is usually dominated by the sort: **`O(n log n)`**. With a heap for "
 ### Template A — Sort by greedy key, single sweep
 ```python
 def greedy_sweep(items, key_fn, feasible, commit):
-    items.sort(key=key_fn)
+    items.sort(key=key_fn)                        # .sort() mutates in place & returns None — don't do `x = items.sort()`
     state = init_state()
     chosen = []
     for item in items:
         if feasible(state, item):
             chosen.append(item)
-            state = commit(state, item)
+            state = commit(state, item)           # reassign state — don't mutate in place unless commit guarantees it
     return chosen
 ```
 The workhorse. The art is choosing `key_fn`: earliest end, largest ratio, most-constrained first, smallest deficit.
@@ -45,10 +45,10 @@ The workhorse. The art is choosing `key_fn`: earliest end, largest ratio, most-c
 ### Template B — Activity selection (earliest-finishing interval)
 ```python
 def max_non_overlapping(intervals):
-    intervals.sort(key=lambda iv: iv[1])          # sort by end
-    count, last_end = 0, float("-inf")
+    intervals.sort(key=lambda iv: iv[1])          # sort by END (iv[1]) — NOT iv[0]; local optimum only works with end-sort
+    count, last_end = 0, float("-inf")            # float("-inf") is safe immutable sentinel; compares less than any real number
     for s, e in intervals:
-        if s >= last_end:                         # or > for closed/open semantics
+        if s >= last_end:                         # >= treats touching as non-overlap (LC 435); use > for strict gap
             count += 1
             last_end = e
     return count
@@ -59,13 +59,13 @@ Canonical greedy. Exchange argument: among all intervals that start after `last_
 ```python
 def min_coins_canonical(coins, amount):
     """Works ONLY for canonical coin systems (e.g., US coins 1/5/10/25)."""
-    coins.sort(reverse=True)
+    coins.sort(reverse=True)                      # sort descending — try largest denomination first
     used = 0
     for c in coins:
         if amount == 0:
             break
-        used += amount // c
-        amount %= c
+        used += amount // c                       # `//` is FLOOR div (matches math floor for positive ints)
+        amount %= c                               # Python % is non-negative when operands are positive — no C-style sign surprise
     return used if amount == 0 else -1
 ```
 Warning: for arbitrary coin sets this is **wrong** — e.g. `coins=[1,3,4]`, `amount=6` gives greedy `4+1+1=3` coins but optimum is `3+3=2`. When in doubt, use the DP from pattern 25.
@@ -76,12 +76,12 @@ import heapq
 
 def min_meeting_rooms(intervals):
     intervals.sort(key=lambda iv: iv[0])          # by start time
-    heap = []                                     # holds end times of active meetings
+    heap = []                                     # plain list — heapq operates on it IN PLACE
     for s, e in intervals:
-        if heap and heap[0] <= s:                 # earliest-ending room freed
-            heapq.heappop(heap)
+        if heap and heap[0] <= s:                 # heap[0] is smallest (min-heap); `heap and ...` short-circuits on empty
+            heapq.heappop(heap)                   # returns root and re-heapifies — don't call list.pop(0)!
         heapq.heappush(heap, e)
-    return len(heap)
+    return len(heap)                              # peak simultaneous rooms = final heap size
 ```
 Greedy rule: when a new meeting starts, reuse the room that frees soonest; otherwise allocate a new one. Heap answers "which room frees soonest?" in `O(log n)`.
 
@@ -89,17 +89,17 @@ Greedy rule: when a new meeting starts, reuse the room that frees soonest; other
 ```python
 def can_jump(nums):
     reach = 0
-    for i, x in enumerate(nums):
+    for i, x in enumerate(nums):                  # enumerate yields (index, value) tuples — cleaner than range(len(nums))
         if i > reach:
-            return False
+            return False                          # got stuck before reaching i — no way forward
         reach = max(reach, i + x)
     return True
 
 def jump_game_ii(nums):
-    jumps = end = farthest = 0
-    for i in range(len(nums) - 1):
+    jumps = end = farthest = 0                    # chained assignment — all three start at 0 (int is immutable, safe)
+    for i in range(len(nums) - 1):                # iterate UP TO but not including last index — we don't jump FROM last
         farthest = max(farthest, i + nums[i])
-        if i == end:                              # end of current jump window
+        if i == end:                              # reached end of current window → must jump now
             jumps += 1
             end = farthest
     return jumps
@@ -112,19 +112,19 @@ import heapq
 from collections import Counter, deque
 
 def task_scheduler(tasks, n):
-    counts = Counter(tasks)
-    heap = [-c for c in counts.values()]          # max-heap of remaining counts
-    heapq.heapify(heap)
-    cooldown = deque()                            # (ready_time, remaining_count)
+    counts = Counter(tasks)                       # Counter is a dict subclass — counts[key] defaults to 0 for missing keys
+    heap = [-c for c in counts.values()]          # NEGATE to simulate max-heap on Python's min-heap-only heapq
+    heapq.heapify(heap)                           # O(len) — faster than n pushes
+    cooldown = deque()                            # FIFO of (ready_time, remaining_count)
     time = 0
-    while heap or cooldown:
+    while heap or cooldown:                       # loop until BOTH are empty
         time += 1
         if heap:
-            remaining = heapq.heappop(heap) + 1   # one unit done (negative counts)
-            if remaining != 0:
+            remaining = heapq.heappop(heap) + 1   # +1 because counts are NEGATIVE (decrementing magnitude = adding)
+            if remaining != 0:                    # zero means task fully done — don't re-enqueue
                 cooldown.append((time + n, remaining))
         if cooldown and cooldown[0][0] == time:
-            _, c = cooldown.popleft()
+            _, c = cooldown.popleft()             # `_` = throwaway for ready_time; tuple unpacking
             heapq.heappush(heap, c)
     return time
 ```
@@ -134,15 +134,15 @@ Greedy: always run the task with the most copies remaining. Heap + cooldown queu
 ```python
 # Fractional knapsack — sort by value-per-weight, take greedily
 def fractional_knapsack(items, capacity):
-    items.sort(key=lambda it: it[0] / it[1], reverse=True)   # value/weight
-    total = 0.0
+    items.sort(key=lambda it: it[0] / it[1], reverse=True)   # key lambda — runs for EACH item; watch zero-weight (ZeroDivisionError)
+    total = 0.0                                   # float seed — promotes arithmetic to float throughout
     for value, weight in items:
         if capacity >= weight:
             total += value
             capacity -= weight
         else:
-            total += value * (capacity / weight)
-            break
+            total += value * (capacity / weight)  # `/` is TRUE division (float); `//` would floor
+            break                                 # remaining capacity fully used — stop scanning
     return total
 ```
 Why it works: if the optimum doesn't take the highest ratio first, swap in as much of it as capacity allows and the objective strictly increases (or stays equal). Repeat → optimum = greedy.
@@ -153,13 +153,13 @@ import heapq
 
 def max_jobs_before_deadline(jobs):
     """jobs: list of (deadline, profit). Each job takes 1 time unit."""
-    jobs.sort(key=lambda j: j[0])                 # by deadline
-    heap = []                                     # min-heap of accepted profits
+    jobs.sort(key=lambda j: j[0])                 # sort ascending by deadline — process most-constrained first
+    heap = []                                     # min-heap of accepted profits; root = worst kept job
     for deadline, profit in jobs:
-        heapq.heappush(heap, profit)
-        if len(heap) > deadline:                  # too many jobs before this deadline
-            heapq.heappop(heap)                   # drop smallest-profit accepted job
-    return sum(heap)
+        heapq.heappush(heap, profit)              # TENTATIVELY accept
+        if len(heap) > deadline:                  # infeasible — can only do `deadline` jobs by time `deadline`
+            heapq.heappop(heap)                   # evict current WORST profit — keep cardinality at `deadline`
+    return sum(heap)                              # sum of a list is O(n); works on heap because heap IS a list
 ```
 Process jobs in deadline order; greedily accept each and kick out the least-profitable one if the schedule is now infeasible. Classic trick: "accept-and-maybe-replace" via a min-heap keyed on the regret metric (smallest profit already accepted).
 
@@ -192,13 +192,13 @@ The optimum **keeps the earliest-finishing compatible intervals** and removes th
 ### Implementation
 ```python
 def eraseOverlapIntervals(intervals):
-    intervals.sort(key=lambda iv: iv[1])           # sort by end
-    kept, last_end = 0, float("-inf")
+    intervals.sort(key=lambda iv: iv[1])           # sort by end — stable sort keeps input order on ties
+    kept, last_end = 0, float("-inf")              # tuple-unpack ASSIGNMENT — two names in one line
     for s, e in intervals:
         if s >= last_end:
             kept += 1
             last_end = e
-    return len(intervals) - kept
+    return len(intervals) - kept                   # min removals = total - kept
 ```
 
 ### Trace

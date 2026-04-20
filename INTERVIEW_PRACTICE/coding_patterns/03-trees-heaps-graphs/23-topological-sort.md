@@ -38,23 +38,23 @@ from collections import deque, defaultdict
 
 def topo_sort(n, edges):
     """edges: list of (u, v) meaning u must come before v."""
-    indeg = [0] * n
-    adj = defaultdict(list)
+    indeg = [0] * n                               # [0]*n safe — int immutable, no shared-element trap
+    adj = defaultdict(list)                       # missing key auto-creates [] on .append
     for u, v in edges:
         adj[u].append(v)
-        indeg[v] += 1
+        indeg[v] += 1                             # count INCOMING edges — not outgoing
 
-    q = deque(i for i in range(n) if indeg[i] == 0)
+    q = deque(i for i in range(n) if indeg[i] == 0)  # generator expr, not list comp — deque consumes the iterable
     order = []
     while q:
-        u = q.popleft()
+        u = q.popleft()                           # popleft O(1); list.pop(0) would be O(n)
         order.append(u)
         for v in adj[u]:
             indeg[v] -= 1
-            if indeg[v] == 0:
+            if indeg[v] == 0:                     # only enqueue when ALL predecessors are done
                 q.append(v)
 
-    return order if len(order) == n else None     # None ⇒ cycle
+    return order if len(order) == n else None     # None ⇒ cycle (some nodes never reached indeg 0)
 ```
 Mental model: the queue holds every "source" of the residual graph; popping one is safe because it has no un-emitted predecessor.
 
@@ -67,32 +67,32 @@ def topo_sort_dfs(n, edges):
     for u, v in edges:
         adj[u].append(v)
 
-    WHITE, GRAY, BLACK = 0, 1, 2
+    WHITE, GRAY, BLACK = 0, 1, 2                  # tuple unpacking — named constants in one line
     color = [WHITE] * n
     order = []
 
-    def visit(u):
+    def visit(u):                                 # closure captures color, order, adj
         if color[u] == GRAY:
-            raise ValueError("cycle")             # back-edge ⇒ cycle
+            raise ValueError("cycle")             # back-edge → exception propagates up the recursion
         if color[u] == BLACK:
-            return
+            return                                # already processed — skip, not a cycle
         color[u] = GRAY
         for v in adj[u]:
             visit(v)
         color[u] = BLACK
-        order.append(u)                           # post-order append
+        order.append(u)                           # post-order: u added AFTER all descendants
 
-    for u in range(n):
+    for u in range(n):                            # loop over ALL nodes — graph may be disconnected
         if color[u] == WHITE:
             visit(u)
 
-    return order[::-1]                            # reverse post-order
+    return order[::-1]                            # [::-1] creates REVERSED COPY; list.reverse() mutates in place
 ```
 Use this when you already have a DFS skeleton or want finish times for SCC / bridges.
 
 ### Template C — Lexicographically smallest order (heap Kahn's)
 ```python
-import heapq
+import heapq                                      # heapq operates on a plain list — MIN-HEAP by default
 from collections import defaultdict
 
 def topo_sort_lex(n, edges):
@@ -102,16 +102,16 @@ def topo_sort_lex(n, edges):
         adj[u].append(v)
         indeg[v] += 1
 
-    heap = [i for i in range(n) if indeg[i] == 0]
-    heapq.heapify(heap)
+    heap = [i for i in range(n) if indeg[i] == 0]  # list comp — materializes for heapify
+    heapq.heapify(heap)                           # heapify is O(n); faster than n pushes at O(n log n)
     order = []
     while heap:
-        u = heapq.heappop(heap)
+        u = heapq.heappop(heap)                   # returns SMALLEST — deterministic tie-break
         order.append(u)
         for v in adj[u]:
             indeg[v] -= 1
             if indeg[v] == 0:
-                heapq.heappush(heap, v)
+                heapq.heappush(heap, v)           # O(log n) push
 
     return order if len(order) == n else None
 ```
@@ -122,24 +122,24 @@ Every time several nodes are simultaneously "ready", pick the smallest. Used in 
 from collections import deque, defaultdict
 
 def min_semesters(n, edges):
-    indeg = [0] * (n + 1)                         # 1-indexed
+    indeg = [0] * (n + 1)                         # n+1 — leave index 0 unused so indeg[1..n] aligns
     adj = defaultdict(list)
     for u, v in edges:
         adj[u].append(v)
         indeg[v] += 1
 
-    q = deque(i for i in range(1, n + 1) if indeg[i] == 0)
+    q = deque(i for i in range(1, n + 1) if indeg[i] == 0)  # range(1, n+1) — inclusive of n
     semesters = 0
     processed = 0
     while q:
         semesters += 1
-        for _ in range(len(q)):                   # freeze current layer
+        for _ in range(len(q)):                   # SNAPSHOT len(q) before the inner loop mutates q
             u = q.popleft()
             processed += 1
             for v in adj[u]:
                 indeg[v] -= 1
                 if indeg[v] == 0:
-                    q.append(v)
+                    q.append(v)                   # added to q AFTER range was fixed — safe
 
     return semesters if processed == n else -1
 ```
@@ -148,18 +148,18 @@ The trick is the `for _ in range(len(q))` layer freeze — identical to level-or
 ### Template E — DAG DP via topo order (longest path / count paths)
 ```python
 def longest_path_dag(n, edges):
-    order = topo_sort(n, edges)                   # from Template A
+    order = topo_sort(n, edges)                   # from Template A; assumes DAG (no cycle)
     adj = defaultdict(list)
     for u, v in edges:
         adj[u].append(v)
 
-    dp = [0] * n                                  # longest path ending at each node
-    for u in order:
+    dp = [0] * n                                  # longest path ending at each node (in edges, not nodes)
+    for u in order:                               # iterate IN topo order — dp[u] final when u is reached
         for v in adj[u]:
-            if dp[u] + 1 > dp[v]:
+            if dp[u] + 1 > dp[v]:                 # RELAX edge u→v; equivalent to dp[v] = max(dp[v], dp[u]+1)
                 dp[v] = dp[u] + 1
 
-    return max(dp)
+    return max(dp)                                # max() on empty list raises ValueError — n >= 1 assumed
 ```
 The whole point of a topo sort is that when you reach `u`, every predecessor's `dp` is final. This is the same shape as counting paths, computing reachability, propagating expected values, or any other forward DAG DP.
 
@@ -173,7 +173,7 @@ def has_cycle_directed(n, edges):
         indeg[v] += 1
 
     q = deque(i for i in range(n) if indeg[i] == 0)
-    seen = 0
+    seen = 0                                      # simple COUNTER — no need to materialize the full order
     while q:
         u = q.popleft()
         seen += 1
@@ -182,7 +182,7 @@ def has_cycle_directed(n, edges):
             if indeg[v] == 0:
                 q.append(v)
 
-    return seen != n
+    return seen != n                              # True if cycle — some node never reached indeg 0
 ```
 Strip out the `order` list when you only care *is the graph a DAG?*. Often faster to reason about than three-colour DFS on large inputs.
 
@@ -191,20 +191,20 @@ Strip out the `order` list when you only care *is the graph a DAG?*. Often faste
 from collections import defaultdict, deque
 
 def alienOrder(words):
-    adj = defaultdict(set)
-    indeg = {c: 0 for w in words for c in w}
+    adj = defaultdict(set)                        # SET per key — dedups parallel edges automatically
+    indeg = {c: 0 for w in words for c in w}      # nested dict comp — seed every char with indeg 0
 
-    for a, b in zip(words, words[1:]):
+    for a, b in zip(words, words[1:]):            # zip stops at shortest — pairs consecutive words (a, b)
         if len(a) > len(b) and a.startswith(b):
-            return ""                             # invalid: prefix after full word
-        for x, y in zip(a, b):
+            return ""                             # invalid: longer a prefixed by b — impossible lex order
+        for x, y in zip(a, b):                    # iterate chars in lockstep
             if x != y:
-                if y not in adj[x]:
+                if y not in adj[x]:               # guard BEFORE add — else indeg double-counts duplicate edges
                     adj[x].add(y)
                     indeg[y] += 1
-                break                             # only first differing pair matters
+                break                             # only FIRST differing pair gives info
 
-    q = deque([c for c, d in indeg.items() if d == 0])
+    q = deque([c for c, d in indeg.items() if d == 0])  # .items() yields (key, value) tuples
     out = []
     while q:
         c = q.popleft()
@@ -214,7 +214,7 @@ def alienOrder(words):
             if indeg[nxt] == 0:
                 q.append(nxt)
 
-    return "".join(out) if len(out) == len(indeg) else ""
+    return "".join(out) if len(out) == len(indeg) else ""  # "".join accepts iterable of strs — not a list of chars
 ```
 Two-phase problems: **build the graph from problem-specific rules, then run Kahn's**. The prefix-validity check on the invalid case is the standard subtle edge.
 
@@ -224,26 +224,26 @@ from collections import defaultdict, deque
 
 def findMinHeightTrees(n, edges):
     if n <= 2:
-        return list(range(n))
+        return list(range(n))                     # degenerate: 0, 1, or 2 nodes — return all as centroids
 
-    adj = defaultdict(set)
+    adj = defaultdict(set)                        # SET per neighbour — O(1) remove; adjacency list of LIST would need O(deg)
     for u, v in edges:
         adj[u].add(v)
         adj[v].add(u)
 
-    leaves = deque(i for i in range(n) if len(adj[i]) == 1)
+    leaves = deque(i for i in range(n) if len(adj[i]) == 1)  # in a tree, degree-1 nodes are leaves
     remaining = n
     while remaining > 2:
-        layer_size = len(leaves)
+        layer_size = len(leaves)                  # SNAPSHOT before peeling this layer
         remaining -= layer_size
         for _ in range(layer_size):
             leaf = leaves.popleft()
-            neighbour = adj[leaf].pop()           # leaf has exactly one neighbour
-            adj[neighbour].remove(leaf)
+            neighbour = adj[leaf].pop()           # set.pop() — removes arbitrary element; OK since leaf has exactly 1
+            adj[neighbour].remove(leaf)           # set.remove raises KeyError if missing; set.discard would be safe
             if len(adj[neighbour]) == 1:
                 leaves.append(neighbour)
 
-    return list(leaves)
+    return list(leaves)                           # deque → list conversion for return type
 ```
 Undirected "topological" peel: leaves are the in-degree-1 nodes. Peel them in layers; whatever remains after all but 1-2 nodes are gone are the centroids.
 
@@ -289,7 +289,7 @@ def findOrder(numCourses, prerequisites):
     indeg = [0] * numCourses
     adj = defaultdict(list)
     for a, b in prerequisites:
-        adj[b].append(a)                          # b -> a
+        adj[b].append(a)                          # "a requires b" → edge b → a (direction matters!)
         indeg[a] += 1
 
     q = deque(i for i in range(numCourses) if indeg[i] == 0)
@@ -302,7 +302,7 @@ def findOrder(numCourses, prerequisites):
             if indeg[v] == 0:
                 q.append(v)
 
-    return order if len(order) == numCourses else []
+    return order if len(order) == numCourses else []  # LC 210 returns [] on cycle, NOT None
 ```
 
 Step-by-step trace:

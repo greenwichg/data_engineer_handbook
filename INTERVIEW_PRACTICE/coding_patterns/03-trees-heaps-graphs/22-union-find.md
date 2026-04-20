@@ -52,42 +52,42 @@ Examples:
 ```python
 class DSU:
     def __init__(self, n):
-        self.parent = list(range(n))
-        self.rank = [0] * n
+        self.parent = list(range(n))          # list(range(n)) materializes; range(n) alone would be lazy & non-indexable into list
+        self.rank = [0] * n                   # [0]*n is SAFE: int is immutable — no shared-element trap
         self.size = [1] * n
         self.components = n
 
     def find(self, x):
         # Iterative path compression (halving): each node points to its grandparent.
-        while self.parent[x] != x:
-            self.parent[x] = self.parent[self.parent[x]]
+        while self.parent[x] != x:            # root's parent == itself — loop invariant
+            self.parent[x] = self.parent[self.parent[x]]  # RHS fully evaluated before assignment — safe double lookup
             x = self.parent[x]
         return x
 
     def union(self, x, y):
-        rx, ry = self.find(x), self.find(y)
+        rx, ry = self.find(x), self.find(y)   # RHS tuple built first, THEN unpacked — order-independent
         if rx == ry:
-            return False                        # already connected — cycle edge
+            return False                      # already connected — signal that edge closes a cycle
         # Union by rank: attach shallower tree under deeper one
         if self.rank[rx] < self.rank[ry]:
-            rx, ry = ry, rx
+            rx, ry = ry, rx                   # swap by tuple assignment — no temp variable needed
         self.parent[ry] = rx
         self.size[rx] += self.size[ry]
-        if self.rank[rx] == self.rank[ry]:
+        if self.rank[rx] == self.rank[ry]:    # ranks equal BEFORE swap-or-rx-tall means new tree is taller by 1
             self.rank[rx] += 1
         self.components -= 1
         return True
 
     def connected(self, x, y):
-        return self.find(x) == self.find(y)
+        return self.find(x) == self.find(y)   # roots equal ↔ same component
 ```
 
 ### Template B — recursive find with full path compression
 ```python
 def find(self, x):
     if self.parent[x] != x:
-        self.parent[x] = self.find(self.parent[x])   # compress on the way up
-    return self.parent[x]
+        self.parent[x] = self.find(self.parent[x])   # recursive compress — rewrites parent to root on return
+    return self.parent[x]                             # watch recursion depth — chain length can exceed 1000
 ```
 
 Full compression flattens the entire path to the root in one call. Iterative halving (Template A) is cheaper in practice and avoids recursion-depth concerns; both achieve the same `α(n)` amortised bound.
@@ -96,16 +96,16 @@ Full compression flattens the entire path to the root in one call. Iterative hal
 ```python
 class DSUDict:
     def __init__(self):
-        self.parent = {}
+        self.parent = {}                      # dict literal — arbitrary hashable keys (str, tuple, int, ...)
         self.size = {}
 
     def add(self, x):
-        if x not in self.parent:
+        if x not in self.parent:              # idempotent — safe to call on already-known keys
             self.parent[x] = x
             self.size[x] = 1
 
     def find(self, x):
-        self.add(x)
+        self.add(x)                           # auto-seed unknown elements — convenient for streaming inputs
         while self.parent[x] != x:
             self.parent[x] = self.parent[self.parent[x]]
             x = self.parent[x]
@@ -114,7 +114,7 @@ class DSUDict:
     def union(self, x, y):
         rx, ry = self.find(x), self.find(y)
         if rx == ry: return False
-        if self.size[rx] < self.size[ry]: rx, ry = ry, rx
+        if self.size[rx] < self.size[ry]: rx, ry = ry, rx  # always attach smaller under larger — keeps tree shallow
         self.parent[ry] = rx
         self.size[rx] += self.size[ry]
         return True
@@ -127,33 +127,33 @@ Useful when the universe is string emails, arbitrary object IDs, or sparse integ
 class WeightedDSU:
     def __init__(self):
         self.parent = {}
-        self.weight = {}                           # weight[x] = x / parent[x]
+        self.weight = {}                           # weight[x] = x / parent[x] — relational edge label
 
     def find(self, x):
         if x not in self.parent:
-            self.parent[x] = x; self.weight[x] = 1.0
+            self.parent[x] = x; self.weight[x] = 1.0  # 1.0 not 1 — force float arithmetic from the start
         if self.parent[x] != x:
-            root = self.find(self.parent[x])
-            self.weight[x] *= self.weight[self.parent[x]]
+            root = self.find(self.parent[x])       # recurse BEFORE reading weight[parent[x]] — parent now points to root
+            self.weight[x] *= self.weight[self.parent[x]]  # accumulate ratio along compressed path
             self.parent[x] = root
         return self.parent[x]
 
     def union(self, x, y, ratio):                  # ratio = x / y
         rx, ry = self.find(x), self.find(y)
-        if rx == ry: return                        # already related; could verify consistency
+        if rx == ry: return                        # already related — could verify consistency if trust-but-verify
         self.parent[rx] = ry
-        self.weight[rx] = ratio * self.weight[y] / self.weight[x]
+        self.weight[rx] = ratio * self.weight[y] / self.weight[x]  # float divide — precision drifts over many unions
 
     def query(self, x, y):
         if x not in self.parent or y not in self.parent: return -1.0
-        if self.find(x) != self.find(y): return -1.0
+        if self.find(x) != self.find(y): return -1.0  # different components → undefined ratio
         return self.weight[x] / self.weight[y]
 ```
 
 ### Template E — grid cell flattening `(r, c) -> r * n + c`
 ```python
 def grid_dsu_index(r, c, cols):
-    return r * cols + c
+    return r * cols + c                       # flatten 2D to 1D — use `cols` NOT `rows`; confuse them and indices collide
 
 def unite_cells(dsu, r1, c1, r2, c2, cols):
     dsu.union(grid_dsu_index(r1, c1, cols), grid_dsu_index(r2, c2, cols))
@@ -167,11 +167,11 @@ def kruskal(n, edges):
     """edges = [(weight, u, v), ...]"""
     dsu = DSU(n)
     mst_weight = 0; picked = []
-    for w, u, v in sorted(edges):
-        if dsu.union(u, v):
+    for w, u, v in sorted(edges):             # tuple sort is LEXICOGRAPHIC — weight first gives weight-ascending order
+        if dsu.union(u, v):                   # union returns True only if NEW connection — rejects cycle-closing edges
             mst_weight += w
             picked.append((u, v, w))
-            if dsu.components == 1: break
+            if dsu.components == 1: break     # early exit — MST has exactly n-1 edges
     return mst_weight, picked
 ```
 
@@ -235,14 +235,14 @@ class DSU:
         self.parent = {}
     def find(self, x):
         if x not in self.parent:
-            self.parent[x] = x
+            self.parent[x] = x                # auto-seed — makes it safe to find() a never-before-seen key
         while self.parent[x] != x:
             self.parent[x] = self.parent[self.parent[x]]
             x = self.parent[x]
         return x
     def union(self, x, y):
         rx, ry = self.find(x), self.find(y)
-        if rx != ry: self.parent[rx] = ry
+        if rx != ry: self.parent[rx] = ry     # arbitrary direction here — no rank balancing for simplicity
 
 def accountsMerge(accounts):
     dsu = DSU()
@@ -250,21 +250,21 @@ def accountsMerge(accounts):
 
     # Phase 1: union all emails within each account; record name per email
     for acc in accounts:
-        name = acc[0]
-        first = acc[1]
-        for email in acc[1:]:
-            email_to_name[email] = name
+        name = acc[0]                         # name at index 0
+        first = acc[1]                        # anchor email — assumes at least one email (no guard)
+        for email in acc[1:]:                 # slice acc[1:] skips the name; end index omitted = to end
+            email_to_name[email] = name       # safe to overwrite — same email must map to same name anyway
             dsu.union(first, email)
 
     # Phase 2: bucket emails by their DSU root
-    from collections import defaultdict
-    groups = defaultdict(list)
-    for email in email_to_name:
+    from collections import defaultdict       # local import is legal Python; saves module-level clutter
+    groups = defaultdict(list)                # defaultdict(list) — missing key auto-creates []; no KeyError
+    for email in email_to_name:               # iterating a dict yields KEYS; equivalent to .keys()
         groups[dsu.find(email)].append(email)
 
     # Phase 3: emit [name, sorted_emails...]
-    return [[email_to_name[root]] + sorted(emails)
-            for root, emails in groups.items()]
+    return [[email_to_name[root]] + sorted(emails)   # list + list CONCAT produces new list; don't use += on immutable
+            for root, emails in groups.items()]      # .items() yields (key, value) tuples
 ```
 
 ### Step 4. Trace

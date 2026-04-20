@@ -46,57 +46,57 @@ Expand state to include everything that affects future moves. The `seen` set key
 
 ### Template A — shortest distance from src to dst
 ```python
-from collections import deque
+from collections import deque                 # deque.popleft() is O(1); list.pop(0) is O(n)
 
 def shortest_distance(src, dst, neighbours):
-    if src == dst: return 0
-    q = deque([(src, 0)])
-    seen = {src}
-    while q:
-        node, d = q.popleft()
+    if src == dst: return 0                   # early exit — distance 0 without entering BFS loop
+    q = deque([(src, 0)])                     # deque([...]) takes an iterable; double brackets build a 1-tuple iterable
+    seen = {src}                              # SET literal with one element — NOT an empty dict (that's {})
+    while q:                                  # `while q` is truthy when non-empty; don't write `while len(q) > 0`
+        node, d = q.popleft()                 # tuple unpacking; popleft returns the leftmost element atomically
         for nxt in neighbours(node):
             if nxt == dst:
-                return d + 1
-            if nxt not in seen:
-                seen.add(nxt)
+                return d + 1                  # return on first discovery — guaranteed shortest in unweighted BFS
+            if nxt not in seen:               # mark-on-ENQUEUE: prevents O(E) queue blow-up from re-adding
+                seen.add(nxt)                 # set.add is O(1); .append on a list would use a different structure
                 q.append((nxt, d + 1))
-    return -1                                # unreachable
+    return -1                                 # sentinel for unreachable — caller must check
 ```
 
 ### Template B — all distances from src (BFS tree)
 ```python
 def bfs_distances(src, neighbours):
-    dist = {src: 0}
+    dist = {src: 0}                           # dict doubles as `seen` AND distance map — no separate set needed
     q = deque([src])
     while q:
         u = q.popleft()
         for v in neighbours(u):
-            if v not in dist:
-                dist[v] = dist[u] + 1
+            if v not in dist:                 # `in` on dict checks KEYS in O(1) — same test as `not in seen`
+                dist[v] = dist[u] + 1         # read dist[u] BEFORE assigning dist[v] — u already finalized
                 q.append(v)
     return dist
 ```
 
 ### Template C — multi-source BFS on a grid
 ```python
-DIRS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+DIRS = ((1, 0), (-1, 0), (0, 1), (0, -1))     # tuple-of-tuples — immutable module-level constant; safer than list
 
 def multi_source_grid(grid, is_source, is_passable):
-    m, n = len(grid), len(grid[0])
-    q = deque()
-    dist = [[-1] * n for _ in range(m)]
+    m, n = len(grid), len(grid[0])            # assumes grid non-empty; grid[0] would IndexError on [] grid
+    q = deque()                               # empty deque; seed with all sources below
+    dist = [[-1] * n for _ in range(m)]       # LIST COMPREHENSION — do NOT write [[-1]*n]*m (shared row trap)
     for r in range(m):
         for c in range(n):
             if is_source(grid[r][c]):
-                dist[r][c] = 0
-                q.append((r, c))
+                dist[r][c] = 0                # all sources seeded at distance 0 — equivalent to virtual super-source
+                q.append((r, c))              # enqueue ALL sources before the BFS loop starts
     while q:
         r, c = q.popleft()
         for dr, dc in DIRS:
             nr, nc = r + dr, c + dc
-            if (0 <= nr < m and 0 <= nc < n
-                and dist[nr][nc] == -1
-                and is_passable(grid[nr][nc])):
+            if (0 <= nr < m and 0 <= nc < n   # chained comparison — Python evaluates 0 <= nr AND nr < m
+                and dist[nr][nc] == -1        # `-1` doubles as UNVISITED sentinel AND final "unreachable" marker
+                and is_passable(grid[nr][nc])):  # `and` short-circuits — bounds check MUST come first
                 dist[nr][nc] = dist[r][c] + 1
                 q.append((nr, nc))
     return dist
@@ -105,14 +105,14 @@ def multi_source_grid(grid, is_source, is_passable):
 ### Template D — layered / level-by-level BFS
 ```python
 def levels(src, neighbours):
-    q = deque([src]); seen = {src}; layers = []
+    q = deque([src]); seen = {src}; layers = []   # semicolons allow one-line init — style only, no semantic effect
     while q:
         layer = []
-        for _ in range(len(q)):
+        for _ in range(len(q)):                   # SNAPSHOT len(q) BEFORE the inner loop — range is evaluated once
             u = q.popleft(); layer.append(u)
             for v in neighbours(u):
                 if v not in seen:
-                    seen.add(v); q.append(v)
+                    seen.add(v); q.append(v)      # appending to q during iteration is safe because range was fixed
         layers.append(layer)
     return layers
 ```
@@ -121,18 +121,18 @@ def levels(src, neighbours):
 ```python
 def is_bipartite(graph):
     n = len(graph)
-    color = [0] * n                          # 0 = unvisited, 1 / -1 = two colours
-    for start in range(n):
-        if color[start] != 0: continue
+    color = [0] * n                          # [0]*n is safe for immutable int — NOT for [[0]]*n which shares inner list
+    for start in range(n):                   # outer loop handles DISCONNECTED components — single BFS misses them
+        if color[start] != 0: continue       # `continue` skips nodes already colored by a prior BFS tree
         color[start] = 1
         q = deque([start])
         while q:
             u = q.popleft()
             for v in graph[u]:
                 if color[v] == 0:
-                    color[v] = -color[u]
+                    color[v] = -color[u]     # negate parent's color; works because colors are ±1 not 0/1
                     q.append(v)
-                elif color[v] == color[u]:
+                elif color[v] == color[u]:   # same color on an edge → odd cycle → NOT bipartite
                     return False
     return True
 ```
@@ -144,17 +144,17 @@ def zero_one_bfs(src, dst, neighbours_with_weights):
     dist = {src: 0}
     dq = deque([(0, src)])
     while dq:
-        d, u = dq.popleft()
+        d, u = dq.popleft()                   # put distance FIRST in tuple so natural ordering would be by distance
         if u == dst: return d
-        if d > dist[u]: continue
+        if d > dist[u]: continue              # stale entry — we found a shorter path after this was enqueued
         for v, w in neighbours_with_weights(u):
             nd = d + w
-            if nd < dist.get(v, float('inf')):
+            if nd < dist.get(v, float('inf')):  # dict.get with default avoids KeyError on unseen v
                 dist[v] = nd
                 if w == 0:
-                    dq.appendleft((nd, v))
+                    dq.appendleft((nd, v))    # weight-0 edges go to FRONT — preserves distance ordering invariant
                 else:
-                    dq.append((nd, v))
+                    dq.append((nd, v))        # weight-1 edges go to BACK — processed after the current layer
     return -1
 ```
 
@@ -162,21 +162,21 @@ def zero_one_bfs(src, dst, neighbours_with_weights):
 ```python
 def bi_bfs(src, dst, neighbours):
     if src == dst: return 0
-    front, back = {src}, {dst}
-    seen = {src, dst}
+    front, back = {src}, {dst}                # sets, not deques — we only care about membership, not order
+    seen = {src, dst}                         # SET literal with two elements — safe because src != dst was checked
     steps = 0
-    while front and back:
+    while front and back:                     # both must be non-empty; emptying either means no path exists
         steps += 1
-        if len(front) > len(back):           # expand the smaller frontier
+        if len(front) > len(back):            # expand the smaller frontier — tuple-swap reassigns both names atomically
             front, back = back, front
         nxt_front = set()
         for u in front:
             for v in neighbours(u):
-                if v in back:
+                if v in back:                 # frontiers have MET — `in` on a set is O(1)
                     return steps
                 if v not in seen:
                     seen.add(v); nxt_front.add(v)
-        front = nxt_front
+        front = nxt_front                     # replace old frontier — GC collects it if no other refs
     return -1
 ```
 
@@ -184,20 +184,20 @@ def bi_bfs(src, dst, neighbours):
 ```python
 def shortest_with_budget(grid, k):
     m, n = len(grid), len(grid[0])
-    if m == n == 1: return 0
+    if m == n == 1: return 0                  # chained compare — equivalent to (m == n) AND (n == 1)
     # state: (r, c, remaining_eliminations)
-    start = (0, 0, k)
+    start = (0, 0, k)                         # tuple — HASHABLE (immutable); a list would fail as set/dict key
     q = deque([(start, 0)])
     seen = {start}
     while q:
-        (r, c, rem), d = q.popleft()
+        (r, c, rem), d = q.popleft()          # nested tuple unpacking — parens required around the inner triple
         for dr, dc in DIRS:
             nr, nc = r + dr, c + dc
-            if not (0 <= nr < m and 0 <= nc < n): continue
-            new_rem = rem - grid[nr][nc]
-            if new_rem < 0: continue
-            if (nr, nc) == (m - 1, n - 1): return d + 1
-            state = (nr, nc, new_rem)
+            if not (0 <= nr < m and 0 <= nc < n): continue  # `not (a and b)` ≡ De Morgan's — bounds check first
+            new_rem = rem - grid[nr][nc]      # obstacle cell has value 1; free cell has value 0
+            if new_rem < 0: continue          # budget exhausted — skip this move
+            if (nr, nc) == (m - 1, n - 1): return d + 1  # tuple equality is element-wise
+            state = (nr, nc, new_rem)         # full state is the DEDUP key — NOT just (nr, nc)
             if state not in seen:
                 seen.add(state); q.append((state, d + 1))
     return -1
@@ -248,22 +248,22 @@ For this trace we'll use the "try all letter swaps" variant — simpler to expla
 from collections import deque
 
 def ladderLength(beginWord, endWord, wordList):
-    word_set = set(wordList)
-    if endWord not in word_set: return 0
-    q = deque([(beginWord, 1)])
-    seen = {beginWord}
+    word_set = set(wordList)                  # convert list → set ONCE; `in` becomes O(1) instead of O(N) per check
+    if endWord not in word_set: return 0      # early exit — target unreachable by construction
+    q = deque([(beginWord, 1)])               # count WORDS (nodes) not edges — hence starting at 1, not 0
+    seen = {beginWord}                        # beginWord may NOT be in wordList — still a valid start
     while q:
         word, steps = q.popleft()
         if word == endWord:
             return steps
-        for i in range(len(word)):
-            for c in "abcdefghijklmnopqrstuvwxyz":
-                if c == word[i]: continue
-                nxt = word[:i] + c + word[i+1:]
-                if nxt in word_set and nxt not in seen:
+        for i in range(len(word)):            # len(str) is O(1) in CPython — cached on the string object
+            for c in "abcdefghijklmnopqrstuvwxyz":  # iterating a string yields single-char strings
+                if c == word[i]: continue      # skip the identity swap — no self-edge
+                nxt = word[:i] + c + word[i+1:]  # slicing creates NEW strings; end index EXCLUSIVE; `word[i+1:]` is safe past end
+                if nxt in word_set and nxt not in seen:  # `and` short-circuits — cheapest check first
                     seen.add(nxt)
                     q.append((nxt, steps + 1))
-    return 0
+    return 0                                   # unreachable — problem spec says 0, not -1
 ```
 
 ### Step 3. BFS trace
@@ -331,10 +331,10 @@ Without preprocessing: each pop tries `L * 25` letter swaps — `O(N * L * 25)` 
 With pattern-key preprocessing:
 ```python
 from collections import defaultdict
-patterns = defaultdict(list)
-for w in word_set | {beginWord}:
+patterns = defaultdict(list)                  # missing key auto-creates an empty list — no KeyError on .append
+for w in word_set | {beginWord}:              # `|` on sets = UNION — {beginWord} is a 1-element set literal
     for i in range(len(w)):
-        patterns[w[:i] + "*" + w[i+1:]].append(w)
+        patterns[w[:i] + "*" + w[i+1:]].append(w)  # string concat builds new str each time — OK here since L is tiny
 ```
 Neighbours of `w` are `∪ patterns[w[:i] + "*" + w[i+1:]]` — precomputed. Shared-pattern lookup is constant.
 

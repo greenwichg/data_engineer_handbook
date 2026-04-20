@@ -41,13 +41,13 @@ Complexity shape: **states × transition cost**. A 1D DP with constant-time tran
 from functools import lru_cache
 
 def solve(inputs):
-    @lru_cache(maxsize=None)
-    def go(*state):
+    @lru_cache(maxsize=None)                      # decorator; maxsize=None = unbounded. State args MUST be hashable.
+    def go(*state):                               # *state captures positional args as a tuple
         if is_base(state):
             return base_answer(state)
         best = neutral()
         for choice in choices(state):
-            best = combine(best, go(*next_state(state, choice)))
+            best = combine(best, go(*next_state(state, choice)))  # *args UNPACKS tuple into positional call
         return best
     return go(*start_state(inputs))
 ```
@@ -59,15 +59,15 @@ Use when transitions are sparse or when you want the cleanest translation from a
 def climb_stairs(n):
     if n <= 1:
         return 1
-    a, b = 1, 1
+    a, b = 1, 1                                   # tuple-unpack assignment — RHS fully evaluated first
     for _ in range(2, n + 1):
-        a, b = b, a + b
+        a, b = b, a + b                           # SIMULTANEOUS update — no temp variable; order matters if done serially
     return b
 
 def rob(nums):
     prev2, prev1 = 0, 0
     for x in nums:
-        prev2, prev1 = prev1, max(prev1, prev2 + x)
+        prev2, prev1 = prev1, max(prev1, prev2 + x)  # RHS computed from OLD values, then assigned — swap-safe
     return prev1
 ```
 When `dp[i]` depends only on the previous one or two entries, collapse to `O(1)` variables.
@@ -76,15 +76,15 @@ When `dp[i]` depends only on the previous one or two entries, collapse to `O(1)`
 ```python
 def edit_distance(a, b):
     m, n = len(a), len(b)
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    dp = [[0] * (n + 1) for _ in range(m + 1)]             # LIST COMP — do NOT write [[0]*(n+1)]*(m+1) (shared rows!)
     for i in range(m + 1): dp[i][0] = i                    # delete all of a[:i]
     for j in range(n + 1): dp[0][j] = j                    # insert all of b[:j]
     for i in range(1, m + 1):
         for j in range(1, n + 1):
-            if a[i - 1] == b[j - 1]:
+            if a[i - 1] == b[j - 1]:                       # i-1, j-1 — dp is 1-indexed over 0-indexed strings
                 dp[i][j] = dp[i - 1][j - 1]
             else:
-                dp[i][j] = 1 + min(
+                dp[i][j] = 1 + min(                        # min() on 3 args — takes smallest
                     dp[i - 1][j],                          # delete
                     dp[i][j - 1],                          # insert
                     dp[i - 1][j - 1],                      # replace
@@ -96,10 +96,10 @@ Two sequences ⇒ two indices. Direction of iteration must satisfy dependency (`
 ### Template D — 0/1 Knapsack (each item once)
 ```python
 def knapsack_01(weights, values, W):
-    dp = [0] * (W + 1)
-    for wt, val in zip(weights, values):
-        for w in range(W, wt - 1, -1):                     # REVERSE to avoid reuse
-            dp[w] = max(dp[w], dp[w - wt] + val)
+    dp = [0] * (W + 1)                                     # capacity 0..W inclusive; size W+1
+    for wt, val in zip(weights, values):                   # zip stops at SHORTEST — mismatched lens silently truncated
+        for w in range(W, wt - 1, -1):                     # REVERSE: stop=wt-1 (exclusive) means last value is wt
+            dp[w] = max(dp[w], dp[w - wt] + val)           # read dp[w-wt] from PREVIOUS item's row (ensured by reverse)
     return dp[W]
 ```
 Reverse iteration on `w` is the crux: forward iteration would let the same item be counted twice. Contrast with unbounded knapsack (Template E).
@@ -107,20 +107,20 @@ Reverse iteration on `w` is the crux: forward iteration would let the same item 
 ### Template E — Unbounded knapsack (unlimited copies; coin change)
 ```python
 def coin_change_min(coins, amount):
-    INF = float("inf")
-    dp = [INF] * (amount + 1)
+    INF = float("inf")                                      # safe sentinel — adds with any float stays INF
+    dp = [INF] * (amount + 1)                               # [float]*n is safe — float is immutable, no alias trap
     dp[0] = 0
     for x in range(1, amount + 1):
         for c in coins:
-            if c <= x and dp[x - c] + 1 < dp[x]:
+            if c <= x and dp[x - c] + 1 < dp[x]:            # AND short-circuits — c > x would crash dp[x-c]
                 dp[x] = dp[x - c] + 1
     return dp[amount] if dp[amount] != INF else -1
 
 def coin_change_ways(coins, amount):
     dp = [0] * (amount + 1)
-    dp[0] = 1
-    for c in coins:                                         # outer: coins → combinations
-        for x in range(c, amount + 1):
+    dp[0] = 1                                               # ONE way to make 0 (empty selection)
+    for c in coins:                                         # outer: coins → COMBINATIONS (order-insensitive)
+        for x in range(c, amount + 1):                      # forward iteration ALLOWS reuse (unbounded)
             dp[x] += dp[x - c]
     return dp[amount]
 ```
@@ -128,30 +128,30 @@ Watch the loop order for counting problems. **Coins outside / amount inside** co
 
 ### Template F — Longest Increasing Subsequence (O(n log n) patience sorting)
 ```python
-from bisect import bisect_left
+from bisect import bisect_left                              # bisect_left finds LEFTMOST insert point; bisect_right for >
 
 def length_of_lis(nums):
     tails = []                                              # tails[i] = smallest tail of an LIS of length i+1
     for x in nums:
-        idx = bisect_left(tails, x)
-        if idx == len(tails):
+        idx = bisect_left(tails, x)                         # O(log n) binary search — tails is always SORTED (invariant)
+        if idx == len(tails):                               # x is strictly greater than all tails → extend
             tails.append(x)
         else:
-            tails[idx] = x
-    return len(tails)
+            tails[idx] = x                                  # REPLACE, not insert — keeps tails length = current best LIS len
+    return len(tails)                                       # length only — `tails` is NOT the actual subsequence!
 ```
 Classic trick: DP + binary search. `tails` isn't the LIS itself — it's the invariant "best possible tails by length". The `O(n²)` DP `dp[i] = 1 + max(dp[j] for j<i if a[j]<a[i])` is also useful to know (clearer but slower).
 
 ### Template G — Interval DP (matrix-chain, burst balloons)
 ```python
 def min_matrix_chain(dims):
-    n = len(dims) - 1                                       # number of matrices
-    dp = [[0] * n for _ in range(n)]
-    for length in range(2, n + 1):                          # length of the chain
-        for i in range(n - length + 1):
+    n = len(dims) - 1                                       # number of matrices (dims has n+1 boundary sizes)
+    dp = [[0] * n for _ in range(n)]                        # LIST COMP — avoid [[0]*n]*n alias trap
+    for length in range(2, n + 1):                          # OUTER LOOP ON LENGTH — smaller intervals ready first
+        for i in range(n - length + 1):                     # i+length-1 stays in bounds
             j = i + length - 1
             dp[i][j] = float("inf")
-            for k in range(i, j):                           # split point
+            for k in range(i, j):                           # split point; range(i, j) EXCLUDES j — k is in [i, j-1]
                 cost = dp[i][k] + dp[k + 1][j] + dims[i] * dims[k + 1] * dims[j + 1]
                 if cost < dp[i][j]:
                     dp[i][j] = cost
@@ -164,20 +164,20 @@ def min_matrix_chain(dims):
 def tsp(dist):
     n = len(dist)
     INF = float("inf")
-    dp = [[INF] * n for _ in range(1 << n)]
-    dp[1][0] = 0                                            # start at city 0
+    dp = [[INF] * n for _ in range(1 << n)]                 # 1<<n = 2^n; outer dim is subset mask
+    dp[1][0] = 0                                            # mask=1 = only city 0 visited; at city 0
     for mask in range(1 << n):
         for u in range(n):
-            if not (mask >> u) & 1 or dp[mask][u] == INF:
+            if not (mask >> u) & 1 or dp[mask][u] == INF:   # `(mask >> u) & 1` tests bit u; `not` + `or` = skip cases
                 continue
             for v in range(n):
-                if (mask >> v) & 1:
+                if (mask >> v) & 1:                         # v already visited — skip
                     continue
-                new_mask = mask | (1 << v)
+                new_mask = mask | (1 << v)                  # SET bit v; `|` is bitwise OR, not logical
                 cand = dp[mask][u] + dist[u][v]
                 if cand < dp[new_mask][v]:
                     dp[new_mask][v] = cand
-    return min(dp[(1 << n) - 1][u] + dist[u][0] for u in range(1, n))
+    return min(dp[(1 << n) - 1][u] + dist[u][0] for u in range(1, n))  # full mask = all bits set = (1<<n)-1
 ```
 State: (visited subset, current position). `2^n * n` states × `O(n)` transition = `O(n² 2^n)`. Works up to ~20 nodes. Use for TSP, assignment, small covering problems.
 
@@ -186,13 +186,13 @@ State: (visited subset, current position). `2^n * n` states × `O(n)` transition
 def rob_tree(root):
     def go(node):
         if node is None:
-            return (0, 0)                                   # (rob_here, skip_here)
-        l_rob, l_skip = go(node.left)
+            return (0, 0)                                   # tuple return; `is None` not `== None` (singleton check)
+        l_rob, l_skip = go(node.left)                       # tuple UNPACK at return site
         r_rob, r_skip = go(node.right)
-        rob_here = node.val + l_skip + r_skip
-        skip_here = max(l_rob, l_skip) + max(r_rob, r_skip)
+        rob_here = node.val + l_skip + r_skip               # if rob here, MUST skip both children
+        skip_here = max(l_rob, l_skip) + max(r_rob, r_skip) # if skip here, children free to rob-or-skip independently
         return (rob_here, skip_here)
-    return max(go(root))
+    return max(go(root))                                    # max() on a 2-tuple — picks larger of the two
 ```
 Post-order DFS returning a tuple packs "taken vs not taken" (or any binary choice) per subtree. Covers LC 337 (House Robber III), LC 968 (cameras), tree diameter.
 
@@ -201,17 +201,17 @@ Post-order DFS returning a tuple packs "taken vs not taken" (or any binary choic
 from functools import lru_cache
 
 def count_digits_with_property(N):
-    s = str(N)
+    s = str(N)                                              # str of int — decimal digits as characters
     @lru_cache(maxsize=None)
-    def go(pos, tight, leading_zero, property_state):
+    def go(pos, tight, leading_zero, property_state):       # ALL args must be hashable; bools are hashable, lists aren't
         if pos == len(s):
-            return 1 if accepting(property_state) else 0
-        limit = int(s[pos]) if tight else 9
+            return 1 if accepting(property_state) else 0    # ternary conditional — `A if cond else B`
+        limit = int(s[pos]) if tight else 9                 # tight mode caps the digit to the corresponding digit in N
         total = 0
         for d in range(0 if leading_zero else 0, limit + 1):
             total += go(pos + 1,
-                        tight and d == limit,
-                        leading_zero and d == 0,
+                        tight and d == limit,               # stay tight only if we picked the max allowed digit
+                        leading_zero and d == 0,            # leading-zero persists only while we're still picking 0s
                         update(property_state, d))
         return total
     return go(0, True, True, initial_property_state())
@@ -261,13 +261,13 @@ Iterate `x` from `1` to `amount`. By the time we compute `dp[x]`, every `dp[x - 
 ```python
 def coinChange(coins, amount):
     INF = float("inf")
-    dp = [INF] * (amount + 1)
+    dp = [INF] * (amount + 1)                               # size amount+1 to hold dp[0..amount]
     dp[0] = 0
     for x in range(1, amount + 1):
         for c in coins:
-            if c <= x and dp[x - c] + 1 < dp[x]:
+            if c <= x and dp[x - c] + 1 < dp[x]:            # guard c<=x AND improvement — short-circuits
                 dp[x] = dp[x - c] + 1
-    return dp[amount] if dp[amount] != INF else -1
+    return dp[amount] if dp[amount] != INF else -1          # check INF explicitly — dp[amount] is a float
 ```
 
 ### Full trace, `coins = [1, 2, 5]`, `amount = 11`
@@ -303,13 +303,13 @@ LC 322 asks for a **minimum**, and `min` is commutative. Whether you iterate `x`
 from functools import lru_cache
 
 def coinChange(coins, amount):
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=None)                                # decorator applied to nested func; cache per outer call? NO — cache persists across calls to outer (if outer is called repeatedly)
     def go(x):
         if x == 0: return 0
-        if x < 0: return float("inf")
+        if x < 0: return float("inf")                       # guard NEGATIVE amount — return sentinel, NOT 0
         best = float("inf")
         for c in coins:
-            best = min(best, go(x - c) + 1)
+            best = min(best, go(x - c) + 1)                 # min() on two scalars; `+1` accounts for picking coin c
         return best
     ans = go(amount)
     return ans if ans != float("inf") else -1
