@@ -1503,3 +1503,70 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 19. How to Run a Databricks notebook from Azure Data Factory?
 20. How to trigger a mail from Azure Data Factory on Job Failure?
 21. What are DataMarts? Explain the use of DataMarts?
+
+---
+
+## Interview 38
+
+**Position Role:** A3
+**Technology Areas:** Spark, Scala, Databricks, SQL
+
+### Questions
+
+#### Spark
+
+1. Repartition and coalesce
+2. How to handle the long running jobs
+3. Spark resource allocation
+4. What is DAG
+5. Differences between DataFrame and Dataset
+6. What is the default file format in Spark.
+7. How it is decided how many jobs/stages/tasks will be created of a spark application?
+
+#### Scala
+
+- Traits with Realtime example.
+
+#### SQL
+
+- With clause
+- Hive Merge Query example
+
+#### Databricks
+
+1. How to create a job/workflows
+2. How to enable auto-scaling
+3. How to analyze the failure Databricks jobs.
+4. How to orchestrate the Databricks jobs
+
+#### Additional Questions
+
+1. **Write a SQL Query for the below output**
+
+    Input:
+
+    | emp_id | name    | salary   | dept_id |
+    |--------|---------|----------|---------|
+    | 1      | Alice   | 50000.00 | 1       |
+    | 2      | Bob     | 60000.00 | 2       |
+    | 3      | Charlie | 50000.00 | 2       |
+    | 4      | Charlie | 65000.00 | 2       |
+    | 5      | Eve     | 45000.00 | 1       |
+
+    | dept_id | dept_name   |
+    |---------|-------------|
+    | 1       | HR          |
+    | 2       | Engineering |
+    | 3       | Sales       |
+
+    Output:
+
+    | dept_name   | employee_count | highest_salary |
+    |-------------|----------------|----------------|
+    | Engineering | 3              | 65000          |
+    | HR          | 2              | 50000          |
+    | Sales       | 0              | 0              |
+
+2. Write a function that will accept two strings and return Boolean if they are anagram
+    - str1 = rail safety
+    - str2 = fairy tales
