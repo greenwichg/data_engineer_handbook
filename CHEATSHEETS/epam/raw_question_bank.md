@@ -1084,3 +1084,208 @@ return t_sum / n
 1. What is CICD? A little in detail about CI/CD flow and tools that you have used
 2. What is iceberg tables
 3. Docker
+
+---
+
+## Interview 28
+
+### SQL Questions
+
+**1. Select category group from category table which were not placed in orders in order table.**
+
+Note: Even if category group is present in orders but quantity is 0, that should be considered as category which is not ordered.
+
+Tables: Category and Orders
+
+HINT: Left join or minus
+
+**2. From Orders table if there are categories then output is expected as below (Might ask to group using cust_id)**
+
+Expected output:
+
+| prod_category_a | prod_category_b | prod_category_others |
+|-----------------|-----------------|----------------------|
+| 4               | 8               | 8                    |
+
+Input table — `category | quantity | Cust_id`:
+
+| category | quantity |
+|----------|----------|
+| a        | 1        |
+| b        | 2        |
+| c10      | 5        |
+| a        | 3        |
+| b        | 6        |
+| XYZ      | 3        |
+| ...      | ...      |
+
+HINT: Generate pivot
+
+**3. Select top 10 products placed in US marketplace for year 2021 and consider only first purchase of those products by customer in that year**
+
+Note: Table of orders is same as in Question 1 above
+
+HINT: Filter (Year=2021 and id=1 which is related to US market), Agg, dense_rank
+
+**4. Select top two products placed by each customer using orderitem table**
+
+Expected output:
+
+| cust_id | top1 product  | top2 product     |
+|---------|---------------|------------------|
+| cs1     | iron box      | washing machine  |
+| cs2     | refrigerator  | -                |
+| cs3     | Gas stove     | iron box         |
+
+HINT: There will be two tables orders and orderitem, use only orderitem table and based on quantity and After defining top 1 and top 2 products for each customer generate result in pivot
+
+**5.** (content cut off in image)
+
+---
+
+## Interview 29
+
+**Technology Areas:** S3, Redshift
+
+### Technical Skills
+
+**Mandatory:**
+
+- **Apache Spark / AWS Glue:** Extensive proficiency in utilizing Apache Spark and AWS Glue for efficient data processing and ETL workflows.
+- **AWS:** In-depth knowledge of AWS services, particularly S3, Glue, and Redshift / Redshift Spectrum, for building scalable and robust data solutions.
+- **Datalakes:** Proficiency in working with data lakes, employing Parquet or Iceberg tables for optimized storage and retrieval.
+- **Python:** Strong scripting skills in Python for developing custom data processing scripts and automation.
+- **Terraform:** Familiarity with Terraform for provisioning and managing infrastructure resources.
+- **CI/CD with CircleCI or GitHub Actions:** Developing new CI/CD workflows to streamline development and deployment processes.
+
+**Good to Have:**
+
+- **Datadog:** Experience with Datadog for monitoring and observability, ensuring the health and performance of data systems.
+- **Liquibase:** Knowledge of Liquibase for efficient database schema versioning and management.
+- **Kubernetes / Argo Workflow:** Familiarity with Kubernetes and Argo Workflow for container orchestration and workflow management in a distributed environment.
+- **Data Quality with Deequ:** Proficiency in utilizing Deequ for data validation and anomaly detection, ensuring high data quality standards.
+- **Alation:** Understanding of Alation for comprehensive data cataloging and collaboration among team members.
+
+### Interview Expectations
+
+2) We're expecting practical tasks with Apache Spark
+3) We're expecting practical tasks/coding task with Python
+4) We're expecting theoretical questions about Glue, Spark and CI/CD.
+5) How data is getting loaded to Redshift and how to connect to S3, how insert and update is happening, how to identify the new records and updated records. SCD1 and SCD2 logic.
+6) AWS Athena, AWS Glue configurations, SNS and Project discussion.
+
+### Questions
+
+1. Tell me about your project
+2. Things to check while extracting data from APIs
+3. SQL query optimization
+4. Spark skewed datasets - how to handle?
+5. AWS architecture of the previous project
+6. Glue vs Lambda, glue connectors, glue job optimization
+7. While extracting data from databases, if its running slow - how to resolve?
+8. SCD1 & SCD2
+9. Any interesting thing you worked in your project?
+10. Discussion on Agile
+
+---
+
+## Interview 30
+
+### Questions
+
+1. Project Explanation
+2. Experience on Databricks SDKs, Databricks APIs, and building Databricks Apps. Databricks Unity Catalog.
+3. Spark Job Optimization in depth
+4. Python - Datatypes, Testing, Encryption & Decryption.
+5. Pyspark
+
+---
+
+## Interview 31
+
+**Technology Areas:** GCP
+
+### Questions
+
+1. Project discussion
+2. Major challenges and issues
+3. Apache Airflow concepts
+    - a. Custom calendar concepts
+    - b. Workflow template
+    - c. Timedelta concepts
+    - d. Difference between catchup and backfills
+    - e. How to setup concurrency at airflow level
+    - f. Airflow operators (GCP operators, Short circuit, branch, triggerDagRun etc)
+4. Dataproc concepts
+    - a. How to setup dynamic cluster
+    - b. We have running a spark job on dataproc but that job is not utilizing full cluster how to correct that
+
+---
+
+## Interview 32
+
+**Technology Areas:** Databricks, PySpark, Microsoft Azure, SQL
+
+### Questions
+
+1. Explain your recent project and your roles and responsibilities.
+2. Explain any one of the user stories that you have worked on in your project (Interviewer asked 4 user stories).
+3. What was your prior experience as a Data Engineer?
+
+    (My Previous experience was in AS400, and interviewer also has experience in AS400. He asked questions related to AS400)
+    - a. Explain the technologies you used in AS400.
+    - b. What programming languages did you use in AS400 projects?
+    - c. What is CL programming?
+    - d. Which database did you use?
+
+4. Fill the empty salary column with the Average salary
+
+    | STAFF_ID | FIRST_NAME | SALARY | DEPARTMENT |
+    |----------|------------|--------|------------|
+    | 1        | Monika     | 10000  | HR         |
+    | 2        | Niharika   | 8000   | Admin      |
+    | 3        | Vishal     | 30000  | HR         |
+    | 4        | Amitabh    | 50000  | Admin      |
+    | 5        | Vivek      | 50000  | Admin      |
+    | 6        | Vipul      | 20000  | Account    |
+    | 7        | Satish     | 7500   | Account    |
+    | 8        | Geetika    | 9000   | Admin      |
+    | 9        | emp1       |        | Admin      |
+    | 10       | emp2       |        | Account    |
+
+5. Table name = STUDENTS and Column Name: SCORE, Values (10, 15, 20, 30, 35, 40, 55, 66, 88, 87). Write the Spark code to create a data frame as show:
+
+    | REMARKS | COUNT |
+    |---------|-------|
+    | EVEN    | 6     |
+    | ODD     | 4     |
+
+6. The same question write in SQL
+
+7. Find the missing overlapping dates in SQL from the table `calendar` contains only 2 rows
+
+    | start_date  | end_date    |
+    |-------------|-------------|
+    | 01-JAN-2025 | 10-JAN-2025 |
+    | 08-JAN-2025 | 15-JAN-2025 |
+
+8. Write a query in SQL to print all the transaction history of all Top-10 customers. From the table `customer` and columns: `transaction_id, transaction_date, ar...` (content cut off)
+
+---
+
+## Interview 33
+
+**Technology Areas:** Python, AWS
+
+### Questions
+
+1. Explain recent project and your tech stack.
+2. Did you work on application development?
+3. Have you work on API based development?
+4. Which AWS services you have worked on?
+5. Scenario based questions to solve migration of document analysis system to cloud
+6. SQL and python questions - medium
+7. How authentication in API works? And some questions around flask API
+8. Questions around Medallion architecture
+9. Discussion around lambda, ec2, airflow
+10. Implementation of CICD pipeline
