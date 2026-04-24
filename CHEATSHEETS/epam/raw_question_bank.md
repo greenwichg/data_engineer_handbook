@@ -1570,3 +1570,637 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 2. Write a function that will accept two strings and return Boolean if they are anagram
     - str1 = rail safety
     - str2 = fairy tales
+
+---
+
+## Interview 39
+
+**Technology Areas:** SQL, Pyspark, AWS, Databriks, Airflow
+
+### R1 — Taken by Hema Raju Baipalli from SNP
+
+#### Questions
+
+- Project discussion
+- Spark working, job stages and tasks understanding
+- Cache vs persist
+- Repartition vs coeleace
+- Some scenario based question on aws cloud envirionment
+- Airflow working and operators used
+
+#### Python questions
+
+Given a string s and an integer k, return the length of the longest substring that contains at most k distinct characters.
+
+- Input: s = "eceba", k = 2
+- Output: 3
+- Explanation: The substring is "ece" with 2 distinct characters.
+
+#### SQL questions
+
+List active users per month per year
+
+| user_id | login_date  |
+|---------|-------------|
+| 101     | 2023-01-15  |
+| 102     | 2023-01-20  |
+| 101     | 2023-02-10  |
+| 103     | 2023-02-15  |
+| 101     | 2023-03-01  |
+
+### R2 — Taken by Manasa from SNP
+
+1. Past project discussion (20 mins)
+2. Spark optimization that you may have used.
+3. Python garbage collector working
+4. EMR vs Glue? when to use what?
+5. Python oops concepts like what all inheritance are supported, decorators in python
+6. **SQL Question 1:**
+    - Find 3rd highest salary using window func?
+    - Diff between rank, dense_rank, row_number?
+7. **SQL Question 2:** the management chain of a particular employee in seniority level
+8. **Python question:** return the first non repeating character in a string input: bbbbaccccsddd output: a
+
+---
+
+## Interview 40
+
+**Technology Areas:** Synapse, ...
+
+### Initial Internal Round
+
+#### SQL
+
+**Q1.** Write a query to find studentid whose favourite_subject is commerce and geography both
+
+| studentid | favourite_subject |
+|-----------|-------------------|
+| 123       | commerce          |
+| 232       | science           |
+| 123       | geography         |
+| 354       | commerce          |
+| 564       | history           |
+| 232       | history           |
+
+**Q2.** Write SQL & Pyspark code to select information about Orders per customer, per month with the condition total amount of price within a single month of more than 10000
+
+Table: Orders
+
+| name | Order_Price | date       |
+|------|-------------|------------|
+| c1   | 5800        | 2019-11-12 |
+| c2   | 4200        | 2019-11-10 |
+| c1   | 3000        | 2019-11-13 |
+| c3   | 4000        | 2019-11-14 |
+
+#### Pyspark
+
+- Write Pyspark code to compare 2 dataframes with same columns but their values are different. And returned Datafrmae with Column names and both diff. values.
+- Write a code to read "sample.csv" file which has header and add a new column "sysdate" and write the output to a delta table table1 in append mode using schema merge.
+- Whats is Vaccum and optimize in delta tables and how it works?
+
+#### ADF
+
+- Different types of triggers.
+- Lookup vs Metadata activity.
+- Web Email activity.
+- How to handle copy data activity failure for corrupt records without pipeline failure.
+
+---
+
+- Azure Synapse vs Fabric concepts.
+- KQL language for log analytics
+- Azure DevOps CI/CD
+- Rest API
+
+============================================================
+
+### Client Round
+
+- How we can optimize ingestion for bulk load in ADF and what are the different strategies for full load and incremental load.
+- What are different optimization techniques for delta table read/write.
+- What is concurrency control in delta tables and how to handle for parallel operations.
+- Optimization techniques for Spark jobs running longer and debug approach.
+- Python Oops concepts with error handling and custom modules/packages implementation as generic framework
+- How REST API works in python.
+- CI/CD concepts.
+
+---
+
+## Interview 41
+
+**Technology Areas:** Databricks, Delta Lake
+
+### Questions
+
+1. Introduce and tell us about past projects?
+2. What are the different sources you were getting data from?
+3. How to create a column with identity in delta?
+4. In what different ways we can access data from adls in databricks?
+5. What are different joins used by you and the strategies in spark?
+6. Suppose we have a store procedure in netezza with for loop, how will you handle it in databricks notebook?
+7. Different data structures used in python?
+8. Explain Optimize and Vaccum in delta?
+9. How do you manage notebooks in data bricks? (the repos)
+10. How familiar you are with workflows in data bricks?
+11. What is Unity Catalog and for what it is used?
+12. How do you call one notebook from another in data bricks?
+
+---
+
+## Interview 42
+
+### Questions
+
+1. Project discussion, End to End flow.
+2. Coding - Find the 2nd highest Salary in Pyspark from the imports, spark session creation, df creation, window functions and condition, if no 2nd highest salary, then have to show null.
+3. Explain pyspark architecture in detail.
+4. How many type of triggers in ADF.
+5. What is Tumbling window trigger.
+6. How to monitor logs in ADF.
+7. What are generators in python.
+8. What are decorators in python
+9. **How do you create a framework using classes for pipelineConfig, pipelinefactory, pipeline executor, pipeline Loader**
+
+    ```
+    class pipelineLoader(ABC):
+
+        # loads the file data of any type
+
+    class pipelineConfig(ABC):
+
+        # define the type of the file
+
+    class pipelineexecutor
+
+        # execute the pipeline with functions
+
+    class factory:
+
+        # run the mainclass with all the above classes
+    ```
+
+---
+
+## Interview 43
+
+**Technology Areas:** DBT, Databricks, ADF, Data Vault, Spark & Python
+
+### Questions
+
+1. How to implement incremental load if source is json files
+2. Describe Control Flow of DBT
+3. Where do you specify global variable in DBT project
+4. How to implement SCD type 1 and SCD type 2 in DBT
+5. Why DBT is used in ELT
+6. Hooks (pre and post) in DBT
+7. How to execute only specific model using dbt run
+8. How do you pass parameters to dbt model if it needs to be executed from databricks
+9. Why macros are used
+10. Materialization types in DBT
+11. How can you create materialization based on folder structure in models instead of explicitly specifying materialization type in each model
+12. Command to execute set of models using dbt run
+13. What is command to get parameters from ADF pipeline to databricks
+14. What activity is used in ADF to use databricks
+15. What is the size of each part file databricks create on executing OPTIMIZE command. Can it be configured
+
+---
+
+## Interview 44
+
+**Technology Areas:** Spark, Hive, File formats, Hadoop
+
+### Questions
+
+1. Explain your previous project.
+2. Explain Spark architecture and process of execution. What happens when you execute spark submit command?
+3. How to delete tables in hive?
+4. What are the spark functions used in previous projects?
+5. What is lit? Define a use case.
+6. What are different file formats supported by hadoop?
+7. Is dataframe mutable or immutable? Support your argument.
+8. Explain about parquet file format.
+9. Difference between RDD, dataframe and dataset.
+10. Different levels of storage mechanisms in persist. Explain more on cache and persist.
+11. Define broadcast variables. How did you use them in your previous project?
+12. Managed tables and external tables differences.
+
+---
+
+## Interview 45
+
+### Questions
+
+1. Explain your recent project experience!
+
+2. Follow up Questions on my experience like how much is the volume of data that i was dealing daily, Storage Format, Loading techniques, Challenges that i faced during my task.
+    - You said you store your data in data lake so how you manage CDC? Incremental load? Batch data? Do you use delta live tables?
+    - How do you tackle data quality issues while writing the data in curated layers of adls gen2!
+
+3. In which programming language i was doing the development? Do you follow clean code policy etc.? How you log entries?
+
+4. What is a dimension? Different types of SCD's!
+
+5. Tell me how you were storing your data in medallion architecture?
+
+6. How do you share your work with peer colleagues using Databricks?
+
+7. What do you think in what situation Databricks will be a good choice for data processing?
+
+8. What do you mean by API management? How to expose API to the users?
+
+9. Do you have any experience in Azure Functions? Any trigger based solution implemented in your previous work experience.
+
+10. How to handle distributed data? Is there any specific solution for that?
+
+11. Follow up question on no Q 10 - Given a scenario where i need to implement ADF solution to integrate data from different data sources. What are the steps you will follow to implement the same?
+
+12. Azure Functions
+
+13. Database Vs Data Warehouses
+
+14. Delta Lake Feature, how it is useful?
+
+15. How can you create a Data Pipeline from scratch? Which activities you will use to create a data pipeline in ADF? based on the scenario they will give.
+
+16. What will you do if your SQL query is taking more time that usual?
+
+17. What will you do if your Spark application taking more time that usual?
+
+18. How can you share your code to another team?
+
+19. How do you handle security in your spark code?
+
+20. In which domain you have worked in?
+
+---
+
+## Interview 46
+
+### Scenario
+
+Design a recommendation system for Food Aggregator Application, this system should be able to recommend food based on the login time of the user in realtime.
+
+### Questions
+
+1. Design data model with the schema and tables required for the recommendation engine.
+2. Explain different components required for each step of the data flow within the system.
+3. Explain the data flow from the user application to the recommendation engine and vice versa.
+4. What different options do you have to use as data store for the recommendation engine?
+5. How would you update the end-user application with the recommendations?
+6. How will you ensure fault tolerance in the system?
+7. How will you handle failures in each stage of the system?
+8. How will you handle Load Balancer failure?
+
+---
+
+## Interview 47
+
+### Questions
+
+1. df = [id, name, address, addresslength].
+    This dataframe is given. need to add one new column "newaddress" with the "addresslength" characters from "address" column.
+2. One array is given. need to return yes if array has duplicates otherwise No.
+3. We have a employee table, have to return name of the employee who is getting second highest salary.
+4. Questions on past project.
+
+---
+
+## Interview 48
+
+### Questions
+
+1. Introduce and tell us about past projects?
+2. Can you explain the difference between delete, truncate and Drop?
+3. What is the purpose of a Having clause in SQL? How is it different from where?
+4. What are common table expressions (CTEs), and how are they different from subqueries?
+5. **Scenario:** You have two tables: `Customers` (`CustomerID`, `Name`, `City`) and `Orders` (`OrderID`, `CustomerID`, `OrderDate`). Write a query to return the names of customers who have placed at least one order in 2023 and live in the city of "New York".
+6. **Scenario:** You have a table `Products` with columns `ProductID`, `ProductName`, and `Price`, and a table `Sales` with columns `SaleID`, `ProductID`, and `QuantitySold`. Write a query to find the product with the highest total sales (price multiplied by quantity sold).
+7. **Scenario:** You have a table `Students` with columns `StudentID`, `Name`, `Course`, and `Grade`. Write a query to return the number of students who passed (`Grade >= 60`) and the number who failed (`Grade < 60`) for each course.
+
+---
+
+## Interview 49
+
+**Technology Areas:** Spark, Databricks, SQL, Scala
+
+### Questions
+
+- Explain about your project
+- How to check logs in databricks
+- How to optimize the query
+- How to connect oracle from databricks.
+- How to perform Incremental load.
+- Difference between CDC and SCD
+- Diff btwn Coalesce in SQL and Spark.
+- Diff repartition and coalesce and when to use what
+- Windowing functions in spark.
+- What is persist and cache
+- What is a broadcast funtion
+- What are traits in scala
+- Write a program in scala to find duplicate elements in list.
+- What is TTL in delta table.
+- What is your prefered file format while running jobs and why.
+
+---
+
+## Interview 50
+
+**Technology Areas:** Spark, Databricks, ADF
+
+### Questions
+
+1. Asked about previous project and discussion around that project
+    ex: data volume, data source and sink, pipeline designing
+2. Describe about delta tables.
+3. How would you delete delta file in delta lake
+4. How to copy data from on-prem database to a delta table? - Discussed about different ways
+5. How to drop duplicate values from a dataframe
+
+---
+
+## Interview 51
+
+**Technology Areas:** MLE, Python, SQL
+
+### Questions
+
+1. What are steps to be followed in binary classification (100 features)
+2. How do we calculate outliers?
+3. How can we handle missing values (Null) for numerical and categorical features?
+4. Why we need to standardize normalize numerical future?
+5. What are bias and variance (over fitting, under fitting)?
+6. What are metrics available & usage in classification problem (MSE, RMSE, precision, recall and acuracy)?
+7. Difference between logistic classification and Naive Baye's?
+8. Do you know about curse of dimensionality in machine learning
+
+9. **Write quires in sql and python pandas for below questions**
+
+    Prediction logs table - `pred_logs`
+    Column names - timeofpred, case_id, ml_score, category, email_id
+
+    Example data for pred_logs table:
+
+    | timeofpred | case_id | ml_score | category | email_id      |
+    |------------|---------|----------|----------|---------------|
+    | 2024-01-16 | ABC     | 0.02     | a        | abc@xyz.com   |
+    | 2024-01-16 | DEF     | 0.09     | b        | abc@xyz.com   |
+    | 2024-01-17 | ABC     | 0.05     | c        | abc@gmail.com |
+    | 2024-01-17 | DEF     | 0.01     | a        | def@gmail.com |
+    | 2024-01-17 | DEF     | Null     | a        | def@gmail.com |
+    | 2024-01-18 | UVW     | 0.01     | d        | def@gmail.com |
+
+    1. Find min, max ml_score for each category
+    2. Filter data for gmail users
+    3. Filter last 30 days data
+    4. Check if there are multiple occurrence of a case
+    5. Find null percent in 'ml_score'.
+    6. Check number of cases for each ml_score & get the running total of the 'Number of cases' based on ml_score(case_id) in ascending order
+    7. Add a column with avg ml_score for the respective category
+
+---
+
+## Interview 52
+
+### Questions
+
+**Write a program for the below:**
+
+1. Input - David is good at python programming
+
+    Output - programming python at good is David
+
+2. Given a string, return the first recurring character in it, or "None" if there is no recurring character. Example: input = "pythoninterviewquestion", output = "n"
+
+3. **Write SQL query:**
+
+    | Date       | Name    | Salary | Department |
+    |------------|---------|--------|------------|
+    | 09/04/2024 | Arpan   | 3000   | IT         |
+    | 09/02/2023 | Arpan   | 2500   | IT         |
+    | 09/01/2022 | Arpan   | 1500   | IT         |
+    | 08/30/2021 | Arpan   | 1000   | IT         |
+    | 08/31/2021 | Shubham | 900    | Account    |
+    | 09/02/2022 | Shubham | 1200   | Account    |
+    | 09/04/2023 | Shubham | 1500   | Account    |
+    | 09/27/2024 | Shubham | 2000   | Account    |
+    | 09/02/2022 | Sravan  | 1000   | HR         |
+    | 08/31/2021 | Sravan  | 900    | HR         |
+    | 09/27/2024 | Sravan  | 1500   | HR         |
+    | 09/04/2023 | Sravan  | 1500   | HR         |
+
+    a) Find the employees whose salary increased from the previous year.
+    b) Find the number of employees who changed departments
+    c) Find the average salary increase for each department.
+    d) Find the employees whose salary has always increased over time.
+    e) Find the department with the highest average salary growth over the last year.
+    has context menu
+
+4. **SQL Query:** Prediction logs table - `pred_logs`
+    Column names - time of pred, case_id, ml_score, category, email_id
+
+    Example data for pred_logs table:
+
+    | time of pred | case_id | ml_score | category | email_id      |
+    |--------------|---------|----------|----------|---------------|
+    | 2024-01-16   | ABC     | 0.02     | a        | abc@xyz.com   |
+    | 2024-01-16   | DEF     | 0.09     | b        | abc@xyz.com   |
+    | 2024-01-17   | ABC     | 0.05     | c        | abc@gmail.com |
+    | 2024-01-17   | DEF     | 0.01     | a        | def@gmail.com |
+    | 2024-01-17   | DEF     | Null     | a        | def@gmail.com |
+    | 2024-01-18   | UVW     | 0.01     | d        | def@gmail.com |
+
+    1. Find min, max ml_score for each category
+    2. Filter data for gmail users
+    3. Filter last 30 days data
+    4. Check if there are multiple occurrence of a case
+    5. Find null percent in 'ml_score'.
+    6. Check number of cases for each ml_score & get the running total of the 'number of cases' based on ml_score in ascending order
+    7. Add a column with avg ml_score for the respective category
+
+---
+
+## Interview 53
+
+### Level 1 (Client Interview)
+
+1. Past projects' discussion. What was your role and contributions in them?
+2. A stream data source is sending messages of different schema. Based on the schema, the destinations will be different. Which service in GCP can we use and how?
+    - I explained with PubSub's subscription filter (1 Topic, multiple Subscribers with different filters based on the message schema)
+3. Follow up question to #2: Which other GCP services can be used to handle this scenario? GKE? Dataflow? Composer? Dataproc? Function?
+4. Difference between Conceptual, Logical, Physical data models?
+5. OLAP vs OLTP in terms of data modelling.
+6. If there is a Data migration requirement from legacy OLTP to OLAP, what are the steps and how will you do it?
+    - If we have 1000 tables' DDL statements and some sample data only for data migration reference and no access to the legacy database, how should we proceed?
+7. If we have 500 select SQL from the reports and dashboards from the legacy database, what information can we get from the SQL queries which can help in the data migration?
+
+### Level 2 (Client Interview)
+
+1. Past projects' discussion.
+2. Which data warehouse concept do you prefer while designing a data warehouse? (Kimball vs Inmon)
+3. Difference between RDBMS and NoSQL databases.
+
+### Meet and Greet (Client Delivery Manager)
+
+1. What is the biggest achievement in your past projects?
+2. What was the most difficult situation you faced and how you solved it?
+3. What is the highest volume of data you have worked with?
+4. How do you debug Spark performance issues?
+
+---
+
+## Interview 54
+
+**Technology Areas:** Python, PySpark
+
+### Questions
+
+1. What are generators in python? Can we use return and yield both in same function?
+2. Difference between multithreading and multiprocessing in python?
+3. What is pickling in python?
+4. Write python program to find longest palindrome substring from a given string?
+5. Write python program to find longest string with distinct chars from a given string?
+6. Suppose you are getting json string in a single column in dataframe. How you will create new columns from this?
+7. Diff between explode and explode_outer in spark?
+
+---
+
+## Interview 55
+
+**Technology Areas:** Scala, Spark, AWS, Rest APIs
+
+### Questions
+
+1. How to establish JDBC connection to Relational DB and how to optimize this connection
+2. How to get list of files on S3 bucket rescursively, which filesystem to use for this,
+3. How to create a connection to this bucket without revealing the secrets in the code of S3Client Configuration
+4. What are the different types of authentications for APIs
+5. How to handle illegal responses from the API response and catch those response codes and throw exception accordingly
+6. What are the transformations you worked on using dataframes?
+7. Snowflake Stored procedure vs Functions
+8. How to configure CICD?
+9. Architecture of Snowflake, how it will differ from other data warehouse?
+10. Drawback of Snowflake
+
+---
+
+## Interview 56
+
+### Questions
+
+**Q1.** Project Discussion and Tools used in previous projects.
+
+**Q2.** Questions about Medallion Architecture. In case if we have found some issue in data later at silver layer in our pipeline. How can we roll back to previous version?
+
+**Q3.** Write query for below Output
+
+Input:
+
+| col_code |
+|----------|
+| red      |
+| blue     |
+| green    |
+
+Output:
+
+| col1 | col2  |
+|------|-------|
+| red  | blue  |
+| red  | green |
+| blue | green |
+
+**Q4.** Write PySpark Code to read Text file having JSON data and get the output as per below:
+
+Text File:
+
+```
+{
+    {
+        "id": "1"
+        "name": "sahil"
+        "city": "[city1, city2, city3]"
+    },
+    {
+        "id": "2"
+        "name": "aditya"
+        "city": "[city1, city2]"
+    }
+}
+```
+
+Output:
+
+| id | name   | city  |
+|----|--------|-------|
+| 1  | sahil  | city1 |
+| 1  | sahil  | city2 |
+| 1  | sahil  | city3 |
+| 2  | aditya | city1 |
+| 2  | aditya | city2 |
+
+**Q5.** If a Spark Job is running and taking too much time to complete. What could be the possible reasons and how can we identify it to resolve it?
+
+**Q6.** There are 5 executors and out of which 4 executors have completed their tasks and 1 executor is taking more time to complete the task. What could be the possible reasons behind it?
+
+**Q7.** Suppose a job executor is going in die stage and again executor is getting spinned up then again it goes into die stage. What could be the Possible Reason? As driver can spin executors upto 3 times.
+
+---
+
+## Interview 57
+
+### Questions
+
+1. What is Medallion architecture
+2. What is your strategy for the Bronze layer when ingesting data from various sources? Will you utilize Python or Spark for this process, and do you plan to store the data in Parquet files or in tables or save as is?
+3. What is you strategy for the Silver layer
+4. What is you strategy for the Golden layer
+5. How you achieve SCD type 2
+6. How will call the rest API's with core python code?
+7. How to read CSV, excel file using python?
+8. How to attain many to many relationship in efficient way?
+9. Basic questions of spark like (reparations vs coalesce) Joins, cache vs persist which is better
+10. How to do incremental load in databricks
+
+---
+
+## Interview 58
+
+**Project/Team:** ADI-BUSW
+
+### Questions
+
+1. How to handle corrupted records for databricks?
+2. Medallion architecture
+3. Cache vs persist? issues in cache?
+4. Partition? benefits?
+5. Read API through python? asyncio, httpx library?
+6. Verbode mode in logging
+7. df bt kafka queue and topic?
+8. CDC in databricks?
+9. How to handle more challenging data load?
+10. Types of explode? left explode?
+11. Project experience and related questions.?
+
+---
+
+## Interview 59
+
+**Technology Areas:** Spark, Databricks, Scala, SQL
+
+### Questions
+
+1. Write a sample scala program to identify the no of occurrences of duplicate values in a scala list
+2. What are traits in scala
+3. What are higher order functions in Scala
+4. How to you handle the cases of long running jobs in spark
+5. What is data skew and how to handle it in spark?
+6. What is the difference between CDC and SCD, details about SCD and CDC
+7. Difference between Coalesce and Repartition in Spark
+8. Explain Spark architecture
+9. How do u check logs in databricks?
+10. How do u connect to oracle from databricks?
+11. Explain merge operation in SQL
+12. Explain about data formats and which data format is suited and why?
+13. What do u know about Kafka and Spark streaming?
+14. Explain about delta live tables and advantages over regular parquet files?
