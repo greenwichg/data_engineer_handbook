@@ -264,3 +264,39 @@ SQL query to find id of employees who are also manager
 Employee table → `Emp(empid, managerid, dept, salary)`
 
 SQL query to find deptwise third highest salary
+
+---
+
+## Interview 7
+
+**Technology Areas:** Spark, SQL, Scala
+
+### Questions
+
+1. Project discussion
+2. There were hacker rank coding questions.
+    - a) A S3 path was given which consists of few parquet file, and from here we need to read the data.
+    - b) Source data is in Oracle and fields were given such as op_type, trans_date_time, product_type, amount and currency_code. We have to process data in Iceberg Table by defining the table and CDC table will have inserts, updates and deletes. It was asked to write a Spark application to process data as a daily job. Also below questions were asked w.r.t above scenario.
+        - a) Find monthly/yearly total amount.
+        - b) Currency wise amount trend over the time.
+        - c) Product wise amount for last 7 days.
+
+---
+
+## Interview 8
+
+**Technology Areas:** Spark, Python, SQL
+
+### Questions
+
+1. Project discussion
+2. Spark Optimisation use cases in the projects worked? Challenges faced and how did you overcome it?
+3. Python
+    - a. Parentheses complete check program
+    - b. Check whether a string is substring of another string
+    - c. Input: `l = [73, 76, 72, 69, 71, 75, 74, 70]`
+        - `# Output: [2, 1, 1, 0, 3, 1, 1, 0]` → how far first lower number on right for each number. If not consider 0.
+4. SQL
+    - a. There were multiple tables with fact-dimension tables from which multiple use cases were asked like maximum hrs work logged by users; second max events with some specific event type;
+    - b. A generic question on sql. Use case of partitioning.
+    - c. Exchange Seats - LeetCode
