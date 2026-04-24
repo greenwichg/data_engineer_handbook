@@ -1289,3 +1289,217 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 8. Questions around Medallion architecture
 9. Discussion around lambda, ec2, airflow
 10. Implementation of CICD pipeline
+
+---
+
+## Interview 34
+
+**Technology Areas:** Microsoft Azure, Spark, Databricks, Python, SQL
+
+### Questions
+
+1. Project Discussion
+2. Technology you have worked in previous projects
+3. What is ADF and ADB?
+4. Have you used Azure Functions previously, if yes can you explain it?
+5. How do you utilize Azure key vaults?
+6. How to migrate N numbers of table/files from DB/cloud storage?
+7. What's volume of you have handled daily/weekly?
+8. Which file formats you have used in previous project?
+9. Explain about parquet format and how is delta format is different?
+10. What are ACID properties?
+11. Do you know about managed and external table, explain with example?
+12. What is Datawarehouse and explain its use case?
+13. Datawarehouse vs Database
+14. Star Schema Vs Snowflakes Schema? Fact and dimension table
+15. What is your experience with unit testing?
+16. In Python, Which libraries we use for unit testing?
+17. What is your approach for unit testing if you are handing 100TB Data?
+18. How do you validate a data?
+19. How to remove duplicate from a table?
+20. Optimization techniques used in project, and what is the impact of it?
+21. Repartition and coalesce, which one you choose to reduce partition and why?
+22. Cache and persist
+23. What are the standard practices you should follow while you write a code?
+
+24. **Converting Roman Numerals to Numerals**
+
+    Write a Python `roman_to_int()` function that takes a string of characters representing a Roman number as input and returns its value in digits. Roman numerals are represented by seven different symbols: I (1), V (5), X (10), L (50), C (100), D (500), and M (1000).
+
+    ```python
+    def roman_to_int(value: str) -> int:
+        roman_map = {
+            'I': 1,
+            'V': 5,
+            'X': 10,
+            'L': 50,
+            'C': 100,
+            'D': 500,
+            'M': 1000
+        }
+        num = 0
+
+        for i in range(len(value)):
+            cur = roman_map[value[i]]
+            if i+1 < len(value) and cur < roman_map[value[i+1]]:
+                num -= cur
+            else:
+                num += cur
+
+        return num
+
+    # Verification
+    assert roman_to_int('III') == 3
+    assert roman_to_int('VI') == 6
+    assert roman_to_int('IX') == 9
+    assert roman_to_int('LVIII') == 58
+    assert roman_to_int('CD') == 400
+    assert roman_to_int('MCMXCIV') == 1994
+    ```
+
+25. Is there any other way to solve it? (Yes, reverse a str and take previous value)
+
+26. Design a schema for retail website.
+
+27. Explain the relationships between the tables.
+
+28. Write a query to Find total amount spend by a user on this platform?
+    ```sql
+    select sum(oi.quantity * oi.price) as total_s...
+    from order o
+    join orderItem oi
+    on o.order_id == oi.order_id
+    group by o.user_id
+    ```
+
+29. Write a query to Find most recent order date on which user placed an order?
+    ```sql
+    select max(date) as latest_date from order
+    group by user_id
+    ```
+
+30. Write a query to Find average time of user between order?
+    ```sql
+    with cte as (
+        select *, lag(1, 0) over(partition by user_id order by date desc) as prev_date
+        from order
+    )
+    select avg(prev_date - date) from order
+    group by user_id
+    ```
+
+31. Group by vs partition by
+32. row_number, rank, dense_rank
+33. What step you would take to do data validation after migration
+34. What step you will do for Data Quality check after migration
+35. Is there any tool you will use for Data quality
+36. What you did not like or can do better in your current project with the architecture
+37. What will you do if count validation and hash validation is same but the result and not as expected
+38. What performance issue you have faced in your project and how you resolved it
+39. What type of cluster you where using
+40. CI/CD how its implemented and how you move the code to higher environment
+41. Experience with the Delta live tables
+42. Unity Catalog experience
+
+---
+
+## Interview 35
+
+**Date:** 03/07/2024
+
+### Questions
+
+1. **How do you process csv file and make it structure for pre-processing layer?**
+
+    ```
+    employeeid  name
+    12345       Shankar
+
+                DOB
+                05-06-2000
+    ```
+
+2. Repartition and coalesce
+
+3. Design a solution, procure resource, where you are getting source as files and after medallion arch need to ingest to azure sql data warehouse and to reporting layer and let know the tech stack involved
+
+4. Which are all data modelling you have worked on
+
+5. SCD type and in which scenario you have used it
+
+6. Your gold layer files are in parquet and taking to curated there is a schema change how do you accommodate
+
+7. What difficulties you have encountered in ETL ADF/ADB
+
+8. You need to get file name, with ADF or ADB which is best way and why its
+
+9. You are having null/blank data in non-primary column, how do you confirm that null/blank data is needed or not
+
+10. For the above qus 9, how null/blank data will be represented with constant value either it can be string or integer column
+
+11. Your source is event based processed till gold layer and further batch processing need to be done in curated layer and stored in sql db, what tech stack you will use
+
+12. In your table, there is no columns with timestamp or version flag, etc., need to get the latest desg of the employees, row can be high
+
+    | employeeid | name  | desg |
+    |------------|-------|------|
+    | 1          | Shank | sw   |
+    | 2          | Sam   | sw   |
+    | 1          | Shank | ssw  |
+
+13. Optimization techniques used in project
+
+14. Azure key vault and secret scope
+
+15. Methods used to secure the secrets in ADB
+
+16. Profile previous exp, tech stack worked and Project discussion
+
+17. Any exp on azure sql warehouse (synapse), analysis services, cognitive services
+
+18. Questions related to azure synapse - Replicate, hash, round robin
+
+19. Creating external table in sql warehouse
+
+---
+
+## Interview 36
+
+**Technology Areas:** Python, SQL
+
+### Questions
+
+1. Using pandas to extract data from DB
+2. Using pandas to extract excel and write into excel
+3. Pandas - merge, join
+4. SQL ques
+
+---
+
+## Interview 37
+
+**Technology Areas:** Azure, Databricks, Pyspark, sql, Python
+
+### Questions
+
+1. Project Discussion
+2. Technology you have worked in previous projects
+3. Have you worked on Databricks?
+4. Databricks architecture
+5. Optimization techniques used in previous projects
+6. Medallion arch - (Bronze-Gold-Silver)
+7. Datalake vs Datawarehouse
+8. Delta Lake
+9. File formats used like parquet, etc.,
+10. Unity Catalog and how do to serve data
+11. Recipient and provider
+12. DLT (Delta live tables)
+13. Have you done Data with delta sharing and how?
+14. Types of sharing
+15. How do you share data if its outside the org (or) different workspace?
+16. Different type workspace in databricks?
+17. What are Linked Services in Azure DataFactory?
+18. Different types of Triggers in Azure DataFactory?
+19. How to Run a Databricks notebook from Azure Data Factory?
+20. How to trigger a mail from Azure Data Factory on Job Failure?
+21. What are DataMarts? Explain the use of DataMarts?
