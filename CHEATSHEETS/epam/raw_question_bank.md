@@ -300,3 +300,676 @@ SQL query to find deptwise third highest salary
     - a. There were multiple tables with fact-dimension tables from which multiple use cases were asked like maximum hrs work logged by users; second max events with some specific event type;
     - b. A generic question on sql. Use case of partitioning.
     - c. Exchange Seats - LeetCode
+
+---
+
+## Interview 9
+
+### Questions
+
+1. Project discussion in depth
+
+2. **Python:** The question was more on to do in such a way that it gives most optimized results.
+
+    **Question:** Given two strings, `str1` and `str2`, create a new string, `final_output`, where each character from `str1` is replaced by a corresponding character from `str2`.
+
+    The mapping should follow these rules:
+    - Each character from `str1` is mapped to the character from `str2` at the same index, but if the character of str1 is already mapped to char of str2, we will not change the mapping.
+
+    **Example:**
+    - Input:
+        - `str1 = 'hljljq'`
+        - `str2 = 'abcdef'`
+
+    Mapping would look like: `{'h': 'a', 'l': 'b', 'j': 'c', 'q': 'f'}`
+
+    - Output:
+        - `final_output = 'abcbcf'`
+
+    Thus, the final string combines these replacements to produce `'abcbcf'`.
+
+3. Data warehouse
+    - a. Data warehousing strategies
+    - b. Difference between Slowly changing dimensions
+
+4. SQL
+    - a. There are multiple records for each id in a table, the column names are id, date. We need the latest record for every id.
+    - b. Difference between rank(), row_number(), dense_rank().
+    - c. Table name: event (all employee events will be present here) — Use Lead, Lag
+
+        Input:
+        ```
+        123, 2023-01-01, 'Hire'
+        456, 2023-02-01, 'Hire'
+        123, 2023-12-31, 'Termination'
+        456, 2024-01-31, 'Termination'
+        123, 2024-05-01, 'Hire'
+        ```
+
+        Output:
+        ```
+        123, 2023-01-01, 2023-12-31
+        456, 2023-02-01, 2024-01-31
+        123, 2024-05-01, NULL
+        ```
+
+5. Python program to return a list of indices from the given list where the sum of the elements at those indices is equal to the target.
+    - Input: `list = [1, 5, 3, 6]`, `target = 8`
+    - Output: `[1, 2] # 5 + 3 = 8`, so the index of 5 is 1 and the index of 3 is 2.
+
+6. **SQL:** Get a column "isProficient" and add 1 if sum of the skills from below table > 3 else add 0
+
+    ```
+    name | skills
+    -----------------
+    John | {"s0": "0.0", "s1": "1.0", "s2": "0.0", "s3": "1.0"}
+    Mary | {"s0": "1.0", "s1": "1.0", "s2": "1.0", "s3": "1.0"}
+    Alex | {"s0": "1.0", "s1": "0.0", "s2": "0.0", "s3": "1.0"}
+    ```
+
+---
+
+## Interview 10 — Client Interview (Multi-round)
+
+### Round 1
+
+1. Project discussion in depth
+2. Hacker Rank test: (2 SQL Ques + 1 Python Ques)
+    - a. SQL Ques: Question on group By and other question was on using aggregation with case when and group by statements.
+    - b. Python Ques: Find the index of substring from a string
+3. Spark Architecture and failure scenarios
+
+### Round 2
+
+1. Project explanation and significance or the end of goal of the project/pipeline we built.
+2. Spark
+    - a. Data Skewness issue and resolution
+    - b. Broadcast Join significance
+    - c. Spark optimizations techniques
+    - d. Different sources from where the data you pulled in last project and the quantity of data
+    - e. How will check the quality of data. Basically, how can we calculate Data Quality metrics
+    - f. What checks we keep in place while pulling the data from external sources with spark and how the failures are handled
+3. SQL — Discussion on the Differences Between GROUP BY and DISTINCT
+    - a. Could you explain the differences between the GROUP BY and DISTINCT clauses in SQL? In particular, when dealing with a table containing 100 million records, which approach would be more effective for retrieving distinct records, and why?
+    - b. Follow up ques: What is that one case where distinct will be better, if in your answer is group by is better in general.
+
+### Round 3: Interviewer — Santoshkumar Lakkanagaon
+
+1. Spent about 30 minutes discussing various aspects of past projects.
+2. How to notify developers effectively if a pipeline fails? Discussed strategies for failover and alerting systems.
+3. Create a schema design to support specific business requirements and ensure scalability with respect to Snowflake Schema.
+4. Differences between SCD1 and SCD2.
+5. Explained the SCD2 used in the project and its implementation process.
+6. Data Quality in your project.
+7. Spark Optimization techniques used in past projects.
+8. **SQL Problem:**
+
+    Tables:
+    - visits: Contains columns `visitor_id, visit_id, and date`.
+    - visitors: Contains columns `visitor_id and user_name`.
+
+    Task: Write a query to:
+    - Identify the user with the maximum visits for each day.
+    - Resolve ties by choosing the user with the lexicographically smallest name.
+
+9. Determine the maximum profit that can be made by buying/selling 1 stock. Only one time selling and buying is allowed.
+    - Array `SP = [7, 1, 5, 3, 6, 4]` contains stock prices for 6 days.
+    - Expected output: 5.
+
+---
+
+## Interview 11 — Interviewer: Santosh Kumar Lakhagaon
+
+### Questions
+
+Hackerank questions: a link was shared to join hackerrank workspace and coding was done there.
+
+1. **Python** — a list `[[1,3],[2,5],[7,9],[8,10]]` was given and asked to minimize the range if `b >= c` where `[[a, b],[c, d]]`
+2. **SQL** — visitor_id, visit_id, visit_date and visitor details table visitor_id, visitor_name — find the max visitor details for each day.
+
+---
+
+## Interview 12 — Client Interviewer: Yamika Chauhan (Atlassian DE)
+
+### Questions
+
+- Introduction and about past projects, no cross-questions on past projects
+- Asked about tech stack
+- 2 SQL Hacker Rank questions
+
+    Provided schema: `Customer, Product_name, action (either sale or refund amount), unit, amount, sale_date`
+
+    1) Return top 2 products from a given table
+    2) Based on action, we need to get sale_amount, total_revenue_amount (sale-refund), customer, and total amount per customer
+
+---
+
+## Interview 13 — Interviewer: Abhishek Gupta
+
+### Questions
+
+Hackerank questions: a link was shared to join hackerrank workspace and coding was done there.
+
+1. **Python** — a list of words is provided and they need to be grouped together based on anagrams
+2. **SQL** — customer, invoices, contacts tables were given and need to find out the customers who have invoices generated by user who never contacted that customer and also consider only those rows where contacted time is less than invoice created time and provide the total count of contacts
+
+    Schema as per what I could remember:
+    - customer: `customer id, customer name`
+    - invoices: `customer id, invoice id, contact_user id, time issued`
+    - contacts: `customer id, contact user id, contact start time`
+
+- Asked previous project experiences
+- Asked about effective documentation importance
+
+---
+
+## Interview 14 — Interviewer: Manoj Kumar (Round 1)
+
+### Questions
+
+1. Second highest salary for the employees
+2. Total duplicate records rows and the occurrence of each records based on firstname and last name.
+3. Given a list we need to return a list of anagrams.
+4. Difference between star and snowflake schema. And the use of each one.
+5. Factless fact tables
+6. What is persist in spark
+7. Various optimization techniques in spark.
+8. How to debug a spark job
+
+---
+
+## Interview 15 — Interviewer: Manoj Kumar (Round 2)
+
+### SQL
+
+1. Second highest salary for the employees
+2. Total duplicate records rows and the occurrence of each records based on firstname and last name.
+3. Out of subquery & cte which one is more performant.
+4. Use cases of ctes
+
+### Python
+
+1. Given a list we need to return a list of anagrams in the sorted order.
+2. Time complexity of the written code.
+3. Time complexity of sorted function
+4. Why data structures like list, map etc are used in python not in sql.
+
+### AWS
+
+1. Types of EC2 instances.
+2. How to retrieve the deleted object in a S3 bucket?
+
+### Spark
+
+1. Difference between Dynamic partitioning & static partitioning.
+2. What is partitioning?
+3. What is shuffle partitions?
+4. How does spark read the metadata in hive/glue?
+
+### Databricks
+
+1. What is autoscaling?
+2. What type of cluster used in Databricks?
+
+### Airflow
+
+1. How do you trigger the failed tasks in Airflow?
+
+### Data Modelling
+
+1. Difference between star & snowflake schema (draw a diagram of either one)
+2. What is relationship (one-to-one or one-to-many)
+3. Where to use star & snowflake schema?
+
+---
+
+## Interview 16 — Client interview questions from Harish Ankam
+
+### Questions
+
+- SQL query to find DAU (Daily Active Users) and MAU (Monthly Active Users), given an activity table. Schema: `user_id, date_id, activity, timestamp`
+- Python coding question to return the group of list of anagrams
+- Data modeling questions — diff between star schema and snowflake schema, explain the design, which is better and some use case questions
+- Query optimization performance-based questions
+- Previous project experiences
+
+---
+
+## Interview 17 — CI questions from Pulkit Gupta
+
+### SQL
+
+`social_media data facebook etc = src_member_id, dst_member_id, activity_type (add/remove), activity_date`
+
+1. Write query to find out 2nd level of friend a member (friend of friend)
+2. Write query to find 3rd level of friend a member (friend of 2nd level friend)
+
+Note: need to filter out data first for member which are added and not removed yet (active added member)
+
+SQL optimization for above query
+
+### Python
+
+String and substring as given return starting index of if substring is present in string, if not matching return -1, if both are empty return 0
+
+- e.g. `string = "Hello"`, `substring = 'll'` return `= 2`
+- Note: don't use built in function to search
+
+---
+
+## Interview 18 — Interviewer: Anurag Devagiri
+
+### Questions
+
+1. Project
+2. What are the challenges you faced in project?
+3. What are the option available to solve it?
+4. Which one you choose why?
+5. Optimization spark
+6. Which schema you structure you build in your project why?
+7. How you design joining keys?
+8. How you handle high volume data?
+
+**Schema:**
+
+Table: interviewer
+```
+interviewer_id,
+name,
+designation,
+org
+```
+
+Table: interview
+```
+id,
+interview_round_type,
+start_time,
+end_time,
+position_id,
+role_id
+application_id,
+interviewer_id, (interviewer)
+feedback_id, (feedback_id)
+hiring_org,
+hiring_manager
+```
+
+Table: Feedback
+```
+feedback_id,
+interview_id, (id) interview
+details_feedback,
+hire_status, (1,2,3,4,5)
+feedback_date
+```
+
+**Queries:**
+
+- How many interviewers are there in marketing org who are eligible to take interviews at each designation level.
+- How many interviews have been conducted for marketing org under John as hiring manager in 3rd quarter. (Assume Q1 starts from Jan-many)
+- How many such interviews have been conducted by John who is in M60 designation where candidates got selected (rating 3 and above)
+- How many number of interviews are taken by each employee per quarter.
+- Optimize all the code
+
+**Python:** Given string, the task is to find if pat is a substring of txt. If yes, return the index of the first occurrence, else return -1.
+- Input: `txt = "Atlassian is ssiamazing"`, `pat = "ssi"`
+- Output: `4`
+
+---
+
+## Interview 19 — Interviewer: Manoj
+
+### Questions
+
+2 SQL questions:
+1. How to find the second highest salary using data frame and sql (sql should be ran through hacker rank and pyspark just to check knowledge)
+2. How to find the duplicate records using data frame and sql (sql should be ran through hacker rank and pyspark just to check knowledge)
+
+3. Python code — How to find the anagrams and sort them alphabetically while providing output.
+
+Other questions:
+- Star schema vs snowflake schema?
+- When to use star schema and when to use snowflake schema for reporting?
+- Design a scheme for the product sales? (ask for the which schema they want us to be design and then proceed) — relationship between dimension and fact table for the above scenario.
+- There would be canvas provided to design schema so practice on the boards.
+- What are partitions in spark?
+- Difference between partition and shuffle partition?
+- How dynamic and static partition works.
+- How spark interacts with the hive metastore? Detailed description of how spark will communicate and would be informed about partition details?
+
+---
+
+## Interview 20 — Interview Name: Judy Thomas
+
+### SQL
+
+Visitors & visits table
+
+Write the sql query to find the customer who has maximum number of visits everyday. If there is an overlapping count then the customer with lower alphabetical order should be given preference.
+
+### Python
+
+**Merge Overlapping Intervals**
+- `intervals = [[1, 3], [2, 4], [5, 7], [6, 8], [9, 10]]`
+- `output = [[1, 4], [5, 8], [9, 10]]`
+- if `b >= c` where `[[a, b], [c, d]]`
+
+**Python**
+- `Input = [1, 3, 2, 2, 3, 1]`
+- `Output = [1, 1, 2, 2, 3, 3]`
+- Without using sorting and bubble sort method
+
+---
+
+## Interview 21 — Interviewer: Santoshkumar Lakkanagaon
+
+### Project Questions
+
+- What are the tools and technologies you have used?
+- Explain the different dimensional modeling schemas you've worked with and how you decide which one to use.
+- Discuss any challenges faced and how you overcame them.
+- Describe your approach to designing efficient data warehouses using dimensional modeling for large datasets and complex reporting requirements, with an example of optimizing models for better performance.
+- Have you used Kimball or Inmon approaches for data warehouse design? If so, explain the differences and how you choose between them.
+
+### 1 SQL Question
+
+Atlassian wants to measure website engagement over several days. Given two tables, 'visits' and 'visitors', with columns for visit date, visitor ID, number of pages viewed, and visitor name.
+
+- Write a query to find the visitor who made the most visits each day.
+- If there's a tie, select the visitor whose username is alphabetically first.
+
+### 1 Python Question
+
+You are given a collection of intervals, where each interval is represented as `[start, end]`. Your task is to merge overlapping intervals and return a list of merged intervals. Two intervals `[a, b]` and `[c, d]` are considered overlapping if `b >= c` (at least one common point).
+
+For example: Input: `[[1, 3], [2, 6], [8, 10], [15, 18]]` Output: `[[1, 6], [8, 10], [15, 18]]` Explanation: `[1, 3]` and `[2, 6]` overlap, so merge them into `[1, 6]`.
+
+---
+
+## Interview 22 — Interviewer: Srushti Tijare
+
+### Questions
+
+1) Previous Project Experience
+2) What techniques did you implemented in spark in your old projects
+3) What are the best practises or developments which you have done in your previous data engineering experience
+4) Did u do any optimisations
+5) What is the size of the data you have worked with and based on the data few practical scenario questions
+6) Few questions based on optimisation approach
+
+### SQL queries — two queries
+
+Schema based on remembrance: `user_name, date, status, sale, refund, amount, units` — Find the total sales and total refund and net revenue for each user and round the final output to two decimal places
+
+**Query 2:**
+
+`user_name, date, status, sale, refund, amount, units, frequency` — find the expiry date for each user and product level granularity
+
+We need to calculate expiry date in such a way that it would be next purchase date and if the status is refund populate the date and if the purchase date is null, make sure to populate the expiry date based on frequency like weekly and monthly.
+
+### Python question
+
+- Input = `[1,2,3,4,5,6,7,7,7]`
+- Target = `7`
+- Output = `[6,8]`
+
+Find the index of first and last position for target element in the array.
+
+Explain how u could solve it and how u approach to the question and tell the complexity and write the code in the optimised way.
+
+---
+
+## Interview 23 — SQL Solutions (from reference page)
+
+### SQL 1: Find Second Degree Friends — Friends of Friends
+
+```sql
+create table friends (
+    src_id integer,
+    dest_id integer,
+    activity_type varchar,
+    activity_time date
+);
+
+insert into friends values(1,2,'add','2024-01-01');
+insert into friends values(1,3,'remove','2024-01-01');
+insert into friends values(2,1,'add','2024-01-01');
+insert into friends values(2,4,'add','2024-01-01');
+insert into friends values(4,2,'add','2024-01-01');
+insert into friends values(4,3,'add','2024-01-01');
+
+with cte as (
+    select *,
+        row_number() over(partition by src_id, dest_id order by activity_time desc) as rn
+    from friends
+    where activity_type='add'
+)
+select distinct
+    case
+        when a.src_id < b.dest_id then a.src_id else b.dest_id
+    end as src_id,
+    case
+        when a.src_id > b.dest_id then a.src_id else b.dest_id
+    end as dest_id
+from cte a
+inner join cte b
+on a.dest_id = b.src_id
+where a.rn = 1 and b.rn = 1
+and a.src_id != b.dest_id
+order by src_id;
+```
+
+Expected output:
+```
+1, 4
+2, 3
+```
+
+### SQL 2
+
+Calculate next purchase date for the product based of sale type and subscription.
+
+For a customer and product, use next purchase date - 1 and if there is no next purchase date, use 30 days (for monthly) and 365 days (for yearly)
+
+Table structure: `customer, product, subscription, sale_type, date`
+
+---
+
+## Interview 24 — Interviewer: Santoshkumar Lakkanagaon (Additional)
+
+### 1 SQL Question
+
+1. `social_media data facebook etc = src_member_id, dst_member_id, activity_type (add/remove), activity_date`
+    - a. Write query to find out 2nd level of friend a member (friend of friend)
+    - b. Write query to find 3rd level of friend a member (friend of 2nd level friend)
+
+Note: need to filter out data first for member which are added and not removed yet (active added member)
+
+### 1 Python Question
+
+Given string, the task is to find if pat is a substring of txt. If yes, return the index of the first occurrence, else return -1.
+
+Time and Space Complexity were asked
+
+### Other Questions
+
+- Spark optimization Techniques
+- How do you fix a long running job
+- AWS Services Used
+- What is SNS?
+- Types of Data Modelling
+- What is SCD 2? How to implement SCD2
+
+---
+
+## Interview 25 — Interviewer: Sriram
+
+### Schema (ER Diagram)
+
+```
++--------------------+
+| salesperson        |
++--------------------+
+| salesperson_id PK  |-----+
+| salesperson_name   |     |
+| manager_id FK      |     |
++--------------------+     |
+         |                 |
+         |                 |
++------------------+       |    +------------------+
+| product          |       |    | sales            |
++------------------+       |    +------------------+
+| product_id PK    |---+   |    | sale_id PK       |
+| product_name     |   |   +----| salesperson_id FK|
++------------------+   |        | sale_amt         |
+                       |        | sale_date        |
+                       +--------| product_id FK    |
+                                +------------------+
+```
+
+### Table: Salesperson
+
+| salesperson_id | salesperson_name | manager_id |
+|----------------|------------------|------------|
+| 1              | Alice            | NULL       |
+| 2              | Bob              | 1          |
+| 3              | Charlie          | 1          |
+| 4              | David            | 2          |
+| 5              | Eve              | 2          |
+
+### Table: Product
+
+| product_id | product_name |
+|------------|--------------|
+| 101        | JIRA         |
+| 102        | Confluence   |
+| 103        | Compass      |
+| 104        | Test Prd-1   |
+| 105        | Test Prd-2   |
+
+### Table: Sales
+
+| sale_id | salesperson_id | sale_amt | sale_date  | product_id |
+|---------|----------------|----------|------------|------------|
+| 1001    | 1              | 500      | 2024-01-01 | 101        |
+| 1002    | 2              | 300      | 2024-01-02 | 102        |
+| 1003    | 3              | 700      | 2024-01-03 | 103        |
+| 1004    | 4              | 450      | 2024-01-04 | 101        |
+| 1005    | 5              | 600      | 2024-01-05 | 102        |
+| 1006    | 1              | 500      | 2024-02-01 | 103        |
+| 1007    | 2              | 300      | 2024-02-02 | 101        |
+| 1008    | 3              | 700      | 2024-02-03 | 102        |
+| 1009    | 4              | 450      | 2024-02-04 | 103        |
+| 1010    | 5              | 600      | 2024-02-05 | 103        |
+
+### SQL Questions
+
+**1. Write a SQL query to calculate the average sales amount for each product in the year 2024.**
+
+```sql
+SELECT p.product_name, coalesce(avg(s.sale_amt), 0)
+from Sales s
+left join product p on s.product_id = p.product_id
+where year(sale_date) = '2024'
+group by p.product_name
+```
+
+**2. Write a SQL query to retrieve the names of the salespersons who sold both Jira and Confluence in Jan 2024.**
+
+```sql
+select
+    s.salesperson_name,
+    p.product_name
+from sales s
+join product p
+    on s.product_id = p.product_id
+join salesperson sp
+    on s.salesperson_id = sp.salesperson_id
+where date_trunc('month', s.sale_date) = '2024-01-01'
+    and p.product_name in ('JIRA', 'Confluence')
+group by p.product_name, s.salesperson_name
+having count(distinct p.product_name) = 2
+```
+
+**3. Print the salesperson_name, manager_name**
+
+Expected output:
+```
+Alice, NULL
+Bob, Alice
+Charlie, Alice
+David, Bob
+Eve, Bob
+```
+
+```sql
+SELECT
+    s.salesperson_name,
+    m.salesperson_name manager_name
+from salesperson s
+join salesperson m
+    on s.manager_id = m.salesperson_id
+```
+
+**4. Write a SQL query to retrieve the names of the products that made no sale in 2024.**
+
+### Python Questions
+
+**Q1:** Add two numbers
+```python
+def addNumbers(a, b):
+    sum = a + b
+    return sum
+
+num1 = int(input())
+num2 = int(input())
+print("The sum is", addNumbers(num1, num2))
+```
+
+**Q2:** Given a list, print the elements in the odd position.
+- Input: `[0, 1, 2, 3, 4, 5]`
+- Output: `[1, 3, 5]`
+
+```python
+res = []
+for i in range(0, len(Input)):
+    if i % 2 != 0:
+        res.append(Input[i])
+return res
+```
+
+**Q3:** Given a list, print a running cumulative sum of its items.
+- Input: `[1, 2, 3]`
+- Output: `[1, 3, 6]`
+
+```python
+res = []
+t_sum = 0
+for i in range(0, len(Input)):
+    t_sum += Input[i]
+    res.append(t_sum)
+return res
+```
+
+**Q4:** Given a string, write a python function to calculate the average length of the words in the string.
+- Input: `"Hello World"`
+- Output: 5
+
+```python
+l = Input.split(" ")  # ["Hello","World"]
+n = len(l)
+
+t_sum = 0
+for i in range(0, n):
+    t_sum += len(l[i])
+return t_sum / n
+```
+
+**Q5:** Find the min and max element from the list and remove these element from the final results.
+- Input: `[10, 57, 17, 90, 100]`
+- Output: `[57, 17, 90]`
+
+**Q6:** Remove the element which exceeds the threshold point
+- Input: `[1, 5, 6, 2, 9, 10]`, threshold = 5
+- Output: `[1, 5, 2]`
