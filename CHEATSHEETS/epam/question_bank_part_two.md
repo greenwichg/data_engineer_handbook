@@ -1,6 +1,8 @@
 # Interview-70
 
-**Topics:** PySpark | Python | DataBricks | SQL
+**Position Role:** A3
+
+**Technology Areas:** PySpark, Python, Databricks, SQL
 
 ---
 
@@ -21,9 +23,11 @@
 
 # Interview-71
 
-**Interviewer:** shrivishnu and vishwas
+**Position Role:** A3
 
-**Interviewee:** Shruti Dhage
+**Technology Areas:** PySpark, Python, Databricks, SQL
+
+**Interviewer:** shrivishnu and vishwas
 
 Hi I have recently attended interview for swiss re project and cleared it. Most of the questions are already covered in KB page. I have not faced any new questions. However for your ease of understanding and getting selected for swiss re i have created this attached document. This contains all the questions along with answers which i had faced or others faced. Please go through it in case if you have interview with Swiss re. All the best!
 
@@ -35,7 +39,9 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 # Interview-72
 
-**Topics:** Java, SQL, Data Engineering, GCP
+**Position Role:** A4
+
+**Technology Areas:** Java, SQL, Data Engineering, GCP
 
 ---
 
@@ -71,7 +77,9 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 # Interview-73
 
-**Topics:** Python, Pyspark, SQL, Data Engineering
+**Position Role:** A3-A4
+
+**Technology Areas:** Python, Pyspark, SQL, Data Engineering
 
 ---
 
@@ -140,7 +148,9 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 # Interview-74
 
-**Topics:** Spark
+**Position Role:** A2-A3
+
+**Technology Areas:** PySpark, Databricks, Spark, Python
 
 ---
 
@@ -346,9 +356,9 @@ c_id, f_name, city, state, country, dob
 
 # Interview-76
 
-**Group:** A3-A4
+**Group:** A3
 
-**Topics:** Spark, Databricks, SQL, PySpark, Pandas
+**Topics:** Python, PySpark, SQL
 
 ---
 
@@ -431,7 +441,9 @@ c_id, f_name, city, state, country, dob
 
 # Interview-77
 
-**Topics:** AWS, Delta Tables, Python
+**Group:** A3-A5
+
+**Topics:** AWS, Python, Spark
 
 ---
 
@@ -467,7 +479,7 @@ c_id, f_name, city, state, country, dob
 
 # Interview-78
 
-**Group:** A3-A4
+**Group:** A4
 
 **Topics:** Python, PySpark, Databricks, AWS
 
@@ -571,7 +583,7 @@ c_id, f_name, city, state, country, dob
 
 # Interview-80
 
-**Group:** A3-A4
+**Group:** A3
 
 **Topics:** Python, Spark, SQL
 
@@ -614,9 +626,9 @@ Output : [3, 2, 2]
 
 # Interview-81
 
-**Group:** A3-A4
+**Group:** A1
 
-**Topics:** Spark, SQL
+**Topics:** PySpark, Databricks, SQL
 
 ---
 
@@ -638,7 +650,7 @@ Output : [3, 2, 2]
 
 # Interview-82
 
-**Group:** A3-A4
+**Group:** A3
 
 **Topics:** PySpark, Databricks, SQL
 
@@ -674,7 +686,7 @@ Output : [3, 2, 2]
 
 # Interview-83
 
-**Group:** A3-A4
+**Group:** A3
 
 **Topics:** PySpark, DataBricks, Airflow, CICD, AWS
 
@@ -775,6 +787,8 @@ emp_id  emp_name  mgr_id
 
 # Interview-85
 
+**Group:** A3-A4
+
 **Topics:** PySpark, SQL, Python
 
 ---
@@ -803,6 +817,8 @@ emp_id  emp_name  mgr_id
 ---
 
 # Interview-86
+
+**Group:** A3-A4
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
 
@@ -833,6 +849,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-87
+
+**Group:** A3-A4
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
 
@@ -871,6 +889,8 @@ Detailed discussion About the previous project
 
 # Interview-88
 
+**Group:** A2-A3
+
 **Topics:** Glue, EMR, Redshift, dbt
 
 ---
@@ -908,6 +928,8 @@ Detailed discussion About the previous project
 
 # Interview-89
 
+**Group:** A3
+
 **Topics:** Python
 
 ---
@@ -940,7 +962,9 @@ Detailed discussion About the previous project
 
 # Interview-90
 
-**Topics:** Glue, Python, PySpark, SQL
+**Group:** A3
+
+**Topics:** AWS Glue, Python, PySpark, SQL
 
 ---
 
@@ -976,6 +1000,8 @@ Detailed discussion About the previous project
 
 # Interview-91
 
+**Group:** A3
+
 **Topics:** Python, PySpark, SQL, CI/CD
 
 ---
@@ -1003,6 +1029,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-92
+
+**Group:** A3
 
 **Topics:** GCP, Python, SQL, PySpark, Airflow
 
@@ -1054,6 +1082,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-93
+
+**Group:** A2-A3
 
 **Topics:** SQL, PySpark, Azure
 
@@ -1280,7 +1310,9 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-99
 
-**Topics:** Databricks, Delta Lake, Spark, Azure, SQL, PySpark
+**Group:** A4
+
+**Topics:** SQL, PySpark, Azure, Python
 
 ---
 
@@ -1436,6 +1468,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-100
 
+**Group:** A4
+
 **Topics:** SQL, Scala, Airflow, Spark, AWS, Python
 
 ---
@@ -1463,7 +1497,9 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-101
 
-**Topics:** Spark, Airflow, Python, SQL, Cloud, Data
+**Group:** A3
+
+**Topics:** Python, Spark, Airflow, cloud, AWS, SQL, PySpark, Data Warehousing, ETL
 
 ---
 
@@ -1507,7 +1543,9 @@ jhl
 
 # Interview-102
 
-**Topics:** Snowflake, Airflow, ETL
+**Group:** A3
+
+**Topics:** Python, Airflow, AWS, ETL, Snowflake, SQL
 
 ---
 
@@ -1533,7 +1571,9 @@ jhl
 
 # Interview-103
 
-**Topics:** Spark, SQL, Python, AWS, Airflow
+**Group:** A3
+
+**Topics:** PySpark, AWS, SQL, Airflow, Spark
 
 ---
 
@@ -1597,7 +1637,9 @@ Solve using SQL.
 
 # Interview-104
 
-**Topics:** SQL, GCP, Data
+**Group:** A1
+
+**Topics:** SQL, Data Engineering, GCP, Data Ingestion
 
 ---
 
@@ -1629,6 +1671,8 @@ Tables:
 ---
 
 # Interview-105
+
+**Group:** A3
 
 **Topics:** ADF, Azure DevOps, Databricks, Apache Spark, PySpark
 
@@ -1684,6 +1728,8 @@ c. What is dimension and fact table
 
 # Interview-106
 
+**Group:** A3
+
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1723,6 +1769,8 @@ c. What is dimension and fact table
 
 # Interview-107
 
+**Group:** A2
+
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1740,7 +1788,9 @@ c. What is dimension and fact table
 
 # Interview-108
 
-**Topics:** Google Cloud Platform, Python, PySpark, SQL
+**Group:** A3
+
+**Topics:** Data Integration, Google Cloud, Big Query, Google Cloud Storage Python, SQL
 
 ---
 
@@ -1764,6 +1814,8 @@ c. What is dimension and fact table
 ---
 
 # Interview-109
+
+**Group:** A3
 
 **Topics:** SQL, Python, PySpark, AWS
 
@@ -1811,6 +1863,8 @@ c. What is dimension and fact table
 
 # Interview-110
 
+**Group:** A4
+
 **Topics:** Python, AWS, PySpark, CI/CD
 
 ---
@@ -1857,6 +1911,8 @@ c. What is dimension and fact table
 ---
 
 # Interview-111
+
+**Group:** A4
 
 **Topics:** Spark, Databricks, Python, Snowflake, SQL
 
