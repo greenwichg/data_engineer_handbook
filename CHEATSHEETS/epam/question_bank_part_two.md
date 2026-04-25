@@ -1,8 +1,6 @@
 # Interview-70
 
-**Position Role:** A3
-
-**Technology Areas:** PySpark, Python, Databricks, SQL
+**Topics:** PySpark | Python | DataBricks | SQL
 
 ---
 
@@ -23,11 +21,9 @@
 
 # Interview-71
 
-**Position Role:** A3
-
-**Technology Areas:** PySpark, Python, Databricks, SQL
-
 **Interviewer:** shrivishnu and vishwas
+
+**Interviewee:** Shruti Dhage
 
 Hi I have recently attended interview for swiss re project and cleared it. Most of the questions are already covered in KB page. I have not faced any new questions. However for your ease of understanding and getting selected for swiss re i have created this attached document. This contains all the questions along with answers which i had faced or others faced. Please go through it in case if you have interview with Swiss re. All the best!
 
@@ -39,9 +35,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 # Interview-72
 
-**Position Role:** A4
-
-**Technology Areas:** Java, SQL, Data Engineering, GCP
+**Topics:** Java, SQL, Data Engineering, GCP
 
 ---
 
@@ -77,9 +71,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 # Interview-73
 
-**Position Role:** A3-A4
-
-**Technology Areas:** Python, Pyspark, SQL, Data Engineering
+**Topics:** Python, Pyspark, SQL, Data Engineering
 
 ---
 
@@ -148,9 +140,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 # Interview-74
 
-**Position Role:** A2-A3
-
-**Technology Areas:** PySpark, Databricks, Spark, Python
+**Topics:** Spark
 
 ---
 
@@ -356,9 +346,9 @@ c_id, f_name, city, state, country, dob
 
 # Interview-76
 
-**Group:** A3
+**Group:** A3-A4
 
-**Topics:** Python, PySpark, SQL
+**Topics:** Spark, Databricks, SQL, PySpark, Pandas
 
 ---
 
@@ -441,9 +431,7 @@ c_id, f_name, city, state, country, dob
 
 # Interview-77
 
-**Group:** A3-A5
-
-**Topics:** AWS, Python, Spark
+**Topics:** AWS, Delta Tables, Python
 
 ---
 
@@ -479,7 +467,7 @@ c_id, f_name, city, state, country, dob
 
 # Interview-78
 
-**Group:** A4
+**Group:** A3-A4
 
 **Topics:** Python, PySpark, Databricks, AWS
 
@@ -583,7 +571,7 @@ c_id, f_name, city, state, country, dob
 
 # Interview-80
 
-**Group:** A3
+**Group:** A3-A4
 
 **Topics:** Python, Spark, SQL
 
@@ -626,9 +614,9 @@ Output : [3, 2, 2]
 
 # Interview-81
 
-**Group:** A1
+**Group:** A3-A4
 
-**Topics:** PySpark, Databricks, SQL
+**Topics:** Spark, SQL
 
 ---
 
@@ -650,7 +638,7 @@ Output : [3, 2, 2]
 
 # Interview-82
 
-**Group:** A3
+**Group:** A3-A4
 
 **Topics:** PySpark, Databricks, SQL
 
@@ -686,7 +674,7 @@ Output : [3, 2, 2]
 
 # Interview-83
 
-**Group:** A3
+**Group:** A3-A4
 
 **Topics:** PySpark, DataBricks, Airflow, CICD, AWS
 
@@ -787,8 +775,6 @@ emp_id  emp_name  mgr_id
 
 # Interview-85
 
-**Group:** A3-A4
-
 **Topics:** PySpark, SQL, Python
 
 ---
@@ -817,8 +803,6 @@ emp_id  emp_name  mgr_id
 ---
 
 # Interview-86
-
-**Group:** A3-A4
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
 
@@ -849,8 +833,6 @@ Detailed discussion About the previous project
 ---
 
 # Interview-87
-
-**Group:** A3-A4
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
 
@@ -889,8 +871,6 @@ Detailed discussion About the previous project
 
 # Interview-88
 
-**Group:** A2-A3
-
 **Topics:** Glue, EMR, Redshift, dbt
 
 ---
@@ -928,8 +908,6 @@ Detailed discussion About the previous project
 
 # Interview-89
 
-**Group:** A3
-
 **Topics:** Python
 
 ---
@@ -962,9 +940,7 @@ Detailed discussion About the previous project
 
 # Interview-90
 
-**Group:** A3
-
-**Topics:** AWS Glue, Python, PySpark, SQL
+**Topics:** Glue, Python, PySpark, SQL
 
 ---
 
@@ -1000,8 +976,6 @@ Detailed discussion About the previous project
 
 # Interview-91
 
-**Group:** A3
-
 **Topics:** Python, PySpark, SQL, CI/CD
 
 ---
@@ -1029,8 +1003,6 @@ Detailed discussion About the previous project
 ---
 
 # Interview-92
-
-**Group:** A3
 
 **Topics:** GCP, Python, SQL, PySpark, Airflow
 
@@ -1082,8 +1054,6 @@ Detailed discussion About the previous project
 ---
 
 # Interview-93
-
-**Group:** A2-A3
 
 **Topics:** SQL, PySpark, Azure
 
@@ -1310,9 +1280,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-99
 
-**Group:** A4
-
-**Topics:** SQL, PySpark, Azure, Python
+**Topics:** Databricks, Delta Lake, Spark, Azure, SQL, PySpark
 
 ---
 
@@ -1468,8 +1436,6 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-100
 
-**Group:** A4
-
 **Topics:** SQL, Scala, Airflow, Spark, AWS, Python
 
 ---
@@ -1497,9 +1463,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-101
 
-**Group:** A3
-
-**Topics:** Python, Spark, Airflow, cloud, AWS, SQL, PySpark, Data Warehousing, ETL
+**Topics:** Spark, Airflow, Python, SQL, Cloud, Data
 
 ---
 
@@ -1543,9 +1507,7 @@ jhl
 
 # Interview-102
 
-**Group:** A3
-
-**Topics:** Python, Airflow, AWS, ETL, Snowflake, SQL
+**Topics:** Snowflake, Airflow, ETL
 
 ---
 
@@ -1571,9 +1533,7 @@ jhl
 
 # Interview-103
 
-**Group:** A3
-
-**Topics:** PySpark, AWS, SQL, Airflow, Spark
+**Topics:** Spark, SQL, Python, AWS, Airflow
 
 ---
 
@@ -1637,9 +1597,7 @@ Solve using SQL.
 
 # Interview-104
 
-**Group:** A1
-
-**Topics:** SQL, Data Engineering, GCP, Data Ingestion
+**Topics:** SQL, GCP, Data
 
 ---
 
@@ -1671,8 +1629,6 @@ Tables:
 ---
 
 # Interview-105
-
-**Group:** A3
 
 **Topics:** ADF, Azure DevOps, Databricks, Apache Spark, PySpark
 
@@ -1728,8 +1684,6 @@ c. What is dimension and fact table
 
 # Interview-106
 
-**Group:** A3
-
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1769,8 +1723,6 @@ c. What is dimension and fact table
 
 # Interview-107
 
-**Group:** A2
-
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1788,9 +1740,7 @@ c. What is dimension and fact table
 
 # Interview-108
 
-**Group:** A3
-
-**Topics:** Data Integration, Google Cloud, Big Query, Google Cloud Storage Python, SQL
+**Topics:** Google Cloud Platform, Python, PySpark, SQL
 
 ---
 
@@ -1814,8 +1764,6 @@ c. What is dimension and fact table
 ---
 
 # Interview-109
-
-**Group:** A3
 
 **Topics:** SQL, Python, PySpark, AWS
 
@@ -1862,8 +1810,6 @@ c. What is dimension and fact table
 ---
 
 # Interview-110
-
-**Group:** A4
 
 **Topics:** Python, AWS, PySpark, CI/CD
 
@@ -1912,8 +1858,6 @@ c. What is dimension and fact table
 
 # Interview-111
 
-**Group:** A4
-
 **Topics:** Spark, Databricks, Python, Snowflake, SQL
 
 ---
@@ -1958,3 +1902,222 @@ c. What is dimension and fact table
 
 1. List the window functions in SQL.
 2. What is the difference between LEAD and LAG?
+
+---
+
+# Interview-112
+
+**Group:** A4
+
+---
+
+## General / Project
+
+- Explain your recent project.
+- List the AWS services used in your recent project.
+- What optimizations did you use in Redshift?
+- How do you connect to the source system from Redshift?
+- What is the maximum size of data handled on a daily basis?
+- What is the difference between Redshift and DynamoDB?
+- How did you schedule the jobs in your recent project?
+
+## Spark Coding
+
+Write PySpark code for the following:
+
+```python
+data = [
+    (1, "2024-01-01 10:00", "login"),
+    (1, "2024-01-01 10:05", "click"),
+    (1, "2024-01-01 10:30", "logout"),
+    (1, "2024-01-01 11:00", "login"),
+    (1, "2024-01-01 11:10", "click"),
+    (2, "2024-01-02 09:00", "login"),
+    (2, "2024-01-02 09:45", "logout"),
+]
+schema = ['user_id', 'date_time', 'operation']
+```
+
+Expected output schema:
+```
+["user_id", "start_time", "end_time", "operations", "duration"]
+```
+
+Sample output:
+```
+1, 2024-01-01 10:00, 2024-01-01 10:30, 'login, click, logout', 30 mins
+```
+
+---
+
+# Interview-113
+
+**Group:** A3
+**Topics:** PySpark, AWS, SQL, Python
+
+---
+
+## General Questions
+
+1. About my background with data engineering
+2. Explain your most recent big data project end-to-end
+3. What are the challenges you faced and how did you resolve them?
+
+## Write SQL Query and PySpark Code to Solve the Problem
+
+Find the best-selling product in each product category.
+If there are two or more products with the same sales quantity, go by whichever product has the higher review rating.
+Return the category name and product name in alphabetical order of the category.
+
+```python
+products_columns = ["product_id", "product_name", "category_name"]
+products_data = [
+    (3690, "Game of Thrones", "Books"),
+    (5520, "Refrigerator", "Home Appliances"),
+    (5952, "Dishwasher", "Home Appliances"),
+    (3561, "IKGAI", "Books"),
+    (8741, "Convertible Laptop", "Tech Gadgets"),
+    (8154, "Gaming Keyboard", "Tech Gadgets"),
+    (8963, "Ultra Slim Smartphone", "Tech Gadgets"),
+    (5666, "Washing Machine", "Home Appliances"),
+    (3300, "Ace the Data Science Interview", "Books"),
+    (6078, "Kindle Oasis", "Amazon Kindle"),
+    (6077, "Kindle Paperwhite", "Amazon Kindle"),
+]
+
+sales_columns = ["product_id", "sales_quantity", "rating"]
+sales_data = [
+    (3690, 300, 4.9),
+    (5520, 70, 3.8),
+    (5952, 70, 4.0),
+    (3561, 290, 4.5),
+    (3300, 450, 5.0),
+    (6077, 126, 4.1),
+    (6078, 230, 4.3),
+    (8741, 40, 3.5),
+    (8963, 190, 4.5),
+    (5666, 30, 3.4),
+    (8154, 190, 4.6),
+]
+```
+
+### SQL Solution
+
+```sql
+WITH SALES AS (
+    SELECT
+        product_id,
+        SUM(sales_quantity) AS total_sales,
+        AVG(rating) AS avg_rating
+    FROM sales_data
+    GROUP BY product_id
+),
+best_selling AS (
+    SELECT
+        p.product_id,
+        p.product_name,
+        p.category_name,
+        RANK() OVER (PARTITION BY category_name ORDER BY total_sales DESC, avg_rating DESC) AS rnk
+    FROM SALES s
+    JOIN products_data p
+        ON s.product_id = p.product_id
+)
+SELECT
+    category_name,
+    product_name
+FROM best_selling
+WHERE rnk = 1
+ORDER BY
+    category_name,
+    product_name
+```
+
+### Convert to Spark Dataframe
+
+`prd_df`, `sales_df`
+
+```python
+from pyspark.sql import functions as F
+from pyspark.sql import Window
+
+total_sales_df = sales_df.groupBy('product_id').agg(
+    F.sum('sales_quantity').alias('total_sales'),
+    F.avg('rating').alias('avg_rating'))
+
+w = Window().partitionBy('category_name').orderBy(col('total_sales').desc(), col('avg_raitng').desc())
+
+final_df = (
+    total_sales_df
+    .join(prd_df, how='inner', on='product_id')
+    .withColumn('rnk', F.rank().over(w))
+    .filter(col('rnk') == 1)
+    .select(prd_df.category_name, prd_df.product_name)
+    .orderBy(col(category_name), col(product_name))
+)
+```
+
+## Python
+
+Find the longest subsequence without repeating characters
+string - 'aaabbcddddd' o/p a3b2c1d5
+
+## Questions on Spark Architecture
+
+- Broadcast join
+- Need to broadcast smaller dataframes, shuffles
+- Cloud technologies - SFTP, data transfer from cloud to cloud
+- Spills - how to reduce spills due to large file sizes
+- Any alternative for OPTIMIZE Command in native spark
+- Handling spills in Native spark application
+- EMR
+- CI/CD concepts
+- Kubernetes/Docker - What is the usage?
+
+---
+
+# Interview-114
+
+**Topics:** PySpark, SQL, Python, ADF, Databricks, Unity Catalog
+
+---
+
+## SQL
+
+Give me the rolling sum of trans_amt for 7 days for all dates from 2024-01-01 to 2025-12-31 -> 3 days before the trans date, current date and the following 3 days. Even if there is no date present, the result still should display the rolling sum for that date (taking into account that missing date has trans_amt of zero).
+
+## Architecture Interview
+
+- High-level architecture and design choice for ingesting 100+ sources into Databricks, tools and design requirements
+- Incremental deployment & configuration settings used
+
+---
+
+# Interview-115
+
+**Group:** A3-A4
+**Topics:** Snowflake, DBT
+
+---
+
+## Previous Exp
+
+1. Explain your recent project and its end-to-end architecture.
+2. What tools did you use to extract data from source systems?
+3. Did you use built-in connectors/libraries or custom code for data extraction?
+4. What types of source systems have you worked with in your data projects?
+
+## dbt
+
+1. Explain the dbt project folder structure.
+2. If you need to implement SCD Type 2, which dbt feature would you use?
+3. What are the strategies used in dbt incremental models?
+4. How do you define and create a model in dbt?
+5. How do you improve performance in dbt?
+6. How do you perform data quality checks in dbt?
+7. Where and how do you configure materialization (e.g., incremental) in dbt, block of code?
+8. Which dbt environment you worked — dbt core, dbt cloud or hybrid?
+
+## DevOps / Process
+
+1. How do you implement CI/CD pipeline in dbt project?
+2. During peer review, in what aspects do you check before promoting the code?
