@@ -68,6 +68,8 @@
 
 ## Interview 3
 
+**Position Role:** A3
+
 **Technology Areas:** Spark, SQL, Scala
 
 **Date:** 5th Oct 2025 — [Added By Gulfam Zahiruddin]
@@ -104,6 +106,8 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 ## Interview 4
 
+**Position Role:** A3
+
 **Technology Areas:** PySpark, AWS
 
 ### Questions
@@ -124,6 +128,8 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 ---
 
 ## Interview 5
+
+**Position Role:** A3
 
 **Technology Areas:** PySpark
 
@@ -154,7 +160,9 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 ## Interview 6
 
-**Technology Areas:** PySpark
+**Position Role:** A2
+
+**Technology Areas:** Spark,SQL,PySpark
 
 ### Questions
 
@@ -269,6 +277,8 @@ SQL query to find deptwise third highest salary
 
 ## Interview 7
 
+**Position Role:** A3
+
 **Technology Areas:** Spark, SQL, Scala
 
 ### Questions
@@ -284,6 +294,8 @@ SQL query to find deptwise third highest salary
 ---
 
 ## Interview 8
+
+**Position Role:** A2
 
 **Technology Areas:** Spark, Python, SQL
 
@@ -304,6 +316,10 @@ SQL query to find deptwise third highest salary
 ---
 
 ## Interview 9
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -371,6 +387,10 @@ SQL query to find deptwise third highest salary
 
 ## Interview 10 — Client Interview (Multi-round)
 
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+
 ### Round 1
 
 1. Project discussion in depth
@@ -420,6 +440,10 @@ SQL query to find deptwise third highest salary
 
 ## Interview 11 — Interviewer: Santosh Kumar Lakhagaon
 
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+
 ### Questions
 
 Hackerank questions: a link was shared to join hackerrank workspace and coding was done there.
@@ -430,6 +454,10 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ---
 
 ## Interview 12 — Client Interviewer: Yamika Chauhan (Atlassian DE)
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -445,6 +473,10 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ---
 
 ## Interview 13 — Interviewer: Abhishek Gupta
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -465,6 +497,10 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 14 — Interviewer: Manoj Kumar (Round 1)
 
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+
 ### Questions
 
 1. Second highest salary for the employees
@@ -479,6 +515,10 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ---
 
 ## Interview 15 — Interviewer: Manoj Kumar (Round 2)
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL
 
@@ -525,6 +565,10 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 16 — Client interview questions from Harish Ankam
 
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+
 ### Questions
 
 - SQL query to find DAU (Daily Active Users) and MAU (Monthly Active Users), given an activity table. Schema: `user_id, date_id, activity, timestamp`
@@ -536,6 +580,10 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ---
 
 ## Interview 17 — CI questions from Pulkit Gupta
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL
 
@@ -558,6 +606,10 @@ String and substring as given return starting index of if substring is present i
 ---
 
 ## Interview 18 — Interviewer: Anurag Devagiri
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -620,6 +672,10 @@ feedback_date
 
 ## Interview 19 — Interviewer: Manoj
 
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+
 ### Questions
 
 2 SQL questions:
@@ -637,10 +693,16 @@ Other questions:
 - Difference between partition and shuffle partition?
 - How dynamic and static partition works.
 - How spark interacts with the hive metastore? Detailed description of how spark will communicate and would be informed about partition details?
+- How in airflow we start the failed task?
+- What types of sensors available in the apache airflow?
 
 ---
 
 ## Interview 20 — Interview Name: Judy Thomas
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL
 
@@ -663,6 +725,10 @@ Write the sql query to find the customer who has maximum number of visits everyd
 ---
 
 ## Interview 21 — Interviewer: Santoshkumar Lakkanagaon
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Project Questions
 
@@ -688,6 +754,10 @@ For example: Input: `[[1, 3], [2, 6], [8, 10], [15, 18]]` Output: `[[1, 6], [8, 
 ---
 
 ## Interview 22 — Interviewer: Srushti Tijare
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -721,6 +791,10 @@ Explain how u could solve it and how u approach to the question and tell the com
 ---
 
 ## Interview 23 — SQL Solutions (from reference page)
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL 1: Find Second Degree Friends — Friends of Friends
 
@@ -778,6 +852,10 @@ Table structure: `customer, product, subscription, sale_type, date`
 
 ## Interview 24 — Interviewer: Santoshkumar Lakkanagaon (Additional)
 
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+
 ### 1 SQL Question
 
 1. `social_media data facebook etc = src_member_id, dst_member_id, activity_type (add/remove), activity_date`
@@ -804,6 +882,10 @@ Time and Space Complexity were asked
 ---
 
 ## Interview 25 — Interviewer: Sriram
+
+**Position Role:** A3
+
+**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Schema (ER Diagram)
 
