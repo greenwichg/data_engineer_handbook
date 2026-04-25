@@ -1060,6 +1060,8 @@ return t_sum / n
 
 ## Interview 26
 
+**Position Role:** A2
+
 **Technology Areas:** Spark, Pyspark, SQL
 
 ### Questions
@@ -1123,6 +1125,8 @@ return t_sum / n
 
 ## Interview 27
 
+**Position Role:** A3
+
 **Technology Areas:** SQL, PYSPARK, PYTHON, AWS
 
 ### SQL
@@ -1170,6 +1174,8 @@ return t_sum / n
 ---
 
 ## Interview 28
+
+**Position Role:** A3
 
 ### SQL Questions
 
@@ -1227,7 +1233,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 29
 
-**Technology Areas:** S3, Redshift
+**Position Role:** A3
+
+**Technology Areas:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 
 ### Technical Skills
 
@@ -1273,6 +1281,10 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 30
 
+**Position Role:** A3
+
+**Technology Areas:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
+
 ### Questions
 
 1. Project Explanation
@@ -1284,6 +1296,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ---
 
 ## Interview 31
+
+**Position Role:** A3
 
 **Technology Areas:** GCP
 
@@ -1305,6 +1319,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ---
 
 ## Interview 32
+
+**Position Role:** A3
 
 **Technology Areas:** Databricks, PySpark, Microsoft Azure, SQL
 
@@ -1351,11 +1367,13 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
     | 01-JAN-2025 | 10-JAN-2025 |
     | 08-JAN-2025 | 15-JAN-2025 |
 
-8. Write a query in SQL to print all the transaction history of all Top-10 customers. From the table `customer` and columns: `transaction_id, transaction_date, ar...` (content cut off)
+8. Write a query in SQL to print all the transaction history of all Top-10 customers. From the table `customer` and columns: `transaction_id, transaction_date, amount and customer_id`
 
 ---
 
 ## Interview 33
+
+**Position Role:** A3
 
 **Technology Areas:** Python, AWS
 
@@ -1375,6 +1393,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ---
 
 ## Interview 34
+
+**Position Role:** A2-A3
 
 **Technology Areas:** Microsoft Azure, Spark, Databricks, Python, SQL
 
@@ -1487,6 +1507,10 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 35
 
+**Position Role:** A3-A4
+
+**Technology Areas:** Microsoft Azure (ADF, SQL Warehouse), PySpark, Databricks, SQL
+
 **Date:** 03/07/2024
 
 ### Questions
@@ -1547,6 +1571,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 36
 
+**Position Role:** A3
+
 **Technology Areas:** Python, SQL
 
 ### Questions
@@ -1559,6 +1585,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ---
 
 ## Interview 37
+
+**Position Role:** A2-A3
 
 **Technology Areas:** Azure, Databricks, Pyspark, sql, Python
 
@@ -1657,6 +1685,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 39
 
+**Position Role:** A3
+
 **Technology Areas:** SQL, Pyspark, AWS, Databriks, Airflow
 
 ### R1 — Taken by Hema Raju Baipalli from SNP
@@ -1707,7 +1737,9 @@ List active users per month per year
 
 ## Interview 40
 
-**Technology Areas:** Synapse, ...
+**Position Role:** A3
+
+**Technology Areas:** SQL, PySpark, ADF, Azure, Synapse, MS Fabric, Delta Lake
 
 ### Initial Internal Round
 
@@ -1771,6 +1803,8 @@ Table: Orders
 
 ## Interview 41
 
+**Position Role:** A3
+
 **Technology Areas:** Databricks, Delta Lake
 
 ### Questions
@@ -1791,6 +1825,10 @@ Table: Orders
 ---
 
 ## Interview 42
+
+**Position Role:** A3
+
+**Technology Areas:** Python, PySpark, Databricks, ADF
 
 ### Questions
 
@@ -1826,6 +1864,8 @@ Table: Orders
 
 ## Interview 43
 
+**Position Role:** A3
+
 **Technology Areas:** DBT, Databricks, ADF, Data Vault, Spark & Python
 
 ### Questions
@@ -1850,6 +1890,8 @@ Table: Orders
 
 ## Interview 44
 
+**Position Role:** A2
+
 **Technology Areas:** Spark, Hive, File formats, Hadoop
 
 ### Questions
@@ -1870,6 +1912,10 @@ Table: Orders
 ---
 
 ## Interview 45
+
+**Position Role:** A3 - A4
+
+**Technology Areas:** Python, SQL, Databricks, ADF, Azure Functions, Azure API Management
 
 ### Questions
 
@@ -1919,6 +1965,10 @@ Table: Orders
 
 ## Interview 46
 
+**Position Role:** A3
+
+**Technology Areas:** Python, AWS
+
 ### Scenario
 
 Design a recommendation system for Food Aggregator Application, this system should be able to recommend food based on the login time of the user in realtime.
@@ -1938,6 +1988,10 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 47
 
+**Position Role:** A2
+
+**Technology Areas:** Spark, Python, SQL
+
 ### Questions
 
 1. df = [id, name, address, addresslength].
@@ -1949,6 +2003,10 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ---
 
 ## Interview 48
+
+**Position Role:** A2
+
+**Technology Areas:** SQL
 
 ### Questions
 
@@ -1963,6 +2021,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ---
 
 ## Interview 49
+
+**Position Role:** A3
 
 **Technology Areas:** Spark, Databricks, SQL, Scala
 
@@ -1988,6 +2048,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 50
 
+**Position Role:** A2
+
 **Technology Areas:** Spark, Databricks, ADF
 
 ### Questions
@@ -2002,6 +2064,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ---
 
 ## Interview 51
+
+**Position Role:** A3
 
 **Technology Areas:** MLE, Python, SQL
 
@@ -2043,6 +2107,10 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ---
 
 ## Interview 52
+
+**Position Role:** A2
+
+**Technology Areas:** Python, SQL
 
 ### Questions
 
@@ -2104,6 +2172,10 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 53
 
+**Position Role:** A4
+
+**Technology Areas:** GCP, Data Migration, Data modelling
+
 ### Level 1 (Client Interview)
 
 1. Past projects' discussion. What was your role and contributions in them?
@@ -2133,6 +2205,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 54
 
+**Position Role:** A2
+
 **Technology Areas:** Python, PySpark
 
 ### Questions
@@ -2148,6 +2222,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ---
 
 ## Interview 55
+
+**Position Role:** A2
 
 **Technology Areas:** Scala, Spark, AWS, Rest APIs
 
@@ -2167,6 +2243,10 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ---
 
 ## Interview 56
+
+**Position Role:** A2
+
+**Technology Areas:** PySpark, Databricks, SQL, Python
 
 ### Questions
 
@@ -2231,6 +2311,10 @@ Output:
 
 ## Interview 57
 
+**Position Role:** A3
+
+**Technology Areas:** Spark, Python Databricks, Medallion architecture
+
 ### Questions
 
 1. What is Medallion architecture
@@ -2247,6 +2331,10 @@ Output:
 ---
 
 ## Interview 58
+
+**Position Role:** A3
+
+**Technology Areas:** Spark, Python Databricks, Medallion architecture
 
 **Project/Team:** ADI-BUSW
 
@@ -2267,6 +2355,8 @@ Output:
 ---
 
 ## Interview 59
+
+**Position Role:** A3
 
 **Technology Areas:** Spark, Databricks, Scala, SQL
 
@@ -2291,6 +2381,8 @@ Output:
 
 ## Interview 60
 
+**Position Role:** A2
+
 **Technology Areas:** Databricks RAG, ML, Python, SQL
 
 ### Questions
@@ -2310,6 +2402,8 @@ Output:
 ---
 
 ## Interview 61
+
+**Position Role:** A2
 
 **Technology Areas:** Databricks, SQL, Spark
 
@@ -2350,6 +2444,10 @@ Output:
 
 ## Interview 62
 
+**Position Role:** A3
+
+**Technology Areas:** Spark, SQL, Databricks
+
 ### Questions
 
 1. Write a program (programming language is of your choice) to find out the set of arrays that can give a sum zero up on adding the individual elements
@@ -2379,7 +2477,9 @@ Output:
 
 ## Interview 63
 
-**Technology Areas:** PySpark, Snowflake, Databricks, Python, ...
+**Position Role:** A3
+
+**Technology Areas:** Spark/PySpark, Snowflake, Databricks, Python, Airflow
 
 ### Questions related to previous project
 
@@ -2428,6 +2528,8 @@ Output:
 ---
 
 ## Interview 64
+
+**Position Role:** A4
 
 **Technology Areas:** MLOps
 
@@ -2557,6 +2659,7 @@ Introduce and tell us about past projects.
 ## Interview 68
 
 **Position Role:** A3
+
 **Technology Areas:** Spark, Scala, Java, Airflow
 
 ### Questions
