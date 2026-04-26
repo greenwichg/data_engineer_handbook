@@ -53,6 +53,8 @@
 
 # Interview-70
 
+**Group:** 
+
 **Topics:** PySpark | Python | DataBricks | SQL
 
 ---
@@ -74,6 +76,8 @@
 
 # Interview-71
 
+**Group:** 
+
 **Interviewer:** shrivishnu and vishwas
 
 **Interviewee:** Shruti Dhage
@@ -87,6 +91,8 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 ---
 
 # Interview-72
+
+**Group:** 
 
 **Topics:** Java, SQL, Data Engineering, GCP
 
@@ -123,6 +129,8 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 ---
 
 # Interview-73
+
+**Group:** 
 
 **Topics:** Python, Pyspark, SQL, Data Engineering
 
@@ -192,6 +200,8 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 ---
 
 # Interview-74
+
+**Group:** 
 
 **Topics:** Spark
 
@@ -483,6 +493,8 @@ c_id, f_name, city, state, country, dob
 ---
 
 # Interview-77
+
+**Group:** 
 
 **Topics:** AWS, Delta Tables, Python
 
@@ -828,6 +840,8 @@ emp_id  emp_name  mgr_id
 
 # Interview-85
 
+**Group:** 
+
 **Topics:** PySpark, SQL, Python
 
 ---
@@ -856,6 +870,8 @@ emp_id  emp_name  mgr_id
 ---
 
 # Interview-86
+
+**Group:** 
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
 
@@ -886,6 +902,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-87
+
+**Group:** 
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
 
@@ -924,6 +942,8 @@ Detailed discussion About the previous project
 
 # Interview-88
 
+**Group:** 
+
 **Topics:** Glue, EMR, Redshift, dbt
 
 ---
@@ -961,6 +981,8 @@ Detailed discussion About the previous project
 
 # Interview-89
 
+**Group:** 
+
 **Topics:** Python
 
 ---
@@ -992,6 +1014,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-90
+
+**Group:** 
 
 **Topics:** Glue, Python, PySpark, SQL
 
@@ -1029,6 +1053,8 @@ Detailed discussion About the previous project
 
 # Interview-91
 
+**Group:** 
+
 **Topics:** Python, PySpark, SQL, CI/CD
 
 ---
@@ -1056,6 +1082,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-92
+
+**Group:** 
 
 **Topics:** GCP, Python, SQL, PySpark, Airflow
 
@@ -1107,6 +1135,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-93
+
+**Group:** 
 
 **Topics:** SQL, PySpark, Azure
 
@@ -1170,6 +1200,8 @@ Detailed discussion About the previous project
 
 # Interview-94
 
+**Group:** 
+
 **Topics:** PySpark
 
 ---
@@ -1197,6 +1229,8 @@ Detailed discussion About the previous project
 ---
 
 # Interview-95
+
+**Group:** 
 
 **Interview Date:** 25 Jul 2025
 
@@ -1263,6 +1297,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-96
 
+**Group:** 
+
 **Topics:** AWS, Databricks, Unity Catalog
 
 ---
@@ -1284,6 +1320,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ---
 
 # Interview-97
+
+**Group:** 
 
 **Topics:** Databricks, Delta Lake, Spark, AWS
 
@@ -1309,6 +1347,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ---
 
 # Interview-98
+
+**Group:** 
 
 **Project:** CARG-MIEX
 
@@ -1336,6 +1376,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ---
 
 # Interview-99
+
+**Group:** 
 
 **Topics:** Databricks, Delta Lake, Spark, Azure, SQL, PySpark
 
@@ -1493,6 +1535,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 # Interview-100
 
+**Group:** 
+
 **Topics:** SQL, Scala, Airflow, Spark, AWS, Python
 
 ---
@@ -1519,6 +1563,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ---
 
 # Interview-101
+
+**Group:** 
 
 **Topics:** Spark, Airflow, Python, SQL, Cloud, Data
 
@@ -1564,6 +1610,8 @@ jhl
 
 # Interview-102
 
+**Group:** 
+
 **Topics:** Snowflake, Airflow, ETL
 
 ---
@@ -1589,6 +1637,8 @@ jhl
 ---
 
 # Interview-103
+
+**Group:** 
 
 **Topics:** Spark, SQL, Python, AWS, Airflow
 
@@ -1654,6 +1704,8 @@ Solve using SQL.
 
 # Interview-104
 
+**Group:** 
+
 **Topics:** SQL, GCP, Data
 
 ---
@@ -1686,6 +1738,8 @@ Tables:
 ---
 
 # Interview-105
+
+**Group:** 
 
 **Topics:** ADF, Azure DevOps, Databricks, Apache Spark, PySpark
 
@@ -1741,6 +1795,8 @@ c. What is dimension and fact table
 
 # Interview-106
 
+**Group:** 
+
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1780,6 +1836,8 @@ c. What is dimension and fact table
 
 # Interview-107
 
+**Group:** 
+
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1796,6 +1854,8 @@ c. What is dimension and fact table
 ---
 
 # Interview-108
+
+**Group:** 
 
 **Topics:** Google Cloud Platform, Python, PySpark, SQL
 
@@ -1821,6 +1881,8 @@ c. What is dimension and fact table
 ---
 
 # Interview-109
+
+**Group:** 
 
 **Topics:** SQL, Python, PySpark, AWS
 
@@ -1868,6 +1930,8 @@ c. What is dimension and fact table
 
 # Interview-110
 
+**Group:** 
+
 **Topics:** Python, AWS, PySpark, CI/CD
 
 ---
@@ -1914,6 +1978,8 @@ c. What is dimension and fact table
 ---
 
 # Interview-111
+
+**Group:** 
 
 **Topics:** Spark, Databricks, Python, Snowflake, SQL
 
@@ -2136,6 +2202,8 @@ string - 'aaabbcddddd' o/p a3b2c1d5
 ---
 
 # Interview-114
+
+**Group:** 
 
 **Topics:** PySpark, SQL, Python, ADF, Databricks, Unity Catalog
 
