@@ -1,3 +1,56 @@
+# Interview Questions — Part Two
+
+## Table of Contents
+
+- [Interview-70](#interview-70) — PySpark | Python | DataBricks | SQL
+- [Interview-71](#interview-71)
+- [Interview-72](#interview-72) — Java, SQL, Data Engineering, GCP
+- [Interview-73](#interview-73) — Python, Pyspark, SQL, Data Engineering
+- [Interview-74](#interview-74) — Spark
+- [Interview-75](#interview-75) — A3-A4 — Spark, Scala, SQL
+- [Interview-76](#interview-76) — A3-A4 — Spark, Databricks, SQL, PySpark, Pandas
+- [Interview-77](#interview-77) — AWS, Delta Tables, Python
+- [Interview-78](#interview-78) — A3-A4 — Python, PySpark, Databricks, AWS
+- [Interview-79](#interview-79) — A3-A4 — Spark, Python, Databricks, Medallion Architecture
+- [Interview-80](#interview-80) — A3-A4 — Python, Spark, SQL
+- [Interview-81](#interview-81) — A3-A4 — Spark, SQL
+- [Interview-82](#interview-82) — A3-A4 — PySpark, Databricks, SQL
+- [Interview-83](#interview-83) — A3-A4 — PySpark, DataBricks, Airflow, CICD, AWS
+- [Interview-84](#interview-84) — A3-A4 — PySpark, DataBricks, CICD, Azure, Python, SQL
+- [Interview-85](#interview-85) — PySpark, SQL, Python
+- [Interview-86](#interview-86) — Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
+- [Interview-87](#interview-87) — Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
+- [Interview-88](#interview-88) — Glue, EMR, Redshift, dbt
+- [Interview-89](#interview-89) — Python
+- [Interview-90](#interview-90) — Glue, Python, PySpark, SQL
+- [Interview-91](#interview-91) — Python, PySpark, SQL, CI/CD
+- [Interview-92](#interview-92) — GCP, Python, SQL, PySpark, Airflow
+- [Interview-93](#interview-93) — SQL, PySpark, Azure
+- [Interview-94](#interview-94) — PySpark
+- [Interview-95](#interview-95)
+- [Interview-96](#interview-96) — AWS, Databricks, Unity Catalog
+- [Interview-97](#interview-97) — Databricks, Delta Lake, Spark, AWS
+- [Interview-98](#interview-98)
+- [Interview-99](#interview-99) — Databricks, Delta Lake, Spark, Azure, SQL, PySpark
+- [Interview-100](#interview-100) — SQL, Scala, Airflow, Spark, AWS, Python
+- [Interview-101](#interview-101) — Spark, Airflow, Python, SQL, Cloud, Data
+- [Interview-102](#interview-102) — Snowflake, Airflow, ETL
+- [Interview-103](#interview-103) — Spark, SQL, Python, AWS, Airflow
+- [Interview-104](#interview-104) — SQL, GCP, Data
+- [Interview-105](#interview-105) — ADF, Azure DevOps, Databricks, Apache Spark, PySpark
+- [Interview-106](#interview-106) — Azure Databricks, Python, SQL, Apache Spark, PySpark
+- [Interview-107](#interview-107) — Azure Databricks, Python, SQL, Apache Spark, PySpark
+- [Interview-108](#interview-108) — Google Cloud Platform, Python, PySpark, SQL
+- [Interview-109](#interview-109) — SQL, Python, PySpark, AWS
+- [Interview-110](#interview-110) — Python, AWS, PySpark, CI/CD
+- [Interview-111](#interview-111) — Spark, Databricks, Python, Snowflake, SQL
+- [Interview-112](#interview-112) — A4
+- [Interview-113](#interview-113) — A3 — PySpark, AWS, SQL, Python
+- [Interview-114](#interview-114) — PySpark, SQL, Python, ADF, Databricks, Unity Catalog
+- [Interview-115](#interview-115) — A3-A4 — Snowflake, DBT
+
+---
+
 # Interview-70
 
 **Topics:** PySpark | Python | DataBricks | SQL
@@ -297,7 +350,7 @@ for ele in all_possible:
 
 **Q2.** Create an external hive table, format as parquet, partititoned on date on below schema:
 
-```
+```text
 custid, tsn data, txn time, txn amt
 ```
 
@@ -325,7 +378,7 @@ custid, tsn data, txn time, txn amt
 
 Given `customer.csv` with schema:
 
-```
+```text
 c_id, f_name, city, state, country, dob
 ```
 
@@ -598,7 +651,7 @@ c_id, f_name, city, state, country, dob
 
 Write a program to count the vowels from given list of strings.
 
-```
+```text
 Input  : ["Kuldeep", "Chandra", "Hitesh"]
 Output : [3, 2, 2]
 ```
@@ -766,7 +819,7 @@ Output : [3, 2, 2]
 
 Write the sql query to find the names of employees & their manager names for the below schema:
 
-```
+```text
 employee
 emp_id  emp_name  mgr_id
 ```
@@ -1153,7 +1206,7 @@ Detailed discussion About the previous project
 
 **Q2)** Given below two CSV files, find the similarities and differences between files using spark or pandas.
 
-```
+```text
 file1.csv contains
 Name,Age,City
 John,25,New York
@@ -1161,7 +1214,7 @@ Emily,30,Los Angeles
 Michael,40,Chicago
 ```
 
-```
+```text
 file2.csv contains
 Name,Age,City
 John,25,New York
@@ -1196,7 +1249,7 @@ Emma,35,San Francisco
 
 Here is structure:
 
-```
+```text
 Project Name, Project Folder, VIEWER_USERS
 A, <project_identifier_1>, [User1, User2]
 B, <project_identifier_2>, [User3]
@@ -1487,7 +1540,7 @@ Identify longest substring in O(n)
 
 Solve in SQL — You want to identify the hierarchy of employees based on the managerid.
 
-```
+```text
 employee
 id   name   managerid
 1    abc    null
@@ -1497,7 +1550,7 @@ id   name   managerid
 ```
 
 If given id = 3 then output should be:
-```
+```text
 abc
 xyz
 jhl
@@ -1939,12 +1992,12 @@ schema = ['user_id', 'date_time', 'operation']
 ```
 
 Expected output schema:
-```
+```text
 ["user_id", "start_time", "end_time", "operations", "duration"]
 ```
 
 Sample output:
-```
+```text
 1, 2024-01-01 10:00, 2024-01-01 10:30, 'login, click, logout', 30 mins
 ```
 
@@ -1953,6 +2006,7 @@ Sample output:
 # Interview-113
 
 **Group:** A3
+
 **Topics:** PySpark, AWS, SQL, Python
 
 ---
@@ -2095,6 +2149,7 @@ Give me the rolling sum of trans_amt for 7 days for all dates from 2024-01-01 to
 # Interview-115
 
 **Group:** A3-A4
+
 **Topics:** Snowflake, DBT
 
 ---
@@ -2121,3 +2176,5 @@ Give me the rolling sum of trans_amt for 7 days for all dates from 2024-01-01 to
 
 1. How do you implement CI/CD pipeline in dbt project?
 2. During peer review, in what aspects do you check before promoting the code?
+
+---
