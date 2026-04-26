@@ -91,15 +91,15 @@
 6. OOM in Databricks jobs and mitigation
 7. How to migrate from existing meta store to UC
 8. Delta Shares and difference between Lakehouse and DW
-7. WorkFlows in Databricks + CDC
-8. External Tables
-9. Merge (upsert) - SQL Coding (related to SCD2)
-10. Python - From List of numbers move 0 to the end of the list and keep other positions as is
-11. How to append two dfs with uneven schema - Coding - Pyspark
-12. Lead lag and range in SQL - Coding
-13. Devops workflow, How to push code from Lower envi - Higher envis
-14. Quality Gates in Github Actions
-15. Code Quality and Data accuracy checks
+9. WorkFlows in Databricks + CDC
+10. External Tables
+11. Merge (upsert) - SQL Coding (related to SCD2)
+12. Python - From List of numbers move 0 to the end of the list and keep other positions as is
+13. How to append two dfs with uneven schema - Coding - Pyspark
+14. Lead lag and range in SQL - Coding
+15. Devops workflow, How to push code from Lower envi - Higher envis
+16. Quality Gates in Github Actions
+17. Code Quality and Data accuracy checks
 
 ---
 
@@ -296,7 +296,7 @@ You have a csv file, and there are some malformed records in it...instead of sto
 **A)** Input: `1|aaa|111|2|bbb|222|3|ccc|333`
 
 Output:
-```
+```text
 1 aaa 111
 2 bbb 222
 3 ccc 333
@@ -304,7 +304,7 @@ Output:
 
 **B)** Input:
 
-```
+```text
 |Product|Amount|Country|
 +-------+------+-------+
 | Banana|  1000|   USA |
@@ -324,7 +324,7 @@ Output:
 
 Output:
 
-```
+```text
 +-------+------+-----+------+-----+
 |Product|Canada|China|Mexico| USA |
 +-------+------+-----+------+-----+
@@ -699,7 +699,7 @@ String and substring as given return starting index of if substring is present i
 **Schema:**
 
 Table: interviewer
-```
+```text
 interviewer_id,
 name,
 designation,
@@ -707,7 +707,7 @@ org
 ```
 
 Table: interview
-```
+```text
 id,
 interview_round_type,
 start_time,
@@ -722,7 +722,7 @@ hiring_manager
 ```
 
 Table: Feedback
-```
+```text
 feedback_id,
 interview_id, (id) interview
 details_feedback,
@@ -909,7 +909,7 @@ order by src_id;
 ```
 
 Expected output:
-```
+```text
 1, 4
 2, 3
 ```
@@ -963,7 +963,7 @@ Time and Space Complexity were asked
 
 ### Schema (ER Diagram)
 
-```
+```text
 +--------------------+
 | salesperson        |
 +--------------------+
@@ -1051,7 +1051,7 @@ having count(distinct p.product_name) = 2
 **3. Print the salesperson_name, manager_name**
 
 Expected output:
-```
+```text
 Alice, NULL
 Bob, Alice
 Charlie, Alice
@@ -2350,7 +2350,7 @@ Output:
 
 Text File:
 
-```
+```text
 {
     {
         "id": "1"
@@ -2715,6 +2715,7 @@ Introduce and tell us about past projects.
 ## Interview 67
 
 **Position Role:** A3
+
 **Technology Areas:** Power BI
 
 ### PI Interview
@@ -2759,6 +2760,7 @@ Introduce and tell us about past projects.
 ## Interview 69
 
 **Position Role:** A3-A4
+
 **Technology Areas:** PySpark, Python, DataBricks, SQL
 
 ### Questions
@@ -2769,7 +2771,9 @@ Introduce and tell us about past projects.
 4. Cache Vs Persist
 5. Stages in Sort Merge Join
 6. Narrow and Wide transformations
-6. Rrepartition and coalsec
-7. Difference between drop ducpliactes and distinct.
-8. SQL Optimization
-9. Types of Indexes and their Usgae
+7. Rrepartition and coalsec
+8. Difference between drop ducpliactes and distinct.
+9. SQL Optimization
+10. Types of Indexes and their Usgae
+
+---
