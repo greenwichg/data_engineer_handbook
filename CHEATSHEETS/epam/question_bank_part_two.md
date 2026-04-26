@@ -27,10 +27,10 @@
 - [Interview-92](#interview-92) — GCP, Python, SQL, PySpark, Airflow
 - [Interview-93](#interview-93) — SQL, PySpark, Azure
 - [Interview-94](#interview-94) — PySpark
-- [Interview-95](#interview-95)
+- [Interview-95](#interview-95) — PySpark, Pandas, Python, API
 - [Interview-96](#interview-96) — AWS, Databricks, Unity Catalog
 - [Interview-97](#interview-97) — Databricks, Delta Lake, Spark, AWS
-- [Interview-98](#interview-98)
+- [Interview-98](#interview-98) — Spark, SQL, Data Modeling, Data Warehousing
 - [Interview-99](#interview-99) — Databricks, Delta Lake, Spark, Azure, SQL, PySpark
 - [Interview-100](#interview-100) — SQL, Scala, Airflow, Spark, AWS, Python
 - [Interview-101](#interview-101) — Spark, Airflow, Python, SQL, Cloud, Data
@@ -44,7 +44,7 @@
 - [Interview-109](#interview-109) — SQL, Python, PySpark, AWS
 - [Interview-110](#interview-110) — Python, AWS, PySpark, CI/CD
 - [Interview-111](#interview-111) — Spark, Databricks, Python, Snowflake, SQL
-- [Interview-112](#interview-112) — A4
+- [Interview-112](#interview-112) — A4 — AWS, Redshift, DynamoDB, PySpark, Spark
 - [Interview-113](#interview-113) — A3 — PySpark, AWS, SQL, Python
 - [Interview-114](#interview-114) — PySpark, SQL, Python, ADF, Databricks, Unity Catalog
 - [Interview-115](#interview-115) — A3-A4 — Snowflake, DBT
@@ -1200,6 +1200,8 @@ Detailed discussion About the previous project
 
 **Interview Date:** 25 Jul 2025
 
+**Topics:** PySpark, Pandas, Python, API
+
 ---
 
 **Q1)** Basic Introduction
@@ -1313,6 +1315,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 **Interviewee:** Gulfam
 
 **Interviewers:** Amogh and Chandan
+
+**Topics:** Spark, SQL, Data Modeling, Data Warehousing
 
 ---
 
@@ -1961,6 +1965,8 @@ c. What is dimension and fact table
 # Interview-112
 
 **Group:** A4
+
+**Topics:** AWS, Redshift, DynamoDB, PySpark, Spark
 
 ---
 
