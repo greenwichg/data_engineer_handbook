@@ -12,21 +12,21 @@
 - [Interview 8](#interview-8) — A2 — Spark, Python, SQL
 - [Interview 9](#interview-9) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 10 — Client Interview (Multi-round)](#interview-10--client-interview-multi-round) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 11 — Interviewer: Santosh Kumar Lakhagaon](#interview-11--interviewer-santosh-kumar-lakhagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 12 — Client Interviewer: Yamika Chauhan (Atlassian DE)](#interview-12--client-interviewer-yamika-chauhan-atlassian-de) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 13 — Interviewer: Abhishek Gupta](#interview-13--interviewer-abhishek-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 14 — Interviewer: Manoj Kumar (Round 1)](#interview-14--interviewer-manoj-kumar-round-1) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 15 — Interviewer: Manoj Kumar (Round 2)](#interview-15--interviewer-manoj-kumar-round-2) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 16 — Client interview questions from Harish Ankam](#interview-16--client-interview-questions-from-harish-ankam) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 17 — CI questions from Pulkit Gupta](#interview-17--ci-questions-from-pulkit-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 18 — Interviewer: Anurag Devagiri](#interview-18--interviewer-anurag-devagiri) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 19 — Interviewer: Manoj](#interview-19--interviewer-manoj) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 20 — Interview Name: Judy Thomas](#interview-20--interview-name-judy-thomas) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 21 — Interviewer: Santoshkumar Lakkanagaon](#interview-21--interviewer-santoshkumar-lakkanagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 22 — Interviewer: Srushti Tijare](#interview-22--interviewer-srushti-tijare) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 11](#interview-11--interviewer-santosh-kumar-lakhagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 12 — (Atlassian DE)](#interview-12--client-interviewer-yamika-chauhan-atlassian-de) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 13](#interview-13--interviewer-abhishek-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 14 — (Round 1)](#interview-14--interviewer-manoj-kumar-round-1) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 15 — (Round 2)](#interview-15--interviewer-manoj-kumar-round-2) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 16](#interview-16--client-interview-questions-from-harish-ankam) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 17](#interview-17--ci-questions-from-pulkit-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 18](#interview-18--interviewer-anurag-devagiri) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 19](#interview-19--interviewer-manoj) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 20](#interview-20--interview-name-judy-thomas) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 21](#interview-21--interviewer-santoshkumar-lakkanagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 22](#interview-22--interviewer-srushti-tijare) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 23 — SQL Solutions (from reference page)](#interview-23--sql-solutions-from-reference-page) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 24 — Interviewer: Santoshkumar Lakkanagaon (Additional)](#interview-24--interviewer-santoshkumar-lakkanagaon-additional) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 25 — Interviewer: Sriram](#interview-25--interviewer-sriram) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 24 — (Additional)](#interview-24--interviewer-santoshkumar-lakkanagaon-additional) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 25](#interview-25--interviewer-sriram) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 26](#interview-26) — A2 — Spark, Pyspark, SQL
 - [Interview 27](#interview-27) — A3 — SQL, PYSPARK, PYTHON, AWS
 - [Interview 28](#interview-28) — A3
