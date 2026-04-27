@@ -29,7 +29,7 @@
 - [Interview 25](#interview-25--interviewer-sriram) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 26](#interview-26) — A2 — Spark, PySpark, SQL
 - [Interview 27](#interview-27) — A3 — SQL, PySpark, Python, AWS
-- [Interview 28](#interview-28) — A3
+- [Interview 28](#interview-28) — A3 — SQL
 - [Interview 29](#interview-29) — A3 — AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 - [Interview 30](#interview-30) — A3 — AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 - [Interview 31](#interview-31) — A3 — GCP
@@ -1306,6 +1306,8 @@ return t_sum / n
 **Group:** A3
 
 **Client Company:** 
+
+**Topics:** SQL
 
 ### SQL Questions
 
