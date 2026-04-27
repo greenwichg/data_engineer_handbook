@@ -2,8 +2,8 @@
 
 ## Table of Contents
 
-- [Interview 1](#interview-1) — A3 — Python, Sql, Spark, Pyspark, DataBricks +UC, DevOps, ADF
-- [Interview 2](#interview-2) — A3 — Sql, Python, AWS, PySpark
+- [Interview 1](#interview-1) — A3 — Python, SQL, Spark, PySpark, Databricks +UC, DevOps, ADF
+- [Interview 2](#interview-2) — A3 — SQL, Python, AWS, PySpark
 - [Interview 3](#interview-3) — A3 — Spark, SQL, Scala
 - [Interview 4](#interview-4) — A3 — PySpark, AWS
 - [Interview 5](#interview-5) — A3 — PySpark
@@ -11,12 +11,12 @@
 - [Interview 7](#interview-7) — A3 — Spark, SQL, Scala
 - [Interview 8](#interview-8) — A2 — Spark, Python, SQL
 - [Interview 9](#interview-9) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 10 — Client Interview (Multi-round)](#interview-10--client-interview-multi-round) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 10](#interview-10--client-interview-multi-round) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 11](#interview-11--interviewer-santosh-kumar-lakhagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 12 — (Atlassian DE)](#interview-12--client-interviewer-yamika-chauhan-atlassian-de) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 12](#interview-12--client-interviewer-yamika-chauhan-atlassian-de) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 13](#interview-13--interviewer-abhishek-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 14 — (Round 1)](#interview-14--interviewer-manoj-kumar-round-1) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 15 — (Round 2)](#interview-15--interviewer-manoj-kumar-round-2) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 14](#interview-14--interviewer-manoj-kumar-round-1) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 15](#interview-15--interviewer-manoj-kumar-round-2) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 16](#interview-16--client-interview-questions-from-harish-ankam) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 17](#interview-17--ci-questions-from-pulkit-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 18](#interview-18--interviewer-anurag-devagiri) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
@@ -24,11 +24,11 @@
 - [Interview 20](#interview-20--interview-name-judy-thomas) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 21](#interview-21--interviewer-santoshkumar-lakkanagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 22](#interview-22--interviewer-srushti-tijare) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 23 — SQL Solutions (from reference page)](#interview-23--sql-solutions-from-reference-page) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 24 — (Additional)](#interview-24--interviewer-santoshkumar-lakkanagaon-additional) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 23](#interview-23--sql-solutions-from-reference-page) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 24](#interview-24--interviewer-santoshkumar-lakkanagaon-additional) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 25](#interview-25--interviewer-sriram) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 26](#interview-26) — A2 — Spark, Pyspark, SQL
-- [Interview 27](#interview-27) — A3 — SQL, PYSPARK, PYTHON, AWS
+- [Interview 26](#interview-26) — A2 — Spark, PySpark, SQL
+- [Interview 27](#interview-27) — A3 — SQL, PySpark, Python, AWS
 - [Interview 28](#interview-28) — A3
 - [Interview 29](#interview-29) — A3 — AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 - [Interview 30](#interview-30) — A3 — AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
@@ -38,9 +38,9 @@
 - [Interview 34](#interview-34) — A2-A3 — Microsoft Azure, Spark, Databricks, Python, SQL
 - [Interview 35](#interview-35) — A3-A4 — Microsoft Azure (ADF, SQL Warehouse), PySpark, Databricks, SQL
 - [Interview 36](#interview-36) — A3 — Python, SQL
-- [Interview 37](#interview-37) — A2-A3 — Azure, Databricks, Pyspark, sql, Python
+- [Interview 37](#interview-37) — A2-A3 — Azure, Databricks, PySpark, SQL, Python
 - [Interview 38](#interview-38) — A3 — Spark, Scala, Databricks, SQL
-- [Interview 39](#interview-39) — A3 — SQL, Pyspark, AWS, Databricks, Airflow
+- [Interview 39](#interview-39) — A3 — SQL, PySpark, AWS, Databricks, Airflow
 - [Interview 40](#interview-40) — A3 — SQL, PySpark, ADF, Azure, Synapse, MS Fabric, Delta Lake
 - [Interview 41](#interview-41) — A3 — Databricks, Delta Lake
 - [Interview 42](#interview-42) — A3 — Python, PySpark, Databricks, ADF
@@ -66,11 +66,11 @@
 - [Interview 62](#interview-62) — A3 — Spark, SQL, Databricks
 - [Interview 63](#interview-63) — A3 — Spark/PySpark, Snowflake, Databricks, Python, Airflow
 - [Interview 64](#interview-64) — A4 — MLOps
-- [Interview 65](#interview-65) — A4 — Python, Pyspark, DataBricks, SQL
+- [Interview 65](#interview-65) — A4 — Python, PySpark, Databricks, SQL
 - [Interview 66](#interview-66) — A3 — Spark, Java, Python, Databricks, API, SQL
 - [Interview 67](#interview-67) — A3 — Power BI
 - [Interview 68](#interview-68) — A3 — Spark, Scala, Java, Airflow
-- [Interview 69](#interview-69) — A3-A4 — PySpark, Python, DataBricks, SQL
+- [Interview 69](#interview-69) — A3-A4 — PySpark, Python, Databricks, SQL
 
 ---
 
