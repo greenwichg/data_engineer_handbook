@@ -3,7 +3,7 @@
 ## Table of Contents
 
 - [Interview 70](#interview-70) — PySpark, Python, Databricks, SQL
-- [Interview 71](#interview-71)
+- [Interview 71](#interview-71) — PySpark, Python, Databricks, SQL
 - [Interview 72](#interview-72) — Java, SQL, Data Engineering, GCP
 - [Interview 73](#interview-73) — Python, Pyspark, SQL, Data Engineering
 - [Interview 74](#interview-74) — Spark
