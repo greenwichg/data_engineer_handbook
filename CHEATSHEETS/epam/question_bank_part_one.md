@@ -1,4 +1,4 @@
-# Interview Questions
+# Interview Questions — Part One
 
 ## Table of Contents
 
@@ -146,7 +146,7 @@
 
 **Topics:** Spark, SQL, Scala
 
-**Date:** 5th Oct 2025 — [Added By Gulfam Zahiruddin]
+**Date:** 2025-10-05 — [Added By Gulfam Zahiruddin]
 
 **Interviewer:** Mukul Garg (Client Round)
 
@@ -1585,7 +1585,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Topics:** Microsoft Azure (ADF, SQL Warehouse), PySpark, Databricks, SQL
 
-**Date:** 03/07/2024
+**Date:** 2024-07-03
 
 ### Questions
 
