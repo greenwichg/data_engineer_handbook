@@ -2,60 +2,62 @@
 
 ## Table of Contents
 
-- [Interview-70](#interview-70) — PySpark | Python | DataBricks | SQL
-- [Interview-71](#interview-71)
-- [Interview-72](#interview-72) — Java, SQL, Data Engineering, GCP
-- [Interview-73](#interview-73) — Python, Pyspark, SQL, Data Engineering
-- [Interview-74](#interview-74) — Spark
-- [Interview-75](#interview-75) — A3-A4 — Spark, Scala, SQL
-- [Interview-76](#interview-76) — A3-A4 — Spark, Databricks, SQL, PySpark, Pandas
-- [Interview-77](#interview-77) — AWS, Delta Tables, Python
-- [Interview-78](#interview-78) — A3-A4 — Python, PySpark, Databricks, AWS
-- [Interview-79](#interview-79) — A3-A4 — Spark, Python, Databricks, Medallion Architecture
-- [Interview-80](#interview-80) — A3-A4 — Python, Spark, SQL
-- [Interview-81](#interview-81) — A3-A4 — Spark, SQL
-- [Interview-82](#interview-82) — A3-A4 — PySpark, Databricks, SQL
-- [Interview-83](#interview-83) — A3-A4 — PySpark, DataBricks, Airflow, CICD, AWS
-- [Interview-84](#interview-84) — A3-A4 — PySpark, DataBricks, CICD, Azure, Python, SQL
-- [Interview-85](#interview-85) — PySpark, SQL, Python
-- [Interview-86](#interview-86) — Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
-- [Interview-87](#interview-87) — Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
-- [Interview-88](#interview-88) — Glue, EMR, Redshift, dbt
-- [Interview-89](#interview-89) — Python
-- [Interview-90](#interview-90) — Glue, Python, PySpark, SQL
-- [Interview-91](#interview-91) — Python, PySpark, SQL, CI/CD
-- [Interview-92](#interview-92) — GCP, Python, SQL, PySpark, Airflow
-- [Interview-93](#interview-93) — SQL, PySpark, Azure
-- [Interview-94](#interview-94) — PySpark
-- [Interview-95](#interview-95) — PySpark, Pandas, Python, API
-- [Interview-96](#interview-96) — AWS, Databricks, Unity Catalog
-- [Interview-97](#interview-97) — Databricks, Delta Lake, Spark, AWS
-- [Interview-98](#interview-98) — Spark, SQL, Data Modeling, Data Warehousing
-- [Interview-99](#interview-99) — Databricks, Delta Lake, Spark, Azure, SQL, PySpark
-- [Interview-100](#interview-100) — SQL, Scala, Airflow, Spark, AWS, Python
-- [Interview-101](#interview-101) — Spark, Airflow, Python, SQL, Cloud, Data
-- [Interview-102](#interview-102) — Snowflake, Airflow, ETL
-- [Interview-103](#interview-103) — Spark, SQL, Python, AWS, Airflow
-- [Interview-104](#interview-104) — SQL, GCP, Data
-- [Interview-105](#interview-105) — ADF, Azure DevOps, Databricks, Apache Spark, PySpark
-- [Interview-106](#interview-106) — Azure Databricks, Python, SQL, Apache Spark, PySpark
-- [Interview-107](#interview-107) — Azure Databricks, Python, SQL, Apache Spark, PySpark
-- [Interview-108](#interview-108) — Google Cloud Platform, Python, PySpark, SQL
-- [Interview-109](#interview-109) — SQL, Python, PySpark, AWS
-- [Interview-110](#interview-110) — Python, AWS, PySpark, CI/CD
-- [Interview-111](#interview-111) — Spark, Databricks, Python, Snowflake, SQL
-- [Interview-112](#interview-112) — A4 — AWS, Redshift, DynamoDB, PySpark, Spark
-- [Interview-113](#interview-113) — A3 — PySpark, AWS, SQL, Python
-- [Interview-114](#interview-114) — PySpark, SQL, Python, ADF, Databricks, Unity Catalog
-- [Interview-115](#interview-115) — A3-A4 — Snowflake, DBT
+- [Interview 70](#interview-70) — PySpark, Python, Databricks, SQL
+- [Interview 71](#interview-71)
+- [Interview 72](#interview-72) — Java, SQL, Data Engineering, GCP
+- [Interview 73](#interview-73) — Python, Pyspark, SQL, Data Engineering
+- [Interview 74](#interview-74) — Spark
+- [Interview 75](#interview-75) — A3-A4 — Spark, Scala, SQL
+- [Interview 76](#interview-76) — A3-A4 — Spark, Databricks, SQL, PySpark, Pandas
+- [Interview 77](#interview-77) — AWS, Delta Tables, Python
+- [Interview 78](#interview-78) — A3-A4 — Python, PySpark, Databricks, AWS
+- [Interview 79](#interview-79) — A3-A4 — Spark, Python, Databricks, Medallion Architecture
+- [Interview 80](#interview-80) — A3-A4 — Python, Spark, SQL
+- [Interview 81](#interview-81) — A3-A4 — Spark, SQL
+- [Interview 82](#interview-82) — A3-A4 — PySpark, Databricks, SQL
+- [Interview 83](#interview-83) — A3-A4 — PySpark, Databricks, Airflow, CICD, AWS
+- [Interview 84](#interview-84) — A3-A4 — PySpark, Databricks, CICD, Azure, Python, SQL
+- [Interview 85](#interview-85) — PySpark, SQL, Python
+- [Interview 86](#interview-86) — Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
+- [Interview 87](#interview-87) — Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
+- [Interview 88](#interview-88) — Glue, EMR, Redshift, dbt
+- [Interview 89](#interview-89) — Python
+- [Interview 90](#interview-90) — Glue, Python, PySpark, SQL
+- [Interview 91](#interview-91) — Python, PySpark, SQL, CI/CD
+- [Interview 92](#interview-92) — GCP, Python, SQL, PySpark, Airflow
+- [Interview 93](#interview-93) — SQL, PySpark, Azure
+- [Interview 94](#interview-94) — PySpark
+- [Interview 95](#interview-95) — PySpark, Pandas, Python, API
+- [Interview 96](#interview-96) — AWS, Databricks, Unity Catalog
+- [Interview 97](#interview-97) — Databricks, Delta Lake, Spark, AWS
+- [Interview 98](#interview-98) — Spark, SQL, Data Modeling, Data Warehousing
+- [Interview 99](#interview-99) — Databricks, Delta Lake, Spark, Azure, SQL, PySpark
+- [Interview 100](#interview-100) — SQL, Scala, Airflow, Spark, AWS, Python
+- [Interview 101](#interview-101) — Spark, Airflow, Python, SQL, Cloud, Data
+- [Interview 102](#interview-102) — Snowflake, Airflow, ETL
+- [Interview 103](#interview-103) — Spark, SQL, Python, AWS, Airflow
+- [Interview 104](#interview-104) — SQL, GCP, Data
+- [Interview 105](#interview-105) — ADF, Azure DevOps, Databricks, Apache Spark, PySpark
+- [Interview 106](#interview-106) — Azure Databricks, Python, SQL, Apache Spark, PySpark
+- [Interview 107](#interview-107) — Azure Databricks, Python, SQL, Apache Spark, PySpark
+- [Interview 108](#interview-108) — Google Cloud Platform, Python, PySpark, SQL
+- [Interview 109](#interview-109) — SQL, Python, PySpark, AWS
+- [Interview 110](#interview-110) — Python, AWS, PySpark, CI/CD
+- [Interview 111](#interview-111) — Spark, Databricks, Python, Snowflake, SQL
+- [Interview 112](#interview-112) — A4 — AWS, Redshift, DynamoDB, PySpark, Spark
+- [Interview 113](#interview-113) — A3 — PySpark, AWS, SQL, Python
+- [Interview 114](#interview-114) — PySpark, SQL, Python, ADF, Databricks, Unity Catalog
+- [Interview 115](#interview-115) — A3-A4 — Snowflake, DBT
 
 ---
 
-## Interview-70
+## Interview 70
 
 **Group:** 
 
-**Topics:** PySpark | Python | Databricks | SQL
+**Client Company:** 
+
+**Topics:** PySpark, Python, Databricks, SQL
 
 ---
 
@@ -74,9 +76,11 @@
 
 ---
 
-## Interview-71
+## Interview 71
 
 **Group:** 
+
+**Client Company:** 
 
 **Interviewer:** shrivishnu and vishwas
 
@@ -90,9 +94,11 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-## Interview-72
+## Interview 72
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Java, SQL, Data Engineering, GCP
 
@@ -128,9 +134,11 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-## Interview-73
+## Interview 73
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, SQL, Data Engineering
 
@@ -199,9 +207,11 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-## Interview-74
+## Interview 74
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Spark
 
@@ -264,15 +274,17 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-## Interview-75
+## Interview 75
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Spark, Scala, SQL
 
 ---
 
-## Section 1: Spark, Scala & SQL Concepts
+### Section 1: Spark, Scala & SQL Concepts
 
 1. Introduction and project?
 2. What is shuffling in spark and when it happens?
@@ -343,7 +355,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-## Section 2: Coding & Scenario Questions
+### Section 2: Coding & Scenario Questions
 
 **Q1.** Find the pairs from the list where sum is 13.
 
@@ -384,7 +396,7 @@ custid, tsn data, txn time, txn amt
 
 ---
 
-## Section 3: Spark Coding Questions
+### Section 3: Spark Coding Questions
 
 Given `customer.csv` with schema:
 
@@ -399,7 +411,7 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-## Section 4: Spark Scala Questions
+### Section 4: Spark Scala Questions
 
 1. Spark performance techniques?
 2. How to define no of partitions to be created while creating repartition?
@@ -407,9 +419,11 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-## Interview-76
+## Interview 76
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Spark, Databricks, SQL, PySpark, Pandas
 
@@ -492,22 +506,24 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-## Interview-77
+## Interview 77
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** AWS, Delta Tables, Python
 
 ---
 
-## General Questions
+### General Questions
 
 - Difference between Glue / EMR / EMR serverless?
 - Difference between Redshift Spectrum and Athena?
 - Delta tables and it's use case?
 - Project overview.
 
-## Python
+### Python
 
 1. How to get last element from a list by slicing?
 2. How to retrieve every third element from a list by slicing?
@@ -530,9 +546,11 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-## Interview-78
+## Interview 78
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, Databricks, AWS
 
@@ -600,9 +618,11 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-## Interview-79
+## Interview 79
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Spark, Python, Databricks, Medallion Architecture
 
@@ -634,15 +654,17 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-## Interview-80
+## Interview 80
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Python, Spark, SQL
 
 ---
 
-## SQL Questions
+### SQL Questions
 
 1. Get top 3 Salary from each Department as per the given schema.
 
@@ -659,7 +681,7 @@ c_id, f_name, city, state, country, dob
    SalesTable : StoreID, SaleDate, SalesAmount
    ```
 
-## Python
+### Python
 
 Write a program to count the vowels from given list of strings.
 
@@ -668,7 +690,7 @@ Input  : ["Kuldeep", "Chandra", "Hitesh"]
 Output : [3, 2, 2]
 ```
 
-## Theory and Conceptual
+### Theory and Conceptual
 
 1. Explain how the partitioners work in Spark and how they partition the Data.
 2. How can you optimize the Data Quality in Spark.
@@ -677,9 +699,11 @@ Output : [3, 2, 2]
 
 ---
 
-## Interview-81
+## Interview 81
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Spark, SQL
 
@@ -701,15 +725,17 @@ Output : [3, 2, 2]
 
 ---
 
-## Interview-82
+## Interview 82
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** PySpark, Databricks, SQL
 
 ---
 
-## Round 1
+### Round 1
 
 1. Introduce Yourself
 2. Explain your past projects
@@ -726,7 +752,7 @@ Output : [3, 2, 2]
 13. How can you optimize SQL queries?
 14. Any Questions for me - Ask about tools and technologies, roles and use cases?
 
-## Round 2
+### Round 2
 
 1. Introduce Yourself
 2. What is delta lake and explain its ACID Properties?
@@ -737,9 +763,11 @@ Output : [3, 2, 2]
 
 ---
 
-## Interview-83
+## Interview 83
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** PySpark, Databricks, Airflow, CICD, AWS
 
@@ -749,9 +777,9 @@ Output : [3, 2, 2]
 
 ---
 
-## About the project
+### About the project
 
-## DataBricks
+### DataBricks
 
 1. Enzyme project in DataBricks
 2. How to run a notebook from another notebook in databricks
@@ -766,28 +794,30 @@ Output : [3, 2, 2]
 11. Difference between z order & partitioning.
 12. Syntax for loading the data from a rdbms like oracle
 
-## Spark
+### Spark
 
 1. Is spark dataframe mutable or immutable?
 2. Difference between DAG & Lineage.
 3. Predicate pushdown
 4. How does spark recovers a corrupted dataframe (Fault tolerance)
 
-## Airflow
+### Airflow
 
 1. How to create dependency between two Dags?
 2. Where are you saving the airflow metadata?
 
-## Jenkins
+### Jenkins
 
 1. How do you troubleshoot a failed step in a jenkins pipeline?
 2. How are you rotating the credentials in a jenkins pipeline?
 
 ---
 
-## Interview-84
+## Interview 84
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** PySpark, Databricks, CICD, Azure, Python, SQL
 
@@ -797,9 +827,9 @@ Output : [3, 2, 2]
 
 ---
 
-## About the previous project
+### About the previous project
 
-## DataBricks
+### DataBricks
 
 1. Delta Live table
 2. Types of CDC
@@ -807,27 +837,27 @@ Output : [3, 2, 2]
 4. Medallion Architecture
 5. Difference between Delta lake & Delta table
 
-## Spark
+### Spark
 
 1. Difference between Narrow & wide transformation.
 2. Difference between spark Dataframe & pandas Dataframe.
 3. Types of cluster manager
 4. What is cluster manager
 
-## Data Modelling
+### Data Modelling
 
 1. Difference between Star & Snowflake schema
 2. If the data from gold layer tables are consumed by data science team then which schema shall we choose & why.
 
-## Python
+### Python
 
 1. Lambda functions & its examples
 
-## ADF
+### ADF
 
 1. There are several files in csv, parquet, orc, avro, excel present in Azure storage. How do you frame the ADF job so that the files are segregated in separate folders like csv, parquet, orc, avro, excel.
 
-## SQL
+### SQL
 
 Write the sql query to find the names of employees & their manager names for the below schema:
 
@@ -838,9 +868,11 @@ emp_id  emp_name  mgr_id
 
 ---
 
-## Interview-85
+## Interview 85
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** PySpark, SQL, Python
 
@@ -869,9 +901,11 @@ emp_id  emp_name  mgr_id
 
 ---
 
-## Interview-86
+## Interview 86
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
 
@@ -883,7 +917,7 @@ emp_id  emp_name  mgr_id
 
 Detailed discussion About the previous project
 
-## DataBricks
+### DataBricks
 
 1. Difference between Unity Catalog & Hive Metastore
 2. Asset Bundle
@@ -891,19 +925,21 @@ Detailed discussion About the previous project
 4. DataBricks Api
 5. Deployment in DataBricks
 
-## Python API
+### Python API
 
 1. FastAPI
 
-## Azure
+### Azure
 
 1. Azure APIM
 
 ---
 
-## Interview-87
+## Interview 87
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
 
@@ -913,14 +949,14 @@ Detailed discussion About the previous project
 
 ---
 
-## DataBricks
+### DataBricks
 
 1. Delta Table
 2. Delta Live Table
 3. Unity Catalog
 4. Autoloader
 
-## Spark
+### Spark
 
 1. Spark architecture
 2. Spark internal functioning
@@ -928,27 +964,29 @@ Detailed discussion About the previous project
 4. Explode function
 5. Flatten function
 
-## Airflow
+### Airflow
 
 1. Scenario based questions on creating dependency between twi dags -- External Sensor.
 2. Components of arirflow.
 3. Dag, tasks
 
-## SQL
+### SQL
 
 1. Question on lead/lag
 
 ---
 
-## Interview-88
+## Interview 88
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Glue, EMR, Redshift, dbt
 
 ---
 
-## Internal Project Interview
+### Internal Project Interview
 
 1. Redshift — why it different than traditional db. How to optimize queries there if taking time.
 2. What is lambda and its limitation
@@ -958,7 +996,7 @@ Detailed discussion About the previous project
 6. Rolling sum SQL/Pyspark: add new column with total_sum_sales which indicate current month sum + all previous month sum.
 7. EMR vs Glue
 
-## Client Interview
+### Client Interview
 
 1. Past project end to end flow (all below questions were based what you explain in project flow)
 2. Where you used which service and how
@@ -969,7 +1007,7 @@ Detailed discussion About the previous project
 7. What are the different options with persist
 8. Any complex or challenging scenario in project
 
-## Client Interview (additional notes)
+### Client Interview (additional notes)
 
 - Project experience
 - Questions to explain end to end ETL pipeline from project
@@ -979,9 +1017,11 @@ Detailed discussion About the previous project
 
 ---
 
-## Interview-89
+## Interview 89
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python
 
@@ -1013,15 +1053,17 @@ Detailed discussion About the previous project
 
 ---
 
-## Interview-90
+## Interview 90
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Glue, Python, PySpark, SQL
 
 ---
 
-## Round 1 (Internal)
+### Round 1 (Internal)
 
 1. Tell me about your project?
 2. What are the services used?
@@ -1030,14 +1072,14 @@ Detailed discussion About the previous project
 5. Difference between saveAsTable() & save() in spark dataframe?
 6. How will you handle different datatype for same columns in Glue DynamicFrames?
 
-## Round 2 (Internal)
+### Round 2 (Internal)
 
 1. Describe about project
 2. Difference between At-least once delivery and at-most once delivery in messaging services?
 3. Difference between checkpoint() and cache()
 4. Identify spark errors and simple spark code to create dataframe
 
-## Round 3 (Client)
+### Round 3 (Client)
 
 1. Describe about project
 2. Where does Spark stores its Physical and Logical plans?
@@ -1045,21 +1087,23 @@ Detailed discussion About the previous project
 4. How can we restrict user access in Athena? List ways and describe?
 5. What the types of messaging services available in market?
 
-## Softskill
+### Softskill
 
 1. What are the challenges faced in previous project
 
 ---
 
-## Interview-91
+## Interview 91
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, SQL, CI/CD
 
 ---
 
-## Client Round
+### Client Round
 
 1. Describe about project and yourself
 2. Was given two tables:
@@ -1081,15 +1125,17 @@ Detailed discussion About the previous project
 
 ---
 
-## Interview-92
+## Interview 92
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** GCP, Python, SQL, PySpark, Airflow
 
 ---
 
-## Round 1
+### Round 1
 
 1. Describe details on my project?
 2. Told to write Airflow Code Implementation for Loading Data from Rest API to GCS do transforms and load to Big Query?
@@ -1106,7 +1152,7 @@ Detailed discussion About the previous project
    ```
 7.
 
-## Round 1 (additional)
+### Round 1 (additional)
 
 1. Remove duplicate in list keeping order
 
@@ -1134,9 +1180,11 @@ Detailed discussion About the previous project
 
 ---
 
-## Interview-93
+## Interview 93
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** SQL, PySpark, Azure
 
@@ -1198,9 +1246,11 @@ Detailed discussion About the previous project
 
 ---
 
-## Interview-94
+## Interview 94
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** PySpark
 
@@ -1228,11 +1278,13 @@ Detailed discussion About the previous project
 
 ---
 
-## Interview-95
+## Interview 95
 
 **Group:** 
 
-**Interview Date:** 25 Jul 2025
+**Client Company:** 
+
+**Date:** 2025-07-25
 
 **Topics:** PySpark, Pandas, Python, API
 
@@ -1295,9 +1347,11 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-## Interview-96
+## Interview 96
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** AWS, Databricks, Unity Catalog
 
@@ -1319,15 +1373,17 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-## Interview-97
+## Interview 97
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Databricks, Delta Lake, Spark, AWS
 
 ---
 
-## Round 1
+### Round 1
 
 - Databricks unity catalog
 - Delta lake
@@ -1337,7 +1393,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 - Data crawler (what special feature) vs Athena
 - Databricks feature from other data warehouse / data lake — data + storage not coupled together
 
-## Round 2
+### Round 2
 
 - Shuffling — what specific in coalesce. Do it work like action in spark? Do it create separate stage?
 - SCD2 code SQL, pyspark?
@@ -1346,9 +1402,11 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-## Interview-98
+## Interview 98
 
 **Group:** 
+
+**Client Company:** 
 
 **Project:** CARG-MIEX
 
@@ -1375,9 +1433,11 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-## Interview-99
+## Interview 99
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Databricks, Delta Lake, Spark, Azure, SQL, PySpark
 
@@ -1533,9 +1593,11 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-## Interview-100
+## Interview 100
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** SQL, Scala, Airflow, Spark, AWS, Python
 
@@ -1555,16 +1617,18 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 12. What is medallion architecture?
 13. Have you worked on python?
 
-## Programs
+### Programs
 
 1. In scala — given `Seq(3, 7, 31, 20, 5)`, the result should be `Seq((31,2),(20,3))`.
 2. Swap 2 variables a, b in python without using 3rd variable.
 
 ---
 
-## Interview-101
+## Interview 101
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Spark, Airflow, Python, SQL, Cloud, Data
 
@@ -1582,11 +1646,11 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 7. Scheduling methodologies for orchestration
 8. We are getting duplicates records which are already written to bigquery. What would be your solution to correct data on this?
 
-## Python problem
+### Python problem
 
 Identify longest substring in O(n)
 
-## SQL problem
+### SQL problem
 
 Solve in SQL — You want to identify the hierarchy of employees based on the managerid.
 
@@ -1608,9 +1672,11 @@ jhl
 
 ---
 
-## Interview-102
+## Interview 102
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Snowflake, Airflow, ETL
 
@@ -1636,15 +1702,17 @@ jhl
 
 ---
 
-## Interview-103
+## Interview 103
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Spark, SQL, Python, AWS, Airflow
 
 ---
 
-## Round 1 Client
+### Round 1 Client
 
 **Project Architecture (25 mins)**
 
@@ -1663,7 +1731,7 @@ jhl
 4. There are 5 nodes, 5 diff nodes 200 GB each node, total 1 TB and you are joining with 1 GB table. What ways to do? (Cross question: what's the way we can have the 1 GB table being replicated in all the nodes?)
 5. How would you handle dependency between Task X in DAG 1 with Task Y in DAG 2?
 
-## Round 2 Client
+### Round 2 Client
 
 - Tell me practically how would you resolve spark job? (don't tell bookish answers)
 - SQL Server optimization techniques?
@@ -1702,15 +1770,17 @@ Solve using SQL.
 
 ---
 
-## Interview-104
+## Interview 104
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** SQL, GCP, Data
 
 ---
 
-## SQL Questions
+### SQL Questions
 
 Tables:
 - Customers(id, name, address, age, email)
@@ -1721,13 +1791,13 @@ Tables:
 2. Find the customer who buys 2 or more products at a single visit. (Optimise the query)
 3. Identify customers who bought exactly 3 different products and count the total "Apple" units bought by them.
 
-## Technical Theory Questions
+### Technical Theory Questions
 
 1. Difference between OLAP and OLTP (include a real-life business scenario)
 2. Give the approach to design OLAP in data warehouse.
 3. Explain an example of ETL flow with data source and stage difference.
 
-## Scenario Based Questions
+### Scenario Based Questions
 
 1. How will you handle an error (transformation failed) if the developer working on the pipeline left.
 2. Identify the error and give steps to resolve it.
@@ -1737,21 +1807,23 @@ Tables:
 
 ---
 
-## Interview-105
+## Interview 105
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** ADF, Azure DevOps, Databricks, Apache Spark, PySpark
 
 ---
 
-## 1. ADF
+### 1. ADF
 
 a. How to build an end-to-end ADF pipeline to copy 50 sql tables sequentially into adls
 
 b. Source files are coming to adls location daily. Build a pipeline to copy only the latest file.
 
-## 2. Databricks & PySpark
+### 2. Databricks & PySpark
 
 a. Detailed discussion on Unity catalog — it's advantages over legacy hive metastore, permission assignments, delta share
 
@@ -1759,7 +1831,7 @@ b. PySpark optimization — Zorder, liquid clustering, partitions etc
 
 c. CI/CD with Azure devops
 
-## 3. Python
+### 3. Python
 
 a. Write a python code for below
 
@@ -1770,7 +1842,7 @@ a. Write a python code for below
 
 b. Explain about Python decorators
 
-## 4. SQL
+### 4. SQL
 
 a. Write a sql query to find top n city with maximum total sales, considering only cities having atleast 3 sales records
 
@@ -1793,9 +1865,11 @@ c. What is dimension and fact table
 
 ---
 
-## Interview-106
+## Interview 106
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
@@ -1834,9 +1908,11 @@ c. What is dimension and fact table
 
 ---
 
-## Interview-107
+## Interview 107
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
@@ -1853,9 +1929,11 @@ c. What is dimension and fact table
 
 ---
 
-## Interview-108
+## Interview 108
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Google Cloud Platform, Python, PySpark, SQL
 
@@ -1880,9 +1958,11 @@ c. What is dimension and fact table
 
 ---
 
-## Interview-109
+## Interview 109
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** SQL, Python, PySpark, AWS
 
@@ -1928,15 +2008,17 @@ c. What is dimension and fact table
 
 ---
 
-## Interview-110
+## Interview 110
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, AWS, PySpark, CI/CD
 
 ---
 
-## Project Discussion
+### Project Discussion
 
 1. Explain your recent project end-to-end.
 2. List the document types used in NoSQL databases.
@@ -1944,32 +2026,32 @@ c. What is dimension and fact table
 4. List the transformations you applied in your data processing.
 5. List the validations you applied in your data processing.
 
-## Python
+### Python
 
 1. Write Python code to get the 2nd highest number from a list without using sorted().
 2. Explain all OOP concepts.
 3. Explain the difference between multiple inheritance and multi-level inheritance.
 
-## SQL
+### SQL
 
 1. Write a query to get consecutive entries from the table (user_id, login_date).
 2. Explain the difference between CTE and Recursive CTE.
 
-## Spark
+### Spark
 
 1. What are the types of join optimizations in Spark?
 2. Explain broadcast join.
 3. How is memory allocated when processing a 1 GB file (internal Spark memory allocation)?
 4. What are the types of serialization in Spark?
 
-## AWS
+### AWS
 
 1. List the storage classes in AWS S3.
 2. What are the limitations of AWS Lambda?
 3. How can you trigger a Lambda function?
 4. Explain AWS SNS.
 
-## CI/CD Pipeline
+### CI/CD Pipeline
 
 1. Explain the CI/CD pipeline process.
 2. What kind of scripts do we write to create a CI/CD pipeline?
@@ -1977,15 +2059,17 @@ c. What is dimension and fact table
 
 ---
 
-## Interview-111
+## Interview 111
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Spark, Databricks, Python, Snowflake, SQL
 
 ---
 
-## Spark
+### Spark
 
 1. Spark is written using Scala. We write code using Python. How do Python, Spark, and Scala communicate internally?
 2. Explain Broadcast Join.
@@ -1996,7 +2080,7 @@ c. What is dimension and fact table
 7. In a PySpark code, a cached DataFrame runs inside a loop, and we get a StackOverflow error. What could be the root cause, and how can we fix it?
 8. List down the key benefits of AQE.
 
-## Databricks
+### Databricks
 
 1. List the types of clusters.
 2. There is a job that points to a notebook where the script accesses an Oracle DB. How are the ODBC/JDBC libraries/JARs configured or passed to the job at runtime in production?
@@ -2006,7 +2090,7 @@ c. What is dimension and fact table
 6. Explain the Catalyst Optimizer.
 7. What is constant folding?
 
-## Python
+### Python
 
 1. How do we access AWS services from Python?
 2. How do we process multiple tables in parallel? How is multithreading handled in Python?
@@ -2014,29 +2098,31 @@ c. What is dimension and fact table
 4. How do we use a decorator for API retry?
 5. How do we copy a large file from a source system to a data lake using Python?
 
-## Snowflake
+### Snowflake
 
 1. How do we create a table and load data into Snowflake from Databricks files (multiple files in a folder)?
 2. What are the types of tables in Snowflake?
 3. What are the disadvantages of a materialized view?
 4. What is a dynamic table in Snowflake?
 
-## SQL
+### SQL
 
 1. List the window functions in SQL.
 2. What is the difference between LEAD and LAG?
 
 ---
 
-## Interview-112
+## Interview 112
 
 **Group:** A4
+
+**Client Company:** 
 
 **Topics:** AWS, Redshift, DynamoDB, PySpark, Spark
 
 ---
 
-## General / Project
+### General / Project
 
 - Explain your recent project.
 - List the AWS services used in your recent project.
@@ -2046,7 +2132,7 @@ c. What is dimension and fact table
 - What is the difference between Redshift and DynamoDB?
 - How did you schedule the jobs in your recent project?
 
-## Spark Coding
+### Spark Coding
 
 Write PySpark code for the following:
 
@@ -2075,21 +2161,23 @@ Sample output:
 
 ---
 
-## Interview-113
+## Interview 113
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** PySpark, AWS, SQL, Python
 
 ---
 
-## General Questions
+### General Questions
 
 1. About my background with data engineering
 2. Explain your most recent big data project end-to-end
 3. What are the challenges you faced and how did you resolve them?
 
-## Write SQL Query and PySpark Code to Solve the Problem
+### Write SQL Query and PySpark Code to Solve the Problem
 
 Find the best-selling product in each product category.
 If there are two or more products with the same sales quantity, go by whichever product has the higher review rating.
@@ -2182,12 +2270,12 @@ final_df = (
 )
 ```
 
-## Python
+### Python
 
 Find the longest subsequence without repeating characters
 string - 'aaabbcddddd' o/p a3b2c1d5
 
-## Questions on Spark Architecture
+### Questions on Spark Architecture
 
 - Broadcast join
 - Need to broadcast smaller dataframes, shuffles
@@ -2201,41 +2289,45 @@ string - 'aaabbcddddd' o/p a3b2c1d5
 
 ---
 
-## Interview-114
+## Interview 114
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** PySpark, SQL, Python, ADF, Databricks, Unity Catalog
 
 ---
 
-## SQL
+### SQL
 
 Give me the rolling sum of trans_amt for 7 days for all dates from 2024-01-01 to 2025-12-31 -> 3 days before the trans date, current date and the following 3 days. Even if there is no date present, the result still should display the rolling sum for that date (taking into account that missing date has trans_amt of zero).
 
-## Architecture Interview
+### Architecture Interview
 
 - High-level architecture and design choice for ingesting 100+ sources into Databricks, tools and design requirements
 - Incremental deployment & configuration settings used
 
 ---
 
-## Interview-115
+## Interview 115
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Snowflake, DBT
 
 ---
 
-## Previous Exp
+### Previous Exp
 
 1. Explain your recent project and its end-to-end architecture.
 2. What tools did you use to extract data from source systems?
 3. Did you use built-in connectors/libraries or custom code for data extraction?
 4. What types of source systems have you worked with in your data projects?
 
-## dbt
+### dbt
 
 1. Explain the dbt project folder structure.
 2. If you need to implement SCD Type 2, which dbt feature would you use?
@@ -2246,7 +2338,7 @@ Give me the rolling sum of trans_amt for 7 days for all dates from 2024-01-01 to
 7. Where and how do you configure materialization (e.g., incremental) in dbt, block of code?
 8. Which dbt environment you worked — dbt core, dbt cloud or hybrid?
 
-## DevOps / Process
+### DevOps / Process
 
 1. How do you implement CI/CD pipeline in dbt project?
 2. During peer review, in what aspects do you check before promoting the code?
