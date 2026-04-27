@@ -78,7 +78,7 @@
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SHELL
 
 **Topics:** Python, SQL, Spark, PySpark, Databricks +UC, DevOps, ADF
 
@@ -109,7 +109,7 @@
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SNP - CFM
 
 **Topics:** SQL, Python, AWS, PySpark
 
@@ -148,7 +148,7 @@
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** MasterCard
 
 **Topics:** Spark, SQL, Scala
 
@@ -188,7 +188,7 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Lenovo
 
 **Topics:** PySpark, AWS
 
@@ -213,7 +213,7 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Whitecap
 
 **Topics:** PySpark
 
@@ -246,7 +246,7 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Expedia
 
 **Topics:** Spark,SQL,PySpark
 
@@ -365,7 +365,7 @@ SQL query to find deptwise third highest salary
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Expedia
 
 **Topics:** Spark, SQL, Scala
 
@@ -385,7 +385,7 @@ SQL query to find deptwise third highest salary
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Spark, Python, SQL
 
@@ -409,7 +409,7 @@ SQL query to find deptwise third highest salary
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
