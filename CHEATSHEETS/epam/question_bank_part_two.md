@@ -51,11 +51,11 @@
 
 ---
 
-# Interview-70
+## Interview-70
 
 **Group:** 
 
-**Topics:** PySpark | Python | DataBricks | SQL
+**Topics:** PySpark | Python | Databricks | SQL
 
 ---
 
@@ -74,7 +74,7 @@
 
 ---
 
-# Interview-71
+## Interview-71
 
 **Group:** 
 
@@ -90,7 +90,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-# Interview-72
+## Interview-72
 
 **Group:** 
 
@@ -128,11 +128,11 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-# Interview-73
+## Interview-73
 
 **Group:** 
 
-**Topics:** Python, Pyspark, SQL, Data Engineering
+**Topics:** Python, PySpark, SQL, Data Engineering
 
 ---
 
@@ -199,7 +199,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-# Interview-74
+## Interview-74
 
 **Group:** 
 
@@ -264,7 +264,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ---
 
-# Interview-75
+## Interview-75
 
 **Group:** A3-A4
 
@@ -407,7 +407,7 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-# Interview-76
+## Interview-76
 
 **Group:** A3-A4
 
@@ -492,7 +492,7 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-# Interview-77
+## Interview-77
 
 **Group:** 
 
@@ -530,7 +530,7 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-# Interview-78
+## Interview-78
 
 **Group:** A3-A4
 
@@ -600,7 +600,7 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-# Interview-79
+## Interview-79
 
 **Group:** A3-A4
 
@@ -634,7 +634,7 @@ c_id, f_name, city, state, country, dob
 
 ---
 
-# Interview-80
+## Interview-80
 
 **Group:** A3-A4
 
@@ -677,7 +677,7 @@ Output : [3, 2, 2]
 
 ---
 
-# Interview-81
+## Interview-81
 
 **Group:** A3-A4
 
@@ -701,7 +701,7 @@ Output : [3, 2, 2]
 
 ---
 
-# Interview-82
+## Interview-82
 
 **Group:** A3-A4
 
@@ -737,11 +737,11 @@ Output : [3, 2, 2]
 
 ---
 
-# Interview-83
+## Interview-83
 
 **Group:** A3-A4
 
-**Topics:** PySpark, DataBricks, Airflow, CICD, AWS
+**Topics:** PySpark, Databricks, Airflow, CICD, AWS
 
 **Project:** Novartis (Round 2)
 
@@ -785,11 +785,11 @@ Output : [3, 2, 2]
 
 ---
 
-# Interview-84
+## Interview-84
 
 **Group:** A3-A4
 
-**Topics:** PySpark, DataBricks, CICD, Azure, Python, SQL
+**Topics:** PySpark, Databricks, CICD, Azure, Python, SQL
 
 **Project:** Novo Nordisk
 
@@ -838,7 +838,7 @@ emp_id  emp_name  mgr_id
 
 ---
 
-# Interview-85
+## Interview-85
 
 **Group:** 
 
@@ -869,11 +869,11 @@ emp_id  emp_name  mgr_id
 
 ---
 
-# Interview-86
+## Interview-86
 
 **Group:** 
 
-**Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
+**Topics:** Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
 
 **Project:** LSEG-LPC
 
@@ -901,11 +901,11 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-87
+## Interview-87
 
 **Group:** 
 
-**Topics:** Python, PySpark, SQL, AWS, Azure, DataBricks, Airflow
+**Topics:** Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
 
 **Project:** NBS-SCM1
 
@@ -940,7 +940,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-88
+## Interview-88
 
 **Group:** 
 
@@ -979,7 +979,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-89
+## Interview-89
 
 **Group:** 
 
@@ -1013,7 +1013,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-90
+## Interview-90
 
 **Group:** 
 
@@ -1051,7 +1051,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-91
+## Interview-91
 
 **Group:** 
 
@@ -1081,7 +1081,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-92
+## Interview-92
 
 **Group:** 
 
@@ -1134,7 +1134,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-93
+## Interview-93
 
 **Group:** 
 
@@ -1198,7 +1198,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-94
+## Interview-94
 
 **Group:** 
 
@@ -1228,7 +1228,7 @@ Detailed discussion About the previous project
 
 ---
 
-# Interview-95
+## Interview-95
 
 **Group:** 
 
@@ -1295,7 +1295,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-# Interview-96
+## Interview-96
 
 **Group:** 
 
@@ -1319,7 +1319,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-# Interview-97
+## Interview-97
 
 **Group:** 
 
@@ -1346,7 +1346,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-# Interview-98
+## Interview-98
 
 **Group:** 
 
@@ -1375,7 +1375,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-# Interview-99
+## Interview-99
 
 **Group:** 
 
@@ -1533,7 +1533,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-# Interview-100
+## Interview-100
 
 **Group:** 
 
@@ -1562,7 +1562,7 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 ---
 
-# Interview-101
+## Interview-101
 
 **Group:** 
 
@@ -1608,7 +1608,7 @@ jhl
 
 ---
 
-# Interview-102
+## Interview-102
 
 **Group:** 
 
@@ -1636,7 +1636,7 @@ jhl
 
 ---
 
-# Interview-103
+## Interview-103
 
 **Group:** 
 
@@ -1702,7 +1702,7 @@ Solve using SQL.
 
 ---
 
-# Interview-104
+## Interview-104
 
 **Group:** 
 
@@ -1737,7 +1737,7 @@ Tables:
 
 ---
 
-# Interview-105
+## Interview-105
 
 **Group:** 
 
@@ -1793,7 +1793,7 @@ c. What is dimension and fact table
 
 ---
 
-# Interview-106
+## Interview-106
 
 **Group:** 
 
@@ -1834,7 +1834,7 @@ c. What is dimension and fact table
 
 ---
 
-# Interview-107
+## Interview-107
 
 **Group:** 
 
@@ -1853,7 +1853,7 @@ c. What is dimension and fact table
 
 ---
 
-# Interview-108
+## Interview-108
 
 **Group:** 
 
@@ -1880,7 +1880,7 @@ c. What is dimension and fact table
 
 ---
 
-# Interview-109
+## Interview-109
 
 **Group:** 
 
@@ -1928,7 +1928,7 @@ c. What is dimension and fact table
 
 ---
 
-# Interview-110
+## Interview-110
 
 **Group:** 
 
@@ -1977,7 +1977,7 @@ c. What is dimension and fact table
 
 ---
 
-# Interview-111
+## Interview-111
 
 **Group:** 
 
@@ -2028,7 +2028,7 @@ c. What is dimension and fact table
 
 ---
 
-# Interview-112
+## Interview-112
 
 **Group:** A4
 
@@ -2075,7 +2075,7 @@ Sample output:
 
 ---
 
-# Interview-113
+## Interview-113
 
 **Group:** A3
 
@@ -2201,7 +2201,7 @@ string - 'aaabbcddddd' o/p a3b2c1d5
 
 ---
 
-# Interview-114
+## Interview-114
 
 **Group:** 
 
@@ -2220,7 +2220,7 @@ Give me the rolling sum of trans_amt for 7 days for all dates from 2024-01-01 to
 
 ---
 
-# Interview-115
+## Interview-115
 
 **Group:** A3-A4
 
