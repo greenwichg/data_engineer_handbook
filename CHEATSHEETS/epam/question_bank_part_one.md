@@ -12,21 +12,21 @@
 - [Interview 8](#interview-8) — A2 — Spark, Python, SQL
 - [Interview 9](#interview-9) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 10 — Client Interview (Multi-round)](#interview-10--client-interview-multi-round) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 11 — Interviewer: Santosh Kumar Lakhagaon](#interview-11--interviewer-santosh-kumar-lakhagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 12 — Client Interviewer: Yamika Chauhan (Atlassian DE)](#interview-12--client-interviewer-yamika-chauhan-atlassian-de) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 13 — Interviewer: Abhishek Gupta](#interview-13--interviewer-abhishek-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 14 — Interviewer: Manoj Kumar (Round 1)](#interview-14--interviewer-manoj-kumar-round-1) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 15 — Interviewer: Manoj Kumar (Round 2)](#interview-15--interviewer-manoj-kumar-round-2) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 16 — Client interview questions from Harish Ankam](#interview-16--client-interview-questions-from-harish-ankam) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 17 — CI questions from Pulkit Gupta](#interview-17--ci-questions-from-pulkit-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 18 — Interviewer: Anurag Devagiri](#interview-18--interviewer-anurag-devagiri) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 19 — Interviewer: Manoj](#interview-19--interviewer-manoj) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 20 — Interview Name: Judy Thomas](#interview-20--interview-name-judy-thomas) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 21 — Interviewer: Santoshkumar Lakkanagaon](#interview-21--interviewer-santoshkumar-lakkanagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 22 — Interviewer: Srushti Tijare](#interview-22--interviewer-srushti-tijare) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 11](#interview-11--interviewer-santosh-kumar-lakhagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 12 — (Atlassian DE)](#interview-12--client-interviewer-yamika-chauhan-atlassian-de) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 13](#interview-13--interviewer-abhishek-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 14 — (Round 1)](#interview-14--interviewer-manoj-kumar-round-1) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 15 — (Round 2)](#interview-15--interviewer-manoj-kumar-round-2) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 16](#interview-16--client-interview-questions-from-harish-ankam) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 17](#interview-17--ci-questions-from-pulkit-gupta) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 18](#interview-18--interviewer-anurag-devagiri) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 19](#interview-19--interviewer-manoj) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 20](#interview-20--interview-name-judy-thomas) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 21](#interview-21--interviewer-santoshkumar-lakkanagaon) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 22](#interview-22--interviewer-srushti-tijare) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 23 — SQL Solutions (from reference page)](#interview-23--sql-solutions-from-reference-page) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 24 — Interviewer: Santoshkumar Lakkanagaon (Additional)](#interview-24--interviewer-santoshkumar-lakkanagaon-additional) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
-- [Interview 25 — Interviewer: Sriram](#interview-25--interviewer-sriram) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 24 — (Additional)](#interview-24--interviewer-santoshkumar-lakkanagaon-additional) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
+- [Interview 25](#interview-25--interviewer-sriram) — A3 — Python, SQL, Data Warehousing, Spark & Spark Optimizations
 - [Interview 26](#interview-26) — A2 — Spark, Pyspark, SQL
 - [Interview 27](#interview-27) — A3 — SQL, PYSPARK, PYTHON, AWS
 - [Interview 28](#interview-28) — A3
@@ -40,7 +40,7 @@
 - [Interview 36](#interview-36) — A3 — Python, SQL
 - [Interview 37](#interview-37) — A2-A3 — Azure, Databricks, Pyspark, sql, Python
 - [Interview 38](#interview-38) — A3 — Spark, Scala, Databricks, SQL
-- [Interview 39](#interview-39) — A3 — SQL, Pyspark, AWS, Databriks, Airflow
+- [Interview 39](#interview-39) — A3 — SQL, Pyspark, AWS, Databricks, Airflow
 - [Interview 40](#interview-40) — A3 — SQL, PySpark, ADF, Azure, Synapse, MS Fabric, Delta Lake
 - [Interview 41](#interview-41) — A3 — Databricks, Delta Lake
 - [Interview 42](#interview-42) — A3 — Python, PySpark, Databricks, ADF
@@ -76,9 +76,9 @@
 
 ## Interview 1
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, Sql, Spark, Pyspark, DataBricks +UC, DevOps, ADF
+**Topics:** Python, SQL, Spark, PySpark, Databricks +UC, DevOps, ADF
 
 ### Questions
 
@@ -105,9 +105,9 @@
 
 ## Interview 2
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Sql, Python, AWS, PySpark
+**Topics:** SQL, Python, AWS, PySpark
 
 ### Questions
 
@@ -142,9 +142,9 @@
 
 ## Interview 3
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, SQL, Scala
+**Topics:** Spark, SQL, Scala
 
 **Date:** 5th Oct 2025 — [Added By Gulfam Zahiruddin]
 
@@ -180,9 +180,9 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 ## Interview 4
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** PySpark, AWS
+**Topics:** PySpark, AWS
 
 ### Questions
 
@@ -203,9 +203,9 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 ## Interview 5
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** PySpark
+**Topics:** PySpark
 
 ### Questions
 
@@ -234,9 +234,9 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 ## Interview 6
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Spark,SQL,PySpark
+**Topics:** Spark,SQL,PySpark
 
 ### Questions
 
@@ -351,9 +351,9 @@ SQL query to find deptwise third highest salary
 
 ## Interview 7
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, SQL, Scala
+**Topics:** Spark, SQL, Scala
 
 ### Questions
 
@@ -369,9 +369,9 @@ SQL query to find deptwise third highest salary
 
 ## Interview 8
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Spark, Python, SQL
+**Topics:** Spark, Python, SQL
 
 ### Questions
 
@@ -391,9 +391,9 @@ SQL query to find deptwise third highest salary
 
 ## Interview 9
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -461,9 +461,9 @@ SQL query to find deptwise third highest salary
 
 ## Interview 10 — Client Interview (Multi-round)
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Round 1
 
@@ -514,9 +514,9 @@ SQL query to find deptwise third highest salary
 
 ## Interview 11 — Interviewer: Santosh Kumar Lakhagaon
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -529,9 +529,9 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 12 — Client Interviewer: Yamika Chauhan (Atlassian DE)
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -548,9 +548,9 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 13 — Interviewer: Abhishek Gupta
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -571,9 +571,9 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 14 — Interviewer: Manoj Kumar (Round 1)
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -590,9 +590,9 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 15 — Interviewer: Manoj Kumar (Round 2)
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL
 
@@ -639,9 +639,9 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 16 — Client interview questions from Harish Ankam
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -655,9 +655,9 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 ## Interview 17 — CI questions from Pulkit Gupta
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL
 
@@ -681,9 +681,9 @@ String and substring as given return starting index of if substring is present i
 
 ## Interview 18 — Interviewer: Anurag Devagiri
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -746,9 +746,9 @@ feedback_date
 
 ## Interview 19 — Interviewer: Manoj
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -774,9 +774,9 @@ Other questions:
 
 ## Interview 20 — Interview Name: Judy Thomas
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL
 
@@ -800,9 +800,9 @@ Write the sql query to find the customer who has maximum number of visits everyd
 
 ## Interview 21 — Interviewer: Santoshkumar Lakkanagaon
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Project Questions
 
@@ -829,9 +829,9 @@ For example: Input: `[[1, 3], [2, 6], [8, 10], [15, 18]]` Output: `[[1, 6], [8, 
 
 ## Interview 22 — Interviewer: Srushti Tijare
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
 
@@ -866,9 +866,9 @@ Explain how u could solve it and how u approach to the question and tell the com
 
 ## Interview 23 — SQL Solutions (from reference page)
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL 1: Find Second Degree Friends — Friends of Friends
 
@@ -926,9 +926,9 @@ Table structure: `customer, product, subscription, sale_type, date`
 
 ## Interview 24 — Interviewer: Santoshkumar Lakkanagaon (Additional)
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### 1 SQL Question
 
@@ -957,9 +957,9 @@ Time and Space Complexity were asked
 
 ## Interview 25 — Interviewer: Sriram
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
+**Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Schema (ER Diagram)
 
@@ -1134,9 +1134,9 @@ return t_sum / n
 
 ## Interview 26
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Spark, Pyspark, SQL
+**Topics:** Spark, PySpark, SQL
 
 ### Questions
 
@@ -1199,9 +1199,9 @@ return t_sum / n
 
 ## Interview 27
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** SQL, PYSPARK, PYTHON, AWS
+**Topics:** SQL, PySpark, Python, AWS
 
 ### SQL
 
@@ -1249,7 +1249,7 @@ return t_sum / n
 
 ## Interview 28
 
-**Position Role:** A3
+**Group:** A3
 
 ### SQL Questions
 
@@ -1307,9 +1307,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 29
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
+**Topics:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 
 ### Technical Skills
 
@@ -1355,9 +1355,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 30
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
+**Topics:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 
 ### Questions
 
@@ -1371,9 +1371,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 31
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** GCP
+**Topics:** GCP
 
 ### Questions
 
@@ -1394,9 +1394,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 32
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Databricks, PySpark, Microsoft Azure, SQL
+**Topics:** Databricks, PySpark, Microsoft Azure, SQL
 
 ### Questions
 
@@ -1447,9 +1447,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 33
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, AWS
+**Topics:** Python, AWS
 
 ### Questions
 
@@ -1468,9 +1468,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 34
 
-**Position Role:** A2-A3
+**Group:** A2-A3
 
-**Technology Areas:** Microsoft Azure, Spark, Databricks, Python, SQL
+**Topics:** Microsoft Azure, Spark, Databricks, Python, SQL
 
 ### Questions
 
@@ -1581,9 +1581,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 35
 
-**Position Role:** A3-A4
+**Group:** A3-A4
 
-**Technology Areas:** Microsoft Azure (ADF, SQL Warehouse), PySpark, Databricks, SQL
+**Topics:** Microsoft Azure (ADF, SQL Warehouse), PySpark, Databricks, SQL
 
 **Date:** 03/07/2024
 
@@ -1645,9 +1645,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 36
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, SQL
+**Topics:** Python, SQL
 
 ### Questions
 
@@ -1660,9 +1660,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 37
 
-**Position Role:** A2-A3
+**Group:** A2-A3
 
-**Technology Areas:** Azure, Databricks, Pyspark, sql, Python
+**Topics:** Azure, Databricks, PySpark, SQL, Python
 
 ### Questions
 
@@ -1692,8 +1692,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 38
 
-**Position Role:** A3
-**Technology Areas:** Spark, Scala, Databricks, SQL
+**Group:** A3
+**Topics:** Spark, Scala, Databricks, SQL
 
 ### Questions
 
@@ -1759,9 +1759,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 ## Interview 39
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** SQL, Pyspark, AWS, Databriks, Airflow
+**Topics:** SQL, PySpark, AWS, Databricks, Airflow
 
 ### R1 — Taken by Hema Raju Baipalli from SNP
 
@@ -1811,9 +1811,9 @@ List active users per month per year
 
 ## Interview 40
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** SQL, PySpark, ADF, Azure, Synapse, MS Fabric, Delta Lake
+**Topics:** SQL, PySpark, ADF, Azure, Synapse, MS Fabric, Delta Lake
 
 ### Initial Internal Round
 
@@ -1877,9 +1877,9 @@ Table: Orders
 
 ## Interview 41
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Databricks, Delta Lake
+**Topics:** Databricks, Delta Lake
 
 ### Questions
 
@@ -1900,9 +1900,9 @@ Table: Orders
 
 ## Interview 42
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, PySpark, Databricks, ADF
+**Topics:** Python, PySpark, Databricks, ADF
 
 ### Questions
 
@@ -1938,9 +1938,9 @@ Table: Orders
 
 ## Interview 43
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** DBT, Databricks, ADF, Data Vault, Spark & Python
+**Topics:** DBT, Databricks, ADF, Data Vault, Spark & Python
 
 ### Questions
 
@@ -1964,9 +1964,9 @@ Table: Orders
 
 ## Interview 44
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Spark, Hive, File formats, Hadoop
+**Topics:** Spark, Hive, File formats, Hadoop
 
 ### Questions
 
@@ -1987,9 +1987,9 @@ Table: Orders
 
 ## Interview 45
 
-**Position Role:** A3 - A4
+**Group:** A3 - A4
 
-**Technology Areas:** Python, SQL, Databricks, ADF, Azure Functions, Azure API Management
+**Topics:** Python, SQL, Databricks, ADF, Azure Functions, Azure API Management
 
 ### Questions
 
@@ -2039,9 +2039,9 @@ Table: Orders
 
 ## Interview 46
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Python, AWS
+**Topics:** Python, AWS
 
 ### Scenario
 
@@ -2062,9 +2062,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 47
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Spark, Python, SQL
+**Topics:** Spark, Python, SQL
 
 ### Questions
 
@@ -2078,9 +2078,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 48
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** SQL
+**Topics:** SQL
 
 ### Questions
 
@@ -2096,9 +2096,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 49
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, Databricks, SQL, Scala
+**Topics:** Spark, Databricks, SQL, Scala
 
 ### Questions
 
@@ -2122,9 +2122,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 50
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Spark, Databricks, ADF
+**Topics:** Spark, Databricks, ADF
 
 ### Questions
 
@@ -2139,9 +2139,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 51
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** MLE, Python, SQL
+**Topics:** MLE, Python, SQL
 
 ### Questions
 
@@ -2182,9 +2182,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 52
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Python, SQL
+**Topics:** Python, SQL
 
 ### Questions
 
@@ -2246,9 +2246,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 53
 
-**Position Role:** A4
+**Group:** A4
 
-**Technology Areas:** GCP, Data Migration, Data modelling
+**Topics:** GCP, Data Migration, Data modelling
 
 ### Level 1 (Client Interview)
 
@@ -2279,9 +2279,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 54
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Python, PySpark
+**Topics:** Python, PySpark
 
 ### Questions
 
@@ -2297,9 +2297,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 55
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Scala, Spark, AWS, Rest APIs
+**Topics:** Scala, Spark, AWS, Rest APIs
 
 ### Questions
 
@@ -2318,9 +2318,9 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 ## Interview 56
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** PySpark, Databricks, SQL, Python
+**Topics:** PySpark, Databricks, SQL, Python
 
 ### Questions
 
@@ -2385,9 +2385,9 @@ Output:
 
 ## Interview 57
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, Python Databricks, Medallion architecture
+**Topics:** Spark, Python Databricks, Medallion architecture
 
 ### Questions
 
@@ -2406,9 +2406,9 @@ Output:
 
 ## Interview 58
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, Python Databricks, Medallion architecture
+**Topics:** Spark, Python Databricks, Medallion architecture
 
 **Project/Team:** ADI-BUSW
 
@@ -2430,9 +2430,9 @@ Output:
 
 ## Interview 59
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, Databricks, Scala, SQL
+**Topics:** Spark, Databricks, Scala, SQL
 
 ### Questions
 
@@ -2455,9 +2455,9 @@ Output:
 
 ## Interview 60
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Databricks RAG, ML, Python, SQL
+**Topics:** Databricks RAG, ML, Python, SQL
 
 ### Questions
 
@@ -2477,9 +2477,9 @@ Output:
 
 ## Interview 61
 
-**Position Role:** A2
+**Group:** A2
 
-**Technology Areas:** Databricks, SQL, Spark
+**Topics:** Databricks, SQL, Spark
 
 ### Internal Interview
 
@@ -2518,9 +2518,9 @@ Output:
 
 ## Interview 62
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, SQL, Databricks
+**Topics:** Spark, SQL, Databricks
 
 ### Questions
 
@@ -2551,9 +2551,9 @@ Output:
 
 ## Interview 63
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark/PySpark, Snowflake, Databricks, Python, Airflow
+**Topics:** Spark/PySpark, Snowflake, Databricks, Python, Airflow
 
 ### Questions related to previous project
 
@@ -2603,9 +2603,9 @@ Output:
 
 ## Interview 64
 
-**Position Role:** A4
+**Group:** A4
 
-**Technology Areas:** MLOps
+**Topics:** MLOps
 
 ### Questions
 
@@ -2628,8 +2628,8 @@ Introduce and tell us about past projects.
 
 ## Interview 65
 
-**Position Role:** A4
-**Technology Areas:** Python, Pyspark, DataBricks, SQL
+**Group:** A4
+**Topics:** Python, PySpark, Databricks, SQL
 
 ### Questions
 
@@ -2693,8 +2693,8 @@ Introduce and tell us about past projects.
 
 ## Interview 66
 
-**Position Role:** A3
-**Technology Areas:** Spark, Java, Python, Databricks, API, SQL
+**Group:** A3
+**Topics:** Spark, Java, Python, Databricks, API, SQL
 
 ### Final client interview
 
@@ -2714,9 +2714,9 @@ Introduce and tell us about past projects.
 
 ## Interview 67
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Power BI
+**Topics:** Power BI
 
 ### PI Interview
 
@@ -2733,9 +2733,9 @@ Introduce and tell us about past projects.
 
 ## Interview 68
 
-**Position Role:** A3
+**Group:** A3
 
-**Technology Areas:** Spark, Scala, Java, Airflow
+**Topics:** Spark, Scala, Java, Airflow
 
 ### Questions
 
@@ -2759,9 +2759,9 @@ Introduce and tell us about past projects.
 
 ## Interview 69
 
-**Position Role:** A3-A4
+**Group:** A3-A4
 
-**Technology Areas:** PySpark, Python, DataBricks, SQL
+**Topics:** PySpark, Python, Databricks, SQL
 
 ### Questions
 
@@ -2771,9 +2771,9 @@ Introduce and tell us about past projects.
 4. Cache Vs Persist
 5. Stages in Sort Merge Join
 6. Narrow and Wide transformations
-7. Rrepartition and coalsec
-8. Difference between drop ducpliactes and distinct.
+7. Repartition and coalesce
+8. Difference between drop duplicates and distinct.
 9. SQL Optimization
-10. Types of Indexes and their Usgae
+10. Types of Indexes and their Usage
 
 ---
