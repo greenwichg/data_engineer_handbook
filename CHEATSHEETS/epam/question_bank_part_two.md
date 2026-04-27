@@ -55,6 +55,8 @@
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** PySpark, Python, Databricks, SQL
 
 ---
@@ -78,6 +80,8 @@
 
 **Group:** 
 
+**Client Company:** 
+
 **Interviewer:** shrivishnu and vishwas
 
 **Interviewee:** Shruti Dhage
@@ -93,6 +97,8 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 ## Interview 72
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Java, SQL, Data Engineering, GCP
 
@@ -131,6 +137,8 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 ## Interview 73
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, SQL, Data Engineering
 
@@ -203,6 +211,8 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Spark
 
 ---
@@ -267,6 +277,8 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 ## Interview 75
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Spark, Scala, SQL
 
@@ -411,6 +423,8 @@ c_id, f_name, city, state, country, dob
 
 **Group:** A3-A4
 
+**Client Company:** 
+
 **Topics:** Spark, Databricks, SQL, PySpark, Pandas
 
 ---
@@ -496,6 +510,8 @@ c_id, f_name, city, state, country, dob
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** AWS, Delta Tables, Python
 
 ---
@@ -533,6 +549,8 @@ c_id, f_name, city, state, country, dob
 ## Interview 78
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, Databricks, AWS
 
@@ -604,6 +622,8 @@ c_id, f_name, city, state, country, dob
 
 **Group:** A3-A4
 
+**Client Company:** 
+
 **Topics:** Spark, Python, Databricks, Medallion Architecture
 
 ---
@@ -637,6 +657,8 @@ c_id, f_name, city, state, country, dob
 ## Interview 80
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Python, Spark, SQL
 
@@ -681,6 +703,8 @@ Output : [3, 2, 2]
 
 **Group:** A3-A4
 
+**Client Company:** 
+
 **Topics:** Spark, SQL
 
 ---
@@ -704,6 +728,8 @@ Output : [3, 2, 2]
 ## Interview 82
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** PySpark, Databricks, SQL
 
@@ -740,6 +766,8 @@ Output : [3, 2, 2]
 ## Interview 83
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** PySpark, Databricks, Airflow, CICD, AWS
 
@@ -788,6 +816,8 @@ Output : [3, 2, 2]
 ## Interview 84
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** PySpark, Databricks, CICD, Azure, Python, SQL
 
@@ -842,6 +872,8 @@ emp_id  emp_name  mgr_id
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** PySpark, SQL, Python
 
 ---
@@ -872,6 +904,8 @@ emp_id  emp_name  mgr_id
 ## Interview 86
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
 
@@ -904,6 +938,8 @@ Detailed discussion About the previous project
 ## Interview 87
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, SQL, AWS, Azure, Databricks, Airflow
 
@@ -944,6 +980,8 @@ Detailed discussion About the previous project
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Glue, EMR, Redshift, dbt
 
 ---
@@ -983,6 +1021,8 @@ Detailed discussion About the previous project
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Python
 
 ---
@@ -1016,6 +1056,8 @@ Detailed discussion About the previous project
 ## Interview 90
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Glue, Python, PySpark, SQL
 
@@ -1055,6 +1097,8 @@ Detailed discussion About the previous project
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Python, PySpark, SQL, CI/CD
 
 ---
@@ -1084,6 +1128,8 @@ Detailed discussion About the previous project
 ## Interview 92
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** GCP, Python, SQL, PySpark, Airflow
 
@@ -1137,6 +1183,8 @@ Detailed discussion About the previous project
 ## Interview 93
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** SQL, PySpark, Azure
 
@@ -1202,6 +1250,8 @@ Detailed discussion About the previous project
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** PySpark
 
 ---
@@ -1231,6 +1281,8 @@ Detailed discussion About the previous project
 ## Interview 95
 
 **Group:** 
+
+**Client Company:** 
 
 **Date:** 2025-07-25
 
@@ -1299,6 +1351,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** AWS, Databricks, Unity Catalog
 
 ---
@@ -1322,6 +1376,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ## Interview 97
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Databricks, Delta Lake, Spark, AWS
 
@@ -1349,6 +1405,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ## Interview 98
 
 **Group:** 
+
+**Client Company:** 
 
 **Project:** CARG-MIEX
 
@@ -1378,6 +1436,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ## Interview 99
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Databricks, Delta Lake, Spark, Azure, SQL, PySpark
 
@@ -1537,6 +1597,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** SQL, Scala, Airflow, Spark, AWS, Python
 
 ---
@@ -1565,6 +1627,8 @@ If new user like USER4 is added to project A, then VIEWED_USERS list should be a
 ## Interview 101
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Spark, Airflow, Python, SQL, Cloud, Data
 
@@ -1612,6 +1676,8 @@ jhl
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Snowflake, Airflow, ETL
 
 ---
@@ -1639,6 +1705,8 @@ jhl
 ## Interview 103
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Spark, SQL, Python, AWS, Airflow
 
@@ -1706,6 +1774,8 @@ Solve using SQL.
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** SQL, GCP, Data
 
 ---
@@ -1740,6 +1810,8 @@ Tables:
 ## Interview 105
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** ADF, Azure DevOps, Databricks, Apache Spark, PySpark
 
@@ -1797,6 +1869,8 @@ c. What is dimension and fact table
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1838,6 +1912,8 @@ c. What is dimension and fact table
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Azure Databricks, Python, SQL, Apache Spark, PySpark
 
 ---
@@ -1856,6 +1932,8 @@ c. What is dimension and fact table
 ## Interview 108
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Google Cloud Platform, Python, PySpark, SQL
 
@@ -1883,6 +1961,8 @@ c. What is dimension and fact table
 ## Interview 109
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** SQL, Python, PySpark, AWS
 
@@ -1932,6 +2012,8 @@ c. What is dimension and fact table
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** Python, AWS, PySpark, CI/CD
 
 ---
@@ -1980,6 +2062,8 @@ c. What is dimension and fact table
 ## Interview 111
 
 **Group:** 
+
+**Client Company:** 
 
 **Topics:** Spark, Databricks, Python, Snowflake, SQL
 
@@ -2032,6 +2116,8 @@ c. What is dimension and fact table
 
 **Group:** A4
 
+**Client Company:** 
+
 **Topics:** AWS, Redshift, DynamoDB, PySpark, Spark
 
 ---
@@ -2078,6 +2164,8 @@ Sample output:
 ## Interview 113
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** PySpark, AWS, SQL, Python
 
@@ -2205,6 +2293,8 @@ string - 'aaabbcddddd' o/p a3b2c1d5
 
 **Group:** 
 
+**Client Company:** 
+
 **Topics:** PySpark, SQL, Python, ADF, Databricks, Unity Catalog
 
 ---
@@ -2223,6 +2313,8 @@ Give me the rolling sum of trans_amt for 7 days for all dates from 2024-01-01 to
 ## Interview 115
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** Snowflake, DBT
 

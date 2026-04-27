@@ -78,6 +78,8 @@
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Spark, PySpark, Databricks +UC, DevOps, ADF
 
 ### Questions
@@ -106,6 +108,8 @@
 ## Interview 2
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** SQL, Python, AWS, PySpark
 
@@ -143,6 +147,8 @@
 ## Interview 3
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Spark, SQL, Scala
 
@@ -182,6 +188,8 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** PySpark, AWS
 
 ### Questions
@@ -204,6 +212,8 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 ## Interview 5
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** PySpark
 
@@ -235,6 +245,8 @@ Schema: `c_id, c_name, c_state, c_city, c_membership, month, year, total_sales`
 ## Interview 6
 
 **Group:** A2
+
+**Client Company:** 
 
 **Topics:** Spark,SQL,PySpark
 
@@ -353,6 +365,8 @@ SQL query to find deptwise third highest salary
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Spark, SQL, Scala
 
 ### Questions
@@ -370,6 +384,8 @@ SQL query to find deptwise third highest salary
 ## Interview 8
 
 **Group:** A2
+
+**Client Company:** 
 
 **Topics:** Spark, Python, SQL
 
@@ -392,6 +408,8 @@ SQL query to find deptwise third highest salary
 ## Interview 9
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -463,6 +481,8 @@ SQL query to find deptwise third highest salary
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Round 1
@@ -516,6 +536,8 @@ SQL query to find deptwise third highest salary
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
@@ -530,6 +552,8 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ## Interview 12 — Client Interviewer: Yamika Chauhan (Atlassian DE)
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -549,6 +573,8 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ## Interview 13 — Interviewer: Abhishek Gupta
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -573,6 +599,8 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
@@ -591,6 +619,8 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ## Interview 15 — Interviewer: Manoj Kumar (Round 2)
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -641,6 +671,8 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
@@ -656,6 +688,8 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 ## Interview 17 — CI questions from Pulkit Gupta
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -682,6 +716,8 @@ String and substring as given return starting index of if substring is present i
 ## Interview 18 — Interviewer: Anurag Devagiri
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -748,6 +784,8 @@ feedback_date
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### Questions
@@ -776,6 +814,8 @@ Other questions:
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### SQL
@@ -801,6 +841,8 @@ Write the sql query to find the customer who has maximum number of visits everyd
 ## Interview 21 — Interviewer: Santoshkumar Lakkanagaon
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -830,6 +872,8 @@ For example: Input: `[[1, 3], [2, 6], [8, 10], [15, 18]]` Output: `[[1, 6], [8, 
 ## Interview 22 — Interviewer: Srushti Tijare
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -867,6 +911,8 @@ Explain how u could solve it and how u approach to the question and tell the com
 ## Interview 23 — SQL Solutions (from reference page)
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -928,6 +974,8 @@ Table structure: `customer, product, subscription, sale_type, date`
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
 ### 1 SQL Question
@@ -958,6 +1006,8 @@ Time and Space Complexity were asked
 ## Interview 25 — Interviewer: Sriram
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -1136,6 +1186,8 @@ return t_sum / n
 
 **Group:** A2
 
+**Client Company:** 
+
 **Topics:** Spark, PySpark, SQL
 
 ### Questions
@@ -1201,6 +1253,8 @@ return t_sum / n
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** SQL, PySpark, Python, AWS
 
 ### SQL
@@ -1250,6 +1304,8 @@ return t_sum / n
 ## Interview 28
 
 **Group:** A3
+
+**Client Company:** 
 
 ### SQL Questions
 
@@ -1309,6 +1365,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 
 ### Technical Skills
@@ -1357,6 +1415,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 
 ### Questions
@@ -1372,6 +1432,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ## Interview 31
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** GCP
 
@@ -1395,6 +1457,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ## Interview 32
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Databricks, PySpark, Microsoft Azure, SQL
 
@@ -1449,6 +1513,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, AWS
 
 ### Questions
@@ -1469,6 +1535,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ## Interview 34
 
 **Group:** A2-A3
+
+**Client Company:** 
 
 **Topics:** Microsoft Azure, Spark, Databricks, Python, SQL
 
@@ -1583,6 +1651,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3-A4
 
+**Client Company:** 
+
 **Topics:** Microsoft Azure (ADF, SQL Warehouse), PySpark, Databricks, SQL
 
 **Date:** 2024-07-03
@@ -1647,6 +1717,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, SQL
 
 ### Questions
@@ -1661,6 +1733,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ## Interview 37
 
 **Group:** A2-A3
+
+**Client Company:** 
 
 **Topics:** Azure, Databricks, PySpark, SQL, Python
 
@@ -1693,6 +1767,9 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 ## Interview 38
 
 **Group:** A3
+
+**Client Company:** 
+
 **Topics:** Spark, Scala, Databricks, SQL
 
 ### Questions
@@ -1761,6 +1838,8 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** SQL, PySpark, AWS, Databricks, Airflow
 
 ### R1 — Taken by Hema Raju Baipalli from SNP
@@ -1812,6 +1891,8 @@ List active users per month per year
 ## Interview 40
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** SQL, PySpark, ADF, Azure, Synapse, MS Fabric, Delta Lake
 
@@ -1879,6 +1960,8 @@ Table: Orders
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Databricks, Delta Lake
 
 ### Questions
@@ -1901,6 +1984,8 @@ Table: Orders
 ## Interview 42
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Python, PySpark, Databricks, ADF
 
@@ -1940,6 +2025,8 @@ Table: Orders
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** DBT, Databricks, ADF, Data Vault, Spark & Python
 
 ### Questions
@@ -1966,6 +2053,8 @@ Table: Orders
 
 **Group:** A2
 
+**Client Company:** 
+
 **Topics:** Spark, Hive, File formats, Hadoop
 
 ### Questions
@@ -1988,6 +2077,8 @@ Table: Orders
 ## Interview 45
 
 **Group:** A3 - A4
+
+**Client Company:** 
 
 **Topics:** Python, SQL, Databricks, ADF, Azure Functions, Azure API Management
 
@@ -2041,6 +2132,8 @@ Table: Orders
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Python, AWS
 
 ### Scenario
@@ -2064,6 +2157,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
+**Client Company:** 
+
 **Topics:** Spark, Python, SQL
 
 ### Questions
@@ -2079,6 +2174,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ## Interview 48
 
 **Group:** A2
+
+**Client Company:** 
 
 **Topics:** SQL
 
@@ -2097,6 +2194,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ## Interview 49
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Spark, Databricks, SQL, Scala
 
@@ -2124,6 +2223,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
+**Client Company:** 
+
 **Topics:** Spark, Databricks, ADF
 
 ### Questions
@@ -2140,6 +2241,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ## Interview 51
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** MLE, Python, SQL
 
@@ -2183,6 +2286,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ## Interview 52
 
 **Group:** A2
+
+**Client Company:** 
 
 **Topics:** Python, SQL
 
@@ -2248,6 +2353,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A4
 
+**Client Company:** 
+
 **Topics:** GCP, Data Migration, Data modelling
 
 ### Level 1 (Client Interview)
@@ -2281,6 +2388,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
+**Client Company:** 
+
 **Topics:** Python, PySpark
 
 ### Questions
@@ -2298,6 +2407,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ## Interview 55
 
 **Group:** A2
+
+**Client Company:** 
 
 **Topics:** Scala, Spark, AWS, Rest APIs
 
@@ -2319,6 +2430,8 @@ Design a recommendation system for Food Aggregator Application, this system shou
 ## Interview 56
 
 **Group:** A2
+
+**Client Company:** 
 
 **Topics:** PySpark, Databricks, SQL, Python
 
@@ -2387,6 +2500,8 @@ Output:
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Spark, Python Databricks, Medallion architecture
 
 ### Questions
@@ -2407,6 +2522,8 @@ Output:
 ## Interview 58
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Spark, Python Databricks, Medallion architecture
 
@@ -2431,6 +2548,8 @@ Output:
 ## Interview 59
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Spark, Databricks, Scala, SQL
 
@@ -2457,6 +2576,8 @@ Output:
 
 **Group:** A2
 
+**Client Company:** 
+
 **Topics:** Databricks RAG, ML, Python, SQL
 
 ### Questions
@@ -2478,6 +2599,8 @@ Output:
 ## Interview 61
 
 **Group:** A2
+
+**Client Company:** 
 
 **Topics:** Databricks, SQL, Spark
 
@@ -2520,6 +2643,8 @@ Output:
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Spark, SQL, Databricks
 
 ### Questions
@@ -2552,6 +2677,8 @@ Output:
 ## Interview 63
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Spark/PySpark, Snowflake, Databricks, Python, Airflow
 
@@ -2605,6 +2732,8 @@ Output:
 
 **Group:** A4
 
+**Client Company:** 
+
 **Topics:** MLOps
 
 ### Questions
@@ -2629,6 +2758,9 @@ Introduce and tell us about past projects.
 ## Interview 65
 
 **Group:** A4
+
+**Client Company:** 
+
 **Topics:** Python, PySpark, Databricks, SQL
 
 ### Questions
@@ -2694,6 +2826,9 @@ Introduce and tell us about past projects.
 ## Interview 66
 
 **Group:** A3
+
+**Client Company:** 
+
 **Topics:** Spark, Java, Python, Databricks, API, SQL
 
 ### Final client interview
@@ -2716,6 +2851,8 @@ Introduce and tell us about past projects.
 
 **Group:** A3
 
+**Client Company:** 
+
 **Topics:** Power BI
 
 ### PI Interview
@@ -2734,6 +2871,8 @@ Introduce and tell us about past projects.
 ## Interview 68
 
 **Group:** A3
+
+**Client Company:** 
 
 **Topics:** Spark, Scala, Java, Airflow
 
@@ -2760,6 +2899,8 @@ Introduce and tell us about past projects.
 ## Interview 69
 
 **Group:** A3-A4
+
+**Client Company:** 
 
 **Topics:** PySpark, Python, Databricks, SQL
 
