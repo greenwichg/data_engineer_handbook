@@ -481,7 +481,7 @@ SQL query to find deptwise third highest salary
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -536,7 +536,7 @@ SQL query to find deptwise third highest salary
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -553,7 +553,7 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -574,7 +574,7 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -599,7 +599,7 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -620,7 +620,7 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -671,7 +671,7 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -689,7 +689,7 @@ Hackerank questions: a link was shared to join hackerrank workspace and coding w
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -717,7 +717,7 @@ String and substring as given return starting index of if substring is present i
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -784,7 +784,7 @@ feedback_date
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -814,7 +814,7 @@ Other questions:
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -842,7 +842,7 @@ Write the sql query to find the customer who has maximum number of visits everyd
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -873,7 +873,7 @@ For example: Input: `[[1, 3], [2, 6], [8, 10], [15, 18]]` Output: `[[1, 6], [8, 
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -912,7 +912,7 @@ Explain how u could solve it and how u approach to the question and tell the com
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -974,7 +974,7 @@ Table structure: `customer, product, subscription, sale_type, date`
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -1007,7 +1007,7 @@ Time and Space Complexity were asked
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Atlassian
 
 **Topics:** Python, SQL, Data Warehousing, Spark & Spark Optimizations
 
@@ -1186,7 +1186,7 @@ return t_sum / n
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Novartis
 
 **Topics:** Spark, PySpark, SQL
 
@@ -1253,7 +1253,7 @@ return t_sum / n
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** TP-ICAP
 
 **Topics:** SQL, PySpark, Python, AWS
 
@@ -1307,7 +1307,7 @@ return t_sum / n
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Amazon
 
 ### SQL Questions
 
@@ -1367,7 +1367,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Syngenta
 
 **Topics:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 
@@ -1417,7 +1417,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Syngenta
 
 **Topics:** AWS - Glue, Lambda, S3, Redshift, Python, Airflow, Docker and Kubernetes
 
@@ -1435,7 +1435,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** DBS - CDH
 
 **Topics:** GCP
 
@@ -1460,7 +1460,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Qatar Airways
 
 **Topics:** Databricks, PySpark, Microsoft Azure, SQL
 
@@ -1515,7 +1515,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Factset
 
 **Topics:** Python, AWS
 
@@ -1538,7 +1538,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A2-A3
 
-**Client Company:** 
+**Client Company:** Ahold Delhaize
 
 **Topics:** Microsoft Azure, Spark, Databricks, Python, SQL
 
@@ -1653,7 +1653,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3-A4
 
-**Client Company:** 
+**Client Company:** Shell
 
 **Topics:** Microsoft Azure (ADF, SQL Warehouse), PySpark, Databricks, SQL
 
@@ -1719,7 +1719,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Factset
 
 **Topics:** Python, SQL
 
@@ -1736,7 +1736,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A2-A3
 
-**Client Company:** 
+**Client Company:** Reckitt
 
 **Topics:** Azure, Databricks, PySpark, SQL, Python
 
@@ -1770,7 +1770,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SNP
 
 **Topics:** Spark, Scala, Databricks, SQL
 
@@ -1840,7 +1840,7 @@ HINT: There will be two tables orders and orderitem, use only orderitem table an
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SNP
 
 **Topics:** SQL, PySpark, AWS, Databricks, Airflow
 
@@ -1894,7 +1894,7 @@ List active users per month per year
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** LSEG
 
 **Topics:** SQL, PySpark, ADF, Azure, Synapse, MS Fabric, Delta Lake
 
@@ -1962,7 +1962,7 @@ Table: Orders
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Microsoft
 
 **Topics:** Databricks, Delta Lake
 
@@ -1987,7 +1987,7 @@ Table: Orders
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Whitecap
 
 **Topics:** Python, PySpark, Databricks, ADF
 
@@ -2027,7 +2027,7 @@ Table: Orders
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Microsoft
 
 **Topics:** DBT, Databricks, ADF, Data Vault, Spark & Python
 
@@ -2055,7 +2055,7 @@ Table: Orders
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** DBS Bank
 
 **Topics:** Spark, Hive, File formats, Hadoop
 
@@ -2080,7 +2080,7 @@ Table: Orders
 
 **Group:** A3 - A4
 
-**Client Company:** 
+**Client Company:** UBS
 
 **Topics:** Python, SQL, Databricks, ADF, Azure Functions, Azure API Management
 
@@ -2134,7 +2134,7 @@ Table: Orders
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Factset
 
 **Topics:** Python, AWS
 
@@ -2159,7 +2159,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Alcon Research
 
 **Topics:** Spark, Python, SQL
 
@@ -2177,7 +2177,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Amazon
 
 **Topics:** SQL
 
@@ -2197,7 +2197,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SNP
 
 **Topics:** Spark, Databricks, SQL, Scala
 
@@ -2225,7 +2225,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** UBS
 
 **Topics:** Spark, Databricks, ADF
 
@@ -2244,7 +2244,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Google
 
 **Topics:** MLE, Python, SQL
 
@@ -2289,7 +2289,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Google
 
 **Topics:** Python, SQL
 
@@ -2355,7 +2355,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A4
 
-**Client Company:** 
+**Client Company:** Google
 
 **Topics:** GCP, Data Migration, Data modelling
 
@@ -2390,7 +2390,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Clarivate Analytics
 
 **Topics:** Python, PySpark
 
@@ -2410,7 +2410,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** IQVIA
 
 **Topics:** Scala, Spark, AWS, Rest APIs
 
@@ -2433,7 +2433,7 @@ Design a recommendation system for Food Aggregator Application, this system shou
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Adidas
 
 **Topics:** PySpark, Databricks, SQL, Python
 
@@ -2502,7 +2502,7 @@ Output:
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Adidas
 
 **Topics:** Spark, Python Databricks, Medallion architecture
 
@@ -2525,7 +2525,7 @@ Output:
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Adidas
 
 **Topics:** Spark, Python Databricks, Medallion architecture
 
@@ -2551,7 +2551,7 @@ Output:
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SNP
 
 **Topics:** Spark, Databricks, Scala, SQL
 
@@ -2578,7 +2578,7 @@ Output:
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Reckitt
 
 **Topics:** Databricks RAG, ML, Python, SQL
 
@@ -2602,7 +2602,7 @@ Output:
 
 **Group:** A2
 
-**Client Company:** 
+**Client Company:** Reckitt
 
 **Topics:** Databricks, SQL, Spark
 
@@ -2645,7 +2645,7 @@ Output:
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SNP
 
 **Topics:** Spark, SQL, Databricks
 
@@ -2680,7 +2680,7 @@ Output:
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Novartis
 
 **Topics:** Spark/PySpark, Snowflake, Databricks, Python, Airflow
 
@@ -2734,7 +2734,7 @@ Output:
 
 **Group:** A4
 
-**Client Company:** 
+**Client Company:** Google
 
 **Topics:** MLOps
 
@@ -2761,7 +2761,7 @@ Introduce and tell us about past projects.
 
 **Group:** A4
 
-**Client Company:** 
+**Client Company:** Robert Bosch
 
 **Topics:** Python, PySpark, Databricks, SQL
 
@@ -2829,7 +2829,7 @@ Introduce and tell us about past projects.
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** SNP
 
 **Topics:** Spark, Java, Python, Databricks, API, SQL
 
@@ -2853,7 +2853,7 @@ Introduce and tell us about past projects.
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** Novartis
 
 **Topics:** Power BI
 
@@ -2874,7 +2874,7 @@ Introduce and tell us about past projects.
 
 **Group:** A3
 
-**Client Company:** 
+**Client Company:** expedia
 
 **Topics:** Spark, Scala, Java, Airflow
 
@@ -2902,7 +2902,7 @@ Introduce and tell us about past projects.
 
 **Group:** A3-A4
 
-**Client Company:** 
+**Client Company:** Swiss Re Global HQ
 
 **Topics:** PySpark, Python, Databricks, SQL
 
