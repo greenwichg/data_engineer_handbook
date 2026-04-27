@@ -53,9 +53,9 @@
 
 ## Interview 70
 
-**Group:** 
+**Group:** A3
 
-**Client Company:** 
+**Client Company:** Swiss Re Global HQ
 
 **Topics:** PySpark, Python, Databricks, SQL
 
@@ -78,9 +78,11 @@
 
 ## Interview 71
 
-**Group:** 
+**Group:** A3
 
-**Client Company:** 
+**Client Company:** Swiss Re Global HQ
+
+**Topics:** PySpark, Python, Databricks, SQL
 
 **Interviewer:** shrivishnu and vishwas
 
@@ -96,9 +98,9 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ## Interview 72
 
-**Group:** 
+**Group:** A4
 
-**Client Company:** 
+**Client Company:** Google
 
 **Topics:** Java, SQL, Data Engineering, GCP
 
@@ -136,9 +138,9 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ## Interview 73
 
-**Group:** 
+**Group:** A3-A4
 
-**Client Company:** 
+**Client Company:** Swiss Re Global HQ
 
 **Topics:** Python, PySpark, SQL, Data Engineering
 
@@ -209,11 +211,11 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 ## Interview 74
 
-**Group:** 
+**Group:** A2-A3
 
-**Client Company:** 
+**Client Company:** Adidas
 
-**Topics:** Spark
+**Topics:** PySpark, Databricks, Spark, Python
 
 ---
 
@@ -278,7 +280,7 @@ Hi I have recently attended interview for swiss re project and cleared it. Most 
 
 **Group:** A3-A4
 
-**Client Company:** 
+**Client Company:** Mastercard
 
 **Topics:** Spark, Scala, SQL
 
